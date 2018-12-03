@@ -25,7 +25,7 @@
 %token < int > INTEGER_LITERAL
 %token < int > LONG_LITERAL
 %token < float > FLOAT_LITERAL
-%token < boolean > BOOLEAN_LITERAL
+%token < bool > BOOLEAN_LITERAL
 %token < char > CHAR_LITERAL
 %token < string > STRING_LITERAL
 %token NULL_LITERAL
