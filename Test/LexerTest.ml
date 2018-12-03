@@ -1,4 +1,5 @@
 open Parser
+open Lexer
 open Main
 
 let () =
@@ -8,9 +9,9 @@ let () =
     let input_file = open_in file in
     let lexbuf = Lexing.from_channel input_file in
       Location.init lexbuf file;
-      print_string lexbuf;
-      let exp = expression Lexer.nexttoken lexbuf in
-        print_string ( exp );
+      (* print_string lexbuf; *)
+      let exp = expression_statement nexttoken lexbuf in
+        print_string  exp ;
       close_in (input_file)
     with Sys_error s ->
       print_endline ("Can't find file '" ^ file ^ "'")

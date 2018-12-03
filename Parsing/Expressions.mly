@@ -1,5 +1,5 @@
-%start expression
-%type < string > expression
+%start expression_statement
+%type < string > expression_statement
 %%
 
 expression:
@@ -13,7 +13,7 @@ statement_expression:
   (* TODO: other statement_expression *)
 
 assignment:
-  | left_hand_side assignment_operator assignment_expression { $1 }
+  | left_hand_side assignment_operator assignment_expression { $1 ^ " " ^ $2 ^ " " ^ $3 }
   (* TODO: other assignment *)
 
 left_hand_side:
@@ -40,7 +40,6 @@ conditional_assignment:
   | conditional_or_expression { $1 }
   | conditional_or_expression TERNARY_THEN expression TERNARY_ELSE conditional_expression { $1 }
 
-
 conditional_expression:
   | conditional_or_expression { $1 }
   | conditional_or_expression TERNARY_THEN expression TERNARY_ELSE conditional_expression { $1 }
@@ -48,7 +47,6 @@ conditional_expression:
 conditional_or_expression:
   | conditional_and_expression { $1 }
   | conditional_or_expression OR_LOGICAL conditional_and_expression { $1 }
-
 
 conditional_and_expression:
   | inclusive_or_expression { $1 }
