@@ -24,7 +24,7 @@ setup.log
 .merlin
 
 # Ocamllex
-*.ml
+./Parsing/*.ml
 
 ### Vim ###
 # Swap
