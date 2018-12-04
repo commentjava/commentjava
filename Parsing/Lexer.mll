@@ -1,5 +1,10 @@
 {
   open Parser
+
+  let create_error_message (lexbuf: Lexing.lexbuf) =
+    lexbuf.lex_curr_p.pos_fname ^ ": cannot find symbol"
+    ^ ":line " ^ (string_of_int lexbuf.lex_curr_p.pos_lnum)
+    ^ ":column " ^ (string_of_int (lexbuf.lex_curr_p.pos_cnum - lexbuf.lex_curr_p.pos_bol))
 }
 
 let java_letter = ['a'-'z' 'A'-'Z' '_' '$']
@@ -15,7 +20,7 @@ let boolean_literal = "true" | "false"
 
 (* Integer Literals *)
 let decimal_numeral = '0' | non_zero_digit digit*
-let integer_literal = decimal_numeral* ('l' | 'L')?
+let integer_literal = decimal_numeral ('l' | 'L')?
 
 (* String Literals *)
 let char = [^'"']
@@ -27,10 +32,12 @@ let float_literal = (digit+ '.'? digit* | '.' digit+) ('f' | 'F')?
 (* Char Literals *)
 let char_literal = '\'' char* '\''
 
-let space = [' ' '\t' '\n' ]
+let space = [' ' '\t']
+let newline = ['\n' '\r'] | '\r' '\n'
 rule nexttoken = parse
 
 (* White Space - 3.6 *)
+  | newline        { Lexing.new_line lexbuf; nexttoken lexbuf }
   | space+         { nexttoken lexbuf }
   | eof            { EOF }
 
@@ -119,3 +126,6 @@ rule nexttoken = parse
   | "?"    { TERNARY_THEN "ternary_then" }
   | ":"    { TERNARY_ELSE "ternary_else" }
   | "!"    { NOT_LOGICAL "not_logical" }
+
+(* Error *)
+  | _      { raise (Failure (create_error_message lexbuf)) }
