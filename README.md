@@ -1,4 +1,7 @@
-The minijavac compiler.
+The minijavac compiler
+======================
+
+[![pipeline status](https://gitlab.com/commentjava/commentjava/badges/master/pipeline.svg)](https://gitlab.com/commentjava/commentjava/commits/master)
 
 A compilation project for Third year students of Telecom Bretagne.
 

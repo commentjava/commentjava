@@ -1,0 +1,13 @@
+image: ocaml/opam
+
+stages:
+  - build-test
+
+build-test:
+  stage: build-test
+  artifacts:
+    untracked: true
+  before_script:
+    - opam install -q -y menhir
+  script:
+    - make test-all
