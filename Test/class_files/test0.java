@@ -1,1 +1,3 @@
-class firstClass {}
+class firstClass {
+  int laba = 12;
+}
