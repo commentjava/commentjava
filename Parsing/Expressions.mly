@@ -1,15 +1,9 @@
 %start expression_statement
 %type < string > expression_statement
 
-%start expression
-%type < string > expression
-
-%start conditional_expression
-%type < string > conditional_expression
-
 %%
 
-expression:
+%public expression:
   | assignment_expression { $1 }
 
 expression_statement:
@@ -47,7 +41,7 @@ conditional_assignment:
   | conditional_or_expression { $1 }
   | conditional_or_expression TERNARY_THEN expression TERNARY_ELSE conditional_expression { $1 }
 
-conditional_expression:
+%public conditional_expression:
   | conditional_or_expression { $1 }
   | conditional_or_expression TERNARY_THEN expression TERNARY_ELSE conditional_expression { $1 }
 
