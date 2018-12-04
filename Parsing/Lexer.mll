@@ -117,15 +117,30 @@ rule nexttoken = parse
 (* Operators - 3.12 *)
   | "="    { ASSIGN "assign" }
   | "=="   { EQUAL "equal" }
-  | "!="   { NOT_EQUAL "not_equal" }
+  | "!="   { NOT_EQUAL "not_equal"}
+  | "<"    { LOWER "lower" }
+  | ">"    { GREATER "greater" }
+  | "<="   { LOWER_OR_EQUAL "lower_or_equal" }
+  | ">="   { GREATER_OR_EQUAL "greater_or_equal" }
+  | "?"    { TERNARY_THEN "ternary_then" }
+  | ":"    { TERNARY_ELSE "ternary_else" }
+  | "&&"   { AND_LOGICAL "and_logical" }
+  | "||"   { OR_LOGICAL "or_logical" }
+  | "!"    { NOT_LOGICAL "not_logical" }
+  | "++"   { INCREMENT "increment" }
+  | "--"   { DECREMENT "decrement" }
   | "+"    { PLUS "plus" }
   | "-"    { MINUS "minus" }
   | "*"    { MULTIPLY "multiply" }
   | "/"    { DIVIDE "divide" }
   | "%"    { MODULO "modulo" }
-  | "?"    { TERNARY_THEN "ternary_then" }
-  | ":"    { TERNARY_ELSE "ternary_else" }
-  | "!"    { NOT_LOGICAL "not_logical" }
+  | "~"    { COMPLEMENT_BITWISE "complement_bitwise" }
+  | "&"    { AND_BITWISE "and_bitwise" }
+  | "|"    { OR_BITWISE "or_bitwise" }
+  | "^"    { XOR_BITWISE "xor_bitwise" }
+  | "<<"   { LEFT_SHIFT "left_shift" }
+  | ">>"   { RIGHT_SHIFT "right_shift" }
+  | ">>>"  { RIGHT_SHIFT_UNSIGNED "right_shift_unsigned" }
 
 (* Error *)
   | _      { raise (Failure (create_error_message lexbuf)) }
