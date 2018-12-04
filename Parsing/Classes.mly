@@ -1,4 +1,4 @@
-% start class_declaration
+%start class_declaration
 %type <string> class_declaration
 %%
 
@@ -7,7 +7,7 @@ class_declaration :
  (*TODO: section 8.1 *)
 
 normal_class_declaration:
-  | class_modifiers? CLASS IDENTIFIER type_parameters? super? interfaces? class_body { $1 }
+  | class_modifiers? CLASS IDENTIFIER type_parameters? super? interfaces? class_body { $3 }
 
 class_modifiers:
   | class_modifier { $1 }
@@ -43,9 +43,6 @@ additional_bound_list:
 additional_bound:
   | AND_BITWISE interface_type { $1 }
 
-interface_type:
-  | type_decl_specifier type_argument? { $1 }
-(*TODO not sure if type_argument is opt section 4.3*)
 
 type_name:
   | IDENTIFIER { $1 }
@@ -85,10 +82,14 @@ class_type:
 
 interface_type:
   | type_decl_specifier type_argument? { $1 }
+(*TODO not sure if type_argument is opt section 4.3*)
 
 type_decl_specifier:
   | type_name { $1 }
  (*TODO : section 4.3*)
+
+type_variable:
+  | IDENTIFIER { $1 }
 
 (* SECTION 8.1.4 *)
 
@@ -162,7 +163,7 @@ type_:
 
 primitive_type:
   | numeric_type { $1 }
-  | BOOLEAN
+  | BOOLEAN { $1 }
 
 numeric_type:
   | integral_type { $1 }

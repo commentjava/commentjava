@@ -1,5 +1,9 @@
 %start expression_statement
 %type < string > expression_statement
+
+%start expression
+%type < string > expression
+
 %%
 
 expression:
