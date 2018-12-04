@@ -32,7 +32,7 @@ test-all: $(RUN_TESTS)
 $(RUN_TESTS):
 	./$(subst test-,,$@)
 
-test-show:
+test-list:
 	@for t in $(RUN_TESTS) ; do \
 	echo "$$t" ; \
 	done;
