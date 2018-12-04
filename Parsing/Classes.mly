@@ -1,5 +1,6 @@
 %start class_declaration
 %type <string> class_declaration
+
 %%
 
 class_declaration :
@@ -21,7 +22,45 @@ class_modifier:
   | STATIC { $1 }
   | FINAL { $1 }
   | STRICTFP { $1 }
-(*TODO : section 8.1.1*)
+  | annotation { $1 }
+
+(* section 9.7 Annotations *)
+annotations:
+  | annotation { $1 }
+  | annotations annotation { $1 }
+
+annotation:
+  | normal_annotation { $1 }
+  | marker_annotation { $1 }
+  | single_element_annotation { $1 }
+
+normal_annotation:
+  | AT type_name L_PAR element_value_pairs? R_PAR { $1 }
+
+element_value_pairs:
+  | element_value_pair { $1 }
+  | element_value_pairs COMMA element_value_pair { $1 }
+
+element_value_pair:
+  | IDENTIFIER ASSIGN element_value { $1 }
+
+element_value:
+  | conditional_expression { $1 }
+  | annotation { $1 }
+  | element_value_array_initializer { $1 } 
+
+element_value_array_initializer:
+  | L_BRACE element_values? COMMA? { $1 }
+
+element_values:
+  | element_value { $1 }
+  | element_values COMMA element_value { $1 }
+
+single_element_annotation:
+  | AT type_name L_PAR element_value R_PAR { $1 }
+
+marker_annotation:
+  | AT type_name { $1 }
 
 type_parameters:
   | LOWER type_parameter_list GREATER { $1 }

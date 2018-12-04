@@ -4,6 +4,9 @@
 %start expression
 %type < string > expression
 
+%start conditional_expression
+%type < string > conditional_expression
+
 %%
 
 expression:
