@@ -1,17 +1,28 @@
 open Parser
-open Lexer
-open Main
+open Lexing
+
+let successCount = ref 0
+let failCount = ref 0
+
+let to_test = [
+  "Test/class_files/test0.java"
+]
+
+let rec print_lexbuf lexbuf =
+  let exp = class_declaration Lexer.nexttoken lexbuf  in
+    print_string exp
+
+(* Token2str.print_lexbuf should be replaced by the test function wich compare the lexer output with the expected result *)
+let tester str = 
+  try
+    print_endline ("## Start Class test for " ^ str);
+    Filereader.read_java str print_lexbuf;
+    print_endline ("\n## End of Class test for " ^ str ^ "\n\n");
+    successCount := !successCount + 1
+  with
+    _ -> failCount := !failCount + 1; print_endline ("/!\\/!\\ Error while testing " ^ str ^ " /!\\/!\\\n\n")
 
 let () =
-  let file_path = "Test/files/test_classes01.java" in
-    let (file, filename) = Main.get_file file_path in
-    try
-    let input_file = open_in file in
-    let lexbuf = Lexing.from_channel input_file in
-      Location.init lexbuf file;
-      (* print_string lexbuf; *)
-      let exp = class_declaration nexttoken lexbuf in
-        print_string  exp ;
-      close_in (input_file)
-    with Sys_error s ->
-      print_endline ("Can't find file '" ^ file ^ "'")
+  List.iter tester to_test;
+  print_endline ("### Success: " ^ (string_of_int !successCount));
+  print_endline ("### Failed: " ^ (string_of_int !failCount))

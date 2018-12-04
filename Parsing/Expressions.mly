@@ -122,7 +122,6 @@ primary:
 
 primary_no_new_array:
   | literal { $1 }
-  | type_ PERIOD CLASS { $1 }
   | VOID PERIOD CLASS { $1 }
   | THIS { $1 }
 (* TODO: other primary_no_new_array 15.8 *)
