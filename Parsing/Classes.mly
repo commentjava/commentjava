@@ -1,10 +1,10 @@
 %start class_declaration
-%type <string> class_declaration
+%type <Ast.ast> class_declaration
 
 %%
 
 class_declaration :
-  | normal_class_declaration { $1 }
+  | normal_class_declaration { Tree("normal_class_declaration", [Leaf($1)])  }
  (*TODO: section 8.1 *)
 
 normal_class_declaration:

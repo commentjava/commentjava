@@ -1,5 +1,6 @@
 open Parser
 open Lexing
+open Ast
 
 let successCount = ref 0
 let failCount = ref 0
@@ -10,7 +11,7 @@ let to_test = [
 
 let rec print_lexbuf lexbuf =
   let exp = class_declaration Lexer.nexttoken lexbuf  in
-    print_string exp
+    print_ast exp
 
 (* Token2str.print_lexbuf should be replaced by the test function wich compare the lexer output with the expected result *)
 let tester str = 
