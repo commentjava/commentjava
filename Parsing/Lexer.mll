@@ -11,12 +11,21 @@ let digit = '0' | non_zero_digit
 let identifier = java_letter (java_letter | digit )*
 
 (* Boolean Literals *)
-let boolean = "true"|"false"
+let boolean_literal = "true" | "false"
+
 (* Integer Literals *)
 let decimal_numeral = '0' | non_zero_digit digit*
-let integer = decimal_numeral* ('l' | 'L')?
+let integer_literal = decimal_numeral* ('l' | 'L')?
 
-(* TODO ad other literals *)
+(* String Literals *)
+let char = [^'"']
+let string_literal = '"' char* '"'
+
+(* Float Literals *)
+let float_literal = (digit+ '.'? digit* | '.' digit+) ('f' | 'F')?
+
+(* Char Literals *)
+let char_literal = '\'' char* '\''
 
 let space = [' ' '\t' '\n' ]
 rule nexttoken = parse
@@ -80,6 +89,13 @@ rule nexttoken = parse
 (* Identifiers - 3.8 *)
   | identifier as ident { IDENTIFIER ident }
 
+(* Literals - 3.10 *)
+  | integer_literal as i { INTEGER_LITERAL i }
+  | string_literal as s { STRING_LITERAL s }
+  | float_literal as f { FLOAT_LITERAL f }
+  | boolean_literal as b { BOOLEAN_LITERAL b }
+  | char_literal as c { CHAR_LITERAL c }
+
 (* Separators - 3.11 *)
   | "("   { L_PAR "l_par" }
   | ")"   { R_PAR "r_par" }
@@ -90,10 +106,6 @@ rule nexttoken = parse
   | ";"   { SEMICOLON "semicolon" }
   | ","   { COMMA "comma" }
   | "."   { PERIOD "period" }
-
-(* Literals - 3.10 *)
-  | boolean as b { BOOLEAN_LITERAL b }
-  | integer as i { INTEGER_LITERAL i }
 
 (* Operators - 3.12 *)
   | "="    { ASSIGN "assign" }
