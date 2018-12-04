@@ -103,7 +103,15 @@ unary_expression_not_plus_minus:
 
 postfix_expression:
   | primary { $1 }
-  (* TODO: other postfix_expression 15.14 *)
+  | expression_name { $1 }
+  | post_increment_expression { $1 }
+  | post_decrement_expression { $1 }
+
+post_increment_expression:
+  | postfix_expression INCREMENT { $1 }
+
+post_decrement_expression:
+  | postfix_expression DECREMENT { $1 }
 
 primary:
   | primary_no_new_array { $1 }
@@ -111,7 +119,10 @@ primary:
 
 primary_no_new_array:
   | literal { $1 }
-  (* TODO: other primary_no_new_array 15.8 *)
+  | type_ PERIOD CLASS { $1 }
+  | VOID PERIOD CLASS { $1 }
+  | THIS { $1 }
+(* TODO: other primary_no_new_array 15.8 *)
 
 literal:
   | INTEGER_LITERAL { $1 }
