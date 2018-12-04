@@ -23,13 +23,13 @@ all: $(MAIN).native
 $(MAIN).native: $(ML_FILES) $(MLL_FILES) $(MLY_FILES)
 	$(OCAMLBUILD) $(MAIN_DIR)/$(MAIN).$(EXT)
 
-TEST_BINS: $(MLY_FILES) $(MLL_FILES) $(MLY_FILES)
+$(TEST_BINS): $(MLY_FILES) $(MLL_FILES) $(MLY_FILES)
 	$(OCAMLBUILD) $(TEST_DIR)/$@
 
 # Tests receipes
 test-all: $(RUN_TESTS)
 
-$(RUN_TESTS):
+$(RUN_TESTS): $(TEST_BINS)
 	./$(subst test-,,$@)
 
 test-list:
