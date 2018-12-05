@@ -32,7 +32,10 @@ let float_literal = (digit+ '.'? digit* | '.' digit+) ('f' | 'F')?
 (* Char Literals *)
 let char_literal = '\'' char* '\''
 
-let space = [' ' '\t']
+(* space / horizontal tab / form feed *)
+let space = [' ' '\t' '\x0C']
+
+(* newline / return / newline then return *)
 let newline = ['\n' '\r'] | '\r' '\n'
 rule nexttoken = parse
 

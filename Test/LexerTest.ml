@@ -1,28 +1,18 @@
 open Parser
-open Lexing
 
-let successCount = ref 0
-let failCount = ref 0
+let tests_dir = "Test/lexer_files/"
 
-let to_test = [
-  "Test/lexer_files/success/HelloWorld.java";
-  "Test/lexer_files/success/ForLoop.java";
-  "Test/lexer_files/success/Literals/IntLiterals.java";
-  "Test/lexer_files/success/Literals/IntLiteralsHexOctal.java";
-  "Test/lexer_files/success/Literals/FloatLiterals.java";
-]
+let rec travel_lexbuff lexbuf =
+  (* Go through all tokens of the buffer until EOF, raise an exception if the test fail *)
+  let token = Lexer.nexttoken lexbuf in
+    match token with
+      | EOF -> ()
+      | _ -> travel_lexbuff lexbuf
 
-(* Token2str.print_lexbuf should be replaced by the test function wich compare the lexer output with the expected result *)
-let tester str = 
-  try
-    print_endline ("## Start Lexer test for " ^ str);
-    Filereader.read_java str Token2str.print_lexbuf;
-    print_endline ("## End of Lexer test for " ^ str ^ "\n\n");
-    successCount := !successCount + 1
-  with
-    _ -> failCount := !failCount + 1; print_endline ("/!\\/!\\ Error while testing " ^ str ^ " /!\\/!\\\n\n")
+let check_lexer file =
+  (* Raise an execption if the file can't be interpreted by the lexer *)
+  Filereader.read_java file travel_lexbuff
+  (* Token2str.print_lexbuf should be replaced by the test function wich compare the lexer output with the expected result *)
 
 let () =
-  List.iter tester to_test;
-  print_endline ("### Success: " ^ (string_of_int !successCount));
-  print_endline ("### Failed: " ^ (string_of_int !failCount))
+  TestHelper.test_dir tests_dir check_lexer
