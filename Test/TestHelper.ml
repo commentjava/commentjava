@@ -1,14 +1,19 @@
 let successCount = ref 0
 let failCount = ref 0
 
+(* Colors in terminal *)
+let green = "\x1b[0;32m"
+let red = "\x1b[0;31m"
+let reset_color = "\x1b[0m"
+
 let test_file assert_fct file =
   (* Run assert_fct on the file, and increment the fail counter if there is an exception, else increment the success counter *)
   try
     print_endline ("> Testing " ^ file);
     assert_fct file;
-    successCount := !successCount + 1; print_endline ("\n> " ^ file ^ " passed \n")
+    successCount := !successCount + 1; print_endline (green ^ "\n> " ^ file ^ " passed \n" ^ reset_color)
   with
-    _ -> failCount := !failCount + 1; print_endline ("\n/!\\/!\\ " ^ file ^ " failed /!\\/!\\\n")
+    _ -> failCount := !failCount + 1; print_endline (red ^ "\n/!\\/!\\ " ^ file ^ " failed /!\\/!\\\n" ^ reset_color)
 
 let dir_is_empty dir =
   (* Return true if dir is empty except . and .. *)
@@ -44,4 +49,7 @@ let test_dir dir assert_fct =
       List.iter (test_file assert_fct) files;
       print_endline (">>> Total tests: " ^ (string_of_int (!successCount + !failCount)));
       print_endline (">>> Passed: " ^ (string_of_int !successCount));
-      print_endline (">>> Failed: " ^ (string_of_int !failCount))
+      print_endline (">>> Failed: " ^ (string_of_int !failCount));
+      match !failCount with
+        | 0 -> print_endline (green ^ "SUCCESS\n" ^ reset_color)
+        | _ -> print_endline (red ^ "FAILURE\n" ^ reset_color)
