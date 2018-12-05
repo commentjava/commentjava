@@ -38,8 +38,8 @@ let space = [' ' '\t' '\x0C']
 (* newline / return / newline then return *)
 let newline = ['\n' '\r'] | '\r' '\n'
 
-let eol_comment = "//" _* newline
-let traditional_comment = "/*" (_ newline?)* "*/"
+let eol_comment = "//" [^ '\n' '\r']* newline
+let traditional_comment = "/*" ([^'*'] | '*' [^'/'])* "*/"
 
 rule nexttoken = parse
 
