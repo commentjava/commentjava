@@ -37,7 +37,15 @@ let space = [' ' '\t' '\x0C']
 
 (* newline / return / newline then return *)
 let newline = ['\n' '\r'] | '\r' '\n'
+
+let eol_comment = "//" _* newline
+let traditional_comment = "/*" (_ newline?)* "*/"
+
 rule nexttoken = parse
+
+(* Comments *)
+  | eol_comment    { Lexing.new_line lexbuf; nexttoken lexbuf }
+  | traditional_comment { nexttoken lexbuf }
 
 (* White Space - 3.6 *)
   | newline        { Lexing.new_line lexbuf; nexttoken lexbuf }

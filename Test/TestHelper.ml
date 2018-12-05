@@ -28,12 +28,18 @@ let dir_contents dir =
   in
     loop [] [dir]
 
+let rec filter_java files = 
+  match files with
+    | [] -> []
+    | hd :: tl when Filename.check_suffix hd ".java" -> hd :: (filter_java tl)
+    | hd :: tl -> filter_java tl
+
 let test_dir dir assert_fct =
   (* Run the assert_fct for each file in the *)
   if dir_is_empty dir then
     print_endline ("There is no file to test in " ^ dir)
   else
-    let files = dir_contents dir
+    let files = filter_java (dir_contents dir)
     in
       List.iter (test_file assert_fct) files;
       print_endline (">>> Total tests: " ^ (string_of_int (!successCount + !failCount)));
