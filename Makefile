@@ -1,4 +1,6 @@
-OCAMLBUILD := ocamlbuild
+MENHIR          := menhir
+MENHIRFLAGS     := --table --inspection -v -la 2
+OCAMLBUILD := ocamlbuild -use-menhir -menhir "$(MENHIR) $(MENHIRFLAGS)" -package menhirLib
 
 EXT := native
 
