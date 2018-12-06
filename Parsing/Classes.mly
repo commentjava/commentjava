@@ -1,28 +1,33 @@
+%{
+    open Ast
+%}
+
+
 %start class_declaration
 %type <Ast.ast> class_declaration
 
 %%
 
 class_declaration :
-  | normal_class_declaration { Tree("normal_class_declaration", [Leaf($1)])  }
+  | normal_class_declaration { Tree("normal_class_declaration", [$1])  }
  (*TODO: section 8.1 *)
 
 normal_class_declaration:
-  | class_modifiers? CLASS IDENTIFIER type_parameters? super? interfaces? class_body { $3 }
+  | class_modifiers? CLASS IDENTIFIER type_parameters? super? interfaces? class_body { Treeopt("normal_class_declaration", [$1; (Some (Leaf($2))); (Some (Leaf($3))); $4]) }
 
 class_modifiers:
-  | class_modifier { $1 }
-  | class_modifiers class_modifier { $1 }
+  | class_modifier { Tree("class_modifiers", [$1]) }
+  | class_modifiers class_modifier { Tree("class_modifiers", [$1; $2]) }
 
 class_modifier:
-  | PUBLIC { $1 }
-  | PROTECTED { $1 }
-  | PRIVATE { $1 }
-  | ABSTRACT { $1 }
-  | STATIC { $1 }
-  | FINAL { $1 }
-  | STRICTFP { $1 }
-  | annotation { $1 }
+  | PUBLIC { Tree("class_modifier", [Leaf($1)]) }
+  | PROTECTED { Tree("class_modifier", [Leaf($1)]) }
+  | PRIVATE { Tree("class_modifier", [Leaf($1)]) }
+  | ABSTRACT { Tree("class_modifier", [Leaf($1)]) }
+  | STATIC { Tree("class_modifier", [Leaf($1)]) }
+  | FINAL { Tree("class_modifier", [Leaf($1)]) }
+  | STRICTFP { Tree("class_modifier", [Leaf($1)]) }
+  | annotation { Tree("class_modifier", [Leaf($1)]) }
 
 (* section 9.7 Annotations *)
 annotations:
@@ -63,7 +68,7 @@ marker_annotation:
   | AT type_name { $1 }
 
 type_parameters:
-  | LOWER type_parameter_list GREATER { $1 }
+  | LOWER type_parameter_list GREATER { Tree("type_parameters", [Leaf("type_parameter_list")]) }
 
 type_parameter_list:
   | type_parameter_list PERIOD type_parameter { $1 }
