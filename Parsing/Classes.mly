@@ -13,7 +13,7 @@ class_declaration :
  (*TODO: section 8.1 *)
 
 normal_class_declaration:
-  | class_modifiers? CLASS IDENTIFIER type_parameters? super? interfaces? class_body { Treeopt("normal_class_declaration", [$1; (Some (Leaf($3))); $4; None; None; (Some $7)]) }
+  | class_modifiers? CLASS IDENTIFIER type_parameters? super? interfaces? class_body { Treeopt("normal_class_declaration", [$1; (Some (Leaf($3))); $4; $5; $6; (Some $7)]) }
 
 class_modifiers:
   | class_modifier { Tree("class_modifiers", [$1]) }
@@ -31,61 +31,60 @@ class_modifier:
 
 (* section 9.7 Annotations *)
 annotations:
-  | annotation { Tree("", []) }
-  | annotations annotation { Tree("", [])  }
+  | annotations? annotation { Treeopt("annotations", [$1; (Some $2)])  }
 
 annotation:
-  | normal_annotation { Tree("", [])  }
-  | marker_annotation { Tree("", [])  }
-  | single_element_annotation { Tree("", [])  }
+  | normal_annotation { Tree("annotation", [$1])  }
+  | marker_annotation { Tree("annotation", [$1])  }
+  | single_element_annotation { Tree("annotation", [$1])  }
 
 normal_annotation:
-  | AT type_name L_PAR element_value_pairs? R_PAR { Tree("", [])  }
+  | AT type_name L_PAR element_value_pairs? R_PAR { Treeopt("normal_annotation", [(Some $2); $4])  }
 
 element_value_pairs:
-  | element_value_pair { Tree("", [])  }
-  | element_value_pairs COMMA element_value_pair { Tree("", [])  }
+  | element_value_pair { Treeopt("element_value_pairs", [None; (Some $1)])  }
+  | element_value_pairs COMMA element_value_pair { Treeopt("element_value_pairs", [(Some $1); (Some $3)])  }
 
 element_value_pair:
-  | IDENTIFIER ASSIGN element_value { Tree("", [])  }
+  | IDENTIFIER ASSIGN element_value { Tree("element_value_pair", [Leaf($1); $3])  }
 
 element_value:
-  | conditional_expression { Tree("", [])  }
-  | annotation { Tree("", [])  }
-  | element_value_array_initializer { Tree("", [])  } 
+  | conditional_expression { Tree("element_value", [Leaf($1)])  }
+  | annotation { Tree("element_value", [$1])  }
+  | element_value_array_initializer { Tree("element_value", [$1])  } 
 
 element_value_array_initializer:
-  | L_BRACE element_values? COMMA? { Tree("", [])  }
+  | L_BRACE element_values? COMMA? { Treeopt("element_value_array_initializer", [$2])  } (* TODO : are we sure of this one? *)
 
 element_values:
-  | element_value { Tree("", [])  }
-  | element_values COMMA element_value { Tree("", [])  }
+  | element_value { Treeopt("element_values", [None; (Some $1)])  }
+  | element_values COMMA element_value { Treeopt("element_values", [(Some $1); (Some $3)])  }
 
 single_element_annotation:
-  | AT type_name L_PAR element_value R_PAR { Tree("", [])  }
+  | AT type_name L_PAR element_value R_PAR { Tree("single_element_annotation", [$2; $4])  }
 
 marker_annotation:
-  | AT type_name { Tree("", [])  }
+  | AT type_name { Tree("marker_annotation", [$2])  }
 
 type_parameters:
-  | LOWER type_parameter_list GREATER { Tree("type_parameters", [Leaf("type_parameter_list")]) }
+  | LOWER type_parameter_list GREATER { Tree("type_parameters", [$2]) }
 
 type_parameter_list:
-  | type_parameter_list PERIOD type_parameter { Tree("", [])  }
-  | type_parameter { Tree("", [])  }
+  | type_parameter_list PERIOD type_parameter { Tree("type_parameter_list", [$1; $3])  }
+  | type_parameter { Tree("type_parameter_list", [$1])  }
 
 type_parameter:
-  | type_variable type_bound? { Tree("", [])  }
+  | type_variable type_bound? { Treeopt("type_parameter", [(Some $1); $2])  }
 
 type_bound:
-  | EXTENDS class_or_interface_type additional_bound_list? { Tree("", [])  }
+  | EXTENDS class_or_interface_type additional_bound_list? { Treeopt("type_bound", [Some($2); $3])  }
 
 additional_bound_list:
-  | additional_bound additional_bound_list { Tree("", [])  }
-  | additional_bound { Tree("", [])  }
+  | additional_bound additional_bound_list { Tree("additional_bound_list", [$1; $2])  } (* TODO : optimize? *)
+  | additional_bound { Tree("additional_bound_list", [$1])  }
 
 additional_bound:
-  | AND_BITWISE interface_type { Tree("", [])  }
+  | AND_BITWISE interface_type { Tree("additional_bound", [$2])  }
 
 
 type_name:
@@ -94,22 +93,22 @@ type_name:
 
 (* SECTION 4.5.1 *)
 type_argument:
-  | LOWER actual_type_argument_list GREATER { Tree("", [])  }
+  | LOWER actual_type_argument_list GREATER { Tree("type_argument", [$2])  }
 
 actual_type_argument_list:
-  | actual_type_argument { Tree("", [])  }
-  | actual_type_argument_list COMMA actual_type_argument { Tree("", [])  }
+  | actual_type_argument { Treeopt("actual_type_argument_list", [None; (Some $1)])  }
+  | actual_type_argument_list COMMA actual_type_argument { Treeopt("actual_type_argument_list", [(Some $1); (Some $3)])  }
 
 actual_type_argument:
-  | reference_type { Tree("", [])  }
-  | wildcard { Tree("", [])  }
+  | reference_type { Tree("actual_type_argument", [$1])  }
+  | wildcard { Tree("actual_type_argument", [$1])  }
 
 wildcard:
-  | TERNARY_THEN wildcard_bounds? { Tree("", [])  }
+  | TERNARY_THEN wildcard_bounds? { Treeopt("wildcard", [$2])  }
 
 wildcard_bounds:
-  | EXTENDS reference_type { Tree("", [])  }
-  | SUPER reference_type { Tree("", [])  } 
+  | EXTENDS reference_type { Tree("wildcard_bounds", [$2])  }
+  | SUPER reference_type { Tree("wildcard_bounds", [$2])  } 
 
 (* SECTION 4.3 *)
 
@@ -138,16 +137,16 @@ type_variable:
 (* SECTION 8.1.4 *)
 
 super:
-  | EXTENDS class_type { Tree("", [])  }
+  | EXTENDS class_type { Tree("super", [$2])  }
 
 (* SECTION 8.1.5 *)
 
 interfaces:
-  | IMPLEMENTS interface_type_list { Tree("", [])  }
+  | IMPLEMENTS interface_type_list { Tree("interfaces", [$2])  }
 
 interface_type_list:
-  | interface_type { Tree("", [])  }
-  | interface_type_list COMMA interface_type { Tree("", [])  }
+  | interface_type { Treeopt("interface_type_list", [None; (Some $1)])  }
+  | interface_type_list COMMA interface_type { Treeopt("interface_type_list", [(Some $1); (Some $3)])  }
 
 (* SECTION 8.1.6 *)
 
@@ -168,20 +167,20 @@ class_member_declaration:
 
 (* SECTION 8.3*)
 field_declaration:
-  | field_modifiers? type_ variable_declarators SEMICOLON { Treeopt("field_declaration", [None; (Some $2); (Some $3)])  }
+  | field_modifiers? type_ variable_declarators SEMICOLON { Treeopt("field_declaration", [$1; (Some $2); (Some $3)])  }
 
 field_modifiers:
-  | field_modifier { Tree("", [])  }
-  | field_modifiers field_modifier { Tree("", [])  }
+  | field_modifier { Treeopt("field_modifiers", [None; (Some $1)])  } (* TODO : good optimization? *)
+  | field_modifiers field_modifier { Treeopt("field_modifiers", [(Some $1); (Some $2)])  }
 
 field_modifier:
-  | PUBLIC { Tree("", [])  }
-  | PROTECTED { Tree("", [])  }
-  | PRIVATE { Tree("", [])  }
-  | STATIC { Tree("", [])  }
-  | FINAL { Tree("", [])  }
-  | TRANSIENT { Tree("", [])  }
-  | VOLATILE { Tree("", [])  }
+  | PUBLIC { Tree("field_modifier", [Leaf($1)])  }
+  | PROTECTED { Tree("field_modifier", [Leaf($1)])  }
+  | PRIVATE { Tree("field_modifier", [Leaf($1)])  }
+  | STATIC { Tree("field_modifier", [Leaf($1)])  }
+  | FINAL { Tree("field_modifier", [Leaf($1)])  }
+  | TRANSIENT { Tree("field_modifier", [Leaf($1)])  }
+  | VOLATILE { Tree("field_modifier", [Leaf($1)])  }
 (*TODO : section 8.3.1*)
 
 variable_declarators:
