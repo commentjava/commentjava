@@ -133,8 +133,8 @@ rule nexttoken = parse
   | ">"    { GREATER "greater" }
   | "<="   { LOWER_OR_EQUAL "lower_or_equal" }
   | ">="   { GREATER_OR_EQUAL "greater_or_equal" }
-  | "?"    { TERNARY_THEN "ternary_then" }
-  | ":"    { TERNARY_ELSE "ternary_else" }
+  | "?"    { QUESTION_MARK "question_mark" }
+  | ":"    { COLON "colon" }
   | "&&"   { AND_LOGICAL "and_logical" }
   | "||"   { OR_LOGICAL "or_logical" }
   | "!"    { NOT_LOGICAL "not_logical" }

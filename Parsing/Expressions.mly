@@ -3,6 +3,7 @@
 
 %%
 
+(* Section 15 *)
 %public expression:
   | assignment_expression { $1 }
 
@@ -39,11 +40,11 @@ assignment_expression:
 
 conditional_assignment:
   | conditional_or_expression { $1 }
-  | conditional_or_expression TERNARY_THEN expression TERNARY_ELSE conditional_expression { $1 }
+  | conditional_or_expression QUESTION_MARK expression COLON conditional_expression { $1 }
 
 %public conditional_expression:
   | conditional_or_expression { $1 }
-  | conditional_or_expression TERNARY_THEN expression TERNARY_ELSE conditional_expression { $1 }
+  | conditional_or_expression QUESTION_MARK expression COLON conditional_expression { $1 }
 
 conditional_or_expression:
   | conditional_and_expression { $1 }

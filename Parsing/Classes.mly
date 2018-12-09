@@ -104,7 +104,7 @@ actual_type_argument:
   | wildcard { Tree("actual_type_argument", [$1])  }
 
 wildcard:
-  | TERNARY_THEN wildcard_bounds? { Treeopt("wildcard", [$2])  }
+  | COLON wildcard_bounds? { Treeopt("wildcard", [$2])  }
 
 wildcard_bounds:
   | EXTENDS reference_type { Tree("wildcard_bounds", [$2])  }

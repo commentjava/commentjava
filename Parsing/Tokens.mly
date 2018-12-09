@@ -45,7 +45,7 @@
 (* Operators - 3.12 *)
 %token <string> ASSIGN
 %token <string> EQUAL NOT_EQUAL LOWER GREATER LOWER_OR_EQUAL GREATER_OR_EQUAL
-%token <string> TERNARY_THEN TERNARY_ELSE
+%token <string> QUESTION_MARK COLON
 %token <string> AND_LOGICAL OR_LOGICAL NOT_LOGICAL
 %token <string> INCREMENT DECREMENT
 %token <string> PLUS MINUS MULTIPLY DIVIDE MODULO
