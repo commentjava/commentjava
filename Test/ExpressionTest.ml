@@ -3,7 +3,7 @@ open Parser
 let tests_dir = "Test/expression_files/"
 
 let rec print_lexbuf lexbuf =
-  let exp = expression_statement Lexer.nexttoken lexbuf  in
+  let exp = expression Lexer.nexttoken lexbuf  in
     print_string exp
 
 let check_expression file =

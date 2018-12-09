@@ -122,7 +122,7 @@ field_modifier:
   | VOLATILE { Tree("field_modifier", [Leaf($1)])  }
 (*TODO : section 8.3.1*)
 
-variable_declarators:
+%public variable_declarators:
   | variable_declarator { Tree("variable_declarators", [$1])  }
   | variable_declarators COMMA variable_declarator { Tree("variable_declarators", [$1; $3])  }
 

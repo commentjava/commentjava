@@ -1,6 +1,6 @@
 open Parser
 
-let tests_dir = "Test/block_files/"
+let tests_dir = "Test/blocks_statements_files/"
 
 let rec print_lexbuf lexbuf =
   let exp = block Lexer.nexttoken lexbuf  in

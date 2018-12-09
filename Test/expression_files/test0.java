@@ -1,1 +1,1 @@
-myVar = 2;
+myVar = 3

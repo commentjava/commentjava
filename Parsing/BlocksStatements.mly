@@ -1,3 +1,7 @@
+%{
+  open Ast
+%}
+
 %start block
 %type < string > block
 
@@ -7,8 +11,8 @@
 
 (* 14.2 *)
 block:
-  | L_BRACE R_BRACE { "block()" }
-  | L_BRACE block_statements R_BRACE { "block(" ^ $2 ^ ")" }
+  | L_BRACE R_BRACE { "{}" }
+  | L_BRACE block_statements R_BRACE { "{" ^ $2 ^ "}" }
 
 block_statements:
   | block_statement { $1 }
@@ -20,22 +24,20 @@ block_statement:
   | statement { $1 }
 
 (* 14.4 *)
-(*)
-local_variable_declaration_statement:
-  | local_variable_declaration COLON { $1 ^ ";" }
+(*local_variable_declaration_statement:
+  | local_variable_declaration SEMICOLON { $1 ^ ";" }
 
 local_variable_declaration:
-  | variable_modifiers type_ variable_declarators { "" }
-*)
+  | variable_modifiers type_ variable_declarators { "" } *)
 
 (* 14.5 *)
 statement:
   | statement_without_trailing_substatement { $1 }
   | labeled_statement { $1 }
-  (* | if_then_statement { "" } *)
-  (* | if_then_else_statement { "" } *)
-  (* | while_statement { "" } *)
-  (* | for_statement { "" } *)
+  | if_then_statement { $1 }
+  | if_then_else_statement { $1 }
+  | while_statement { $1 }
+  (*| for_statement { $1 }*)
 
 statement_without_trailing_substatement:
   | block { $1 }
@@ -51,12 +53,12 @@ statement_without_trailing_substatement:
   | throw_statement { $1 }
   | try_statement { $1 } *)
 
-(* statement_no_short_if:
+statement_no_short_if:
   | statement_without_trailing_substatement { $1 }
   | labeled_statement_no_short_if { $1 }
   | if_then_else_statement_no_short_if { $1 }
   | while_statement_no_short_if { $1 }
-  | for_statement_no_short_if { $1 }*)
+  (*| for_statement_no_short_if { $1 }*)
 
 (* 14.6 *)
 empty_statement:
@@ -65,38 +67,36 @@ empty_statement:
 (* 14.7 *)
 
 labeled_statement:
-  | identifier COLON statement { "labeled_statement(ident " ^ $1 ^ " : " ^ $3 ^ ")" }
-(*
+  | identifier COLON statement { "labeled_statement(" ^ $1 ^ " : " ^ $3 ^ ")" }
+
 labeled_statement_no_short_if:
-  | identifier COLON statement_no_short_if { "" }
-*)
+  | identifier COLON statement_no_short_if { "labeled_statement(" ^ $1 ^ " : " ^ $3 ^ ")" }
 
 (* 14.8 *)
-(*
+
 expression_statement:
   | statement_expression SEMICOLON {""}
 
 statement_expression:
   | assignment {"" }
-  | pre_increment_expression
+  (*| pre_increment_expression
   | pre_decrement_expression
   | post_increment_expression
   | post_decrement_rexpression
   | method_invocation
-  | class_instance_creation_expression {}
-*)
+  | class_instance_creation_expression {}*)
+
 
 (* 14.9 *)
-(*
+
 if_then_statement:
-  | IF L_PAR expression R_PAR {}
+  | IF L_PAR expression R_PAR statement { "if(" ^ $3 ^ ")" ^ $5 }
 
 if_then_else_statement:
-  | IF L_PAR expression R_PAR statement_no_short_if ELSE statement {}
+  | IF L_PAR expression R_PAR statement_no_short_if ELSE statement { "if(" ^ $3 ^ ")" ^ $5 ^ "else" ^ $7 }
 
 if_then_else_statement_no_short_if:
-  | IF L_PAR expression R_PAR statement_no_short_if ELSE statement_no_short_if {}
-*)
+  | IF L_PAR expression R_PAR statement_no_short_if ELSE statement_no_short_if { "if(" ^ $3 ^ ")" ^ $5 ^ "else" ^ $7 }
 
 (* 14.10 *)
 (* assert_statement:
@@ -134,11 +134,11 @@ enum_constant_name:
   | identifier {} *)
 
 (* 14.12 *)
-(*while_statement:
-  | WHILE L_PAR expression R_PAR statement {}
+while_statement:
+  | WHILE L_PAR expression R_PAR statement { "while(" ^ $3 ^ ")" ^ $5 }
 
 while_statement_no_short_if:
-  | WHILE L_PAR expression R_PAR statement_no_short_if {}*)
+  | WHILE L_PAR expression R_PAR statement_no_short_if { "while(" ^ $3 ^ ")" ^ $5 }
 
 (* 14.13 *)
 (*
@@ -147,42 +147,43 @@ do_statement:
 *)
 
 (* 14.14 *)
-(*
+
 for_statement:
-  | basic_for_statement {}
-  | enhanced_for_statement {} 
+  | basic_for_statement { $1 }
+  (*| enhanced_for_statement { $1 }*) 
 
 basic_for_statement:
-  | FOR L_PAR SEMICOLON SEMICOLON R_PAR statement {}
-  | FOR L_PAR for_init SEMICOLON SEMICOLON R_PAR statement {}
-  | FOR L_PAR SEMICOLON expression SEMICOLON R_PAR statement {}
-  | FOR L_PAR SEMICOLON SEMICOLON for_update R_PAR statement {}
-  | FOR L_PAR for_init SEMICOLON expression SEMICOLON R_PAR statement {}
-  | FOR L_PAR for_init SEMICOLON SEMICOLON for_update R_PAR statement {}
-  | FOR L_PAR SEMICOLON expression SEMICOLON for_update R_PAR statement {}
-  | FOR L_PAR for_init SEMICOLON expression SEMICOLON for_update R_PAR statement {}
+  | FOR L_PAR SEMICOLON SEMICOLON R_PAR s=statement { "for(;;)" ^ s }
+  | FOR L_PAR i=for_init SEMICOLON SEMICOLON R_PAR s=statement { "for(" ^ i ^ ";;)" ^ s }
+  | FOR L_PAR SEMICOLON e=expression SEMICOLON R_PAR s=statement { "for(" ^ ";" ^ e ^ ";)" ^ s }
+  | FOR L_PAR SEMICOLON SEMICOLON u=for_update R_PAR s=statement { "for(" ^ ";" ^ ";" ^ u ^ ")" ^ s }
+  | FOR L_PAR i=for_init SEMICOLON e=expression SEMICOLON R_PAR s=statement { "for(" ^ i ^ ";" ^ e ^ ";" ^ ")" ^ s }
+  | FOR L_PAR i=for_init SEMICOLON SEMICOLON u=for_update R_PAR s=statement { "for(" ^ i ^ ";" ^ ";" ^ u ^ ")" ^ s }
+  | FOR L_PAR SEMICOLON e=expression SEMICOLON u=for_update R_PAR s=statement { "for(" ^ ";" ^ e ^ ";" ^ u ^ ")" ^ s }
+  | FOR L_PAR i=for_init SEMICOLON e=expression SEMICOLON u=for_update R_PAR s=statement { "for(" ^ ";" ^ e ^ ";" ^ u ^ ")" ^ s }
 
 for_statement_no_short_if:
-  | FOR L_PAR SEMICOLON SEMICOLON R_PAR statement_no_short_if {}
-  | FOR L_PAR for_init SEMICOLON SEMICOLON R_PAR statement_no_short_if {}
-  | FOR L_PAR SEMICOLON expression SEMICOLON R_PAR statement_no_short_if {}
-  | FOR L_PAR SEMICOLON SEMICOLON for_update R_PAR statement_no_short_if {}
-  | FOR L_PAR for_init SEMICOLON expression SEMICOLON R_PAR statement_no_short_if {}
-  | FOR L_PAR for_init SEMICOLON SEMICOLON for_update R_PAR statement_no_short_if {}
-  | FOR L_PAR SEMICOLON expression SEMICOLON for_update R_PAR statement_no_short_if {}
-  | FOR L_PAR for_init SEMICOLON expression SEMICOLON for_update R_PAR statement_no_short_if {}
+  | FOR L_PAR SEMICOLON SEMICOLON R_PAR s=statement_no_short_if { "for(;;)" ^ s }
+  | FOR L_PAR i=for_init SEMICOLON SEMICOLON R_PAR s=statement_no_short_if { "for(" ^ i ^ ";;)" ^ s }
+  | FOR L_PAR SEMICOLON e=expression SEMICOLON R_PAR s=statement_no_short_if { "for(" ^ ";" ^ e ^ ";)" ^ s }
+  | FOR L_PAR SEMICOLON SEMICOLON u=for_update R_PAR s=statement_no_short_if { "for(" ^ ";" ^ ";" ^ u ^ ")" ^ s }
+  | FOR L_PAR i=for_init SEMICOLON e=expression SEMICOLON R_PAR s=statement_no_short_if { "for(" ^ i ^ ";" ^ e ^ ";" ^ ")" ^ s }
+  | FOR L_PAR i=for_init SEMICOLON SEMICOLON u=for_update R_PAR s=statement_no_short_if { "for(" ^ i ^ ";" ^ ";" ^ u ^ ")" ^ s }
+  | FOR L_PAR SEMICOLON e=expression SEMICOLON u=for_update R_PAR s=statement_no_short_if { "for(" ^ ";" ^ e ^ ";" ^ u ^ ")" ^ s }
+  | FOR L_PAR i=for_init SEMICOLON e=expression SEMICOLON u=for_update R_PAR s=statement_no_short_if { "for(" ^ ";" ^ e ^ ";" ^ u ^ ")" ^ s }
 
 for_init:
-  | statement_expression_list
-  | local_variable_declaration {}
+  | s=statement_expression_list { s }
+  (*| local_variable_declaration {}*)
 
 for_update:
-  | statement_expression_list {}
+  | s=statement_expression_list { s }
 
 statement_expression_list:
-  | statement_expression {}
-  | statement_expression_list COMMA statement_expression {}
+  | s=statement_expression { s }
+  | sl=statement_expression_list COMMA s=statement_expression { sl ^ "," ^ s }
 
+(*
 enhanced_for_statement:
   | FOR L_PAR type_ identifier COLON expression R_PAR statement {}
   | FOR L_PAR variable_modifiers type_ identifier COLON expression R_PAR statement {}

@@ -1,5 +1,5 @@
-%start expression_statement
-%type < string > expression_statement
+%start expression
+%type < string > expression
 
 %%
 
@@ -7,14 +7,7 @@
 %public expression:
   | assignment_expression { $1 }
 
-expression_statement:
-  | statement_expression SEMICOLON { $1 }
-
-statement_expression:
-  | assignment { $1 }
-  (* TODO: other statement_expression *)
-
-assignment:
+%public assignment:
   | left_hand_side assignment_operator assignment_expression { $1 ^ " " ^ $2 ^ " " ^ $3 }
   (* TODO: other assignment *)
 
