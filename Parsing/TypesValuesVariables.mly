@@ -53,11 +53,11 @@ type_decl_specifier:
   (*| class_or_interface_type PERIOD identifer { "" }*)
 
 %public type_name:
-  | IDENTIFIER { Tree("type_name", [Leaf($1)])  }
-  | type_name PERIOD IDENTIFIER { Tree("type_name", [$1; Leaf($3)])  } 
+  | identifier { Tree("type_name", [Leaf($1)])  }
+  | type_name PERIOD identifier { Tree("type_name", [$1; Leaf($3)])  } 
 
 type_variable:
-  | IDENTIFIER { Tree("type_variable", [Leaf($1)])  }
+  | identifier { Tree("type_variable", [Leaf($1)])  }
 
 (* 
 array_type:

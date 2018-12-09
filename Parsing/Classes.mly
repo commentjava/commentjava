@@ -13,7 +13,7 @@ class_declaration :
  (*TODO: section 8.1 *)
 
 normal_class_declaration:
-  | class_modifiers? CLASS IDENTIFIER type_parameters? super? interfaces? class_body { Treeopt("normal_class_declaration", [$1; (Some (Leaf($3))); $4; $5; $6; (Some $7)]) }
+  | class_modifiers? CLASS identifier type_parameters? super? interfaces? class_body { Treeopt("normal_class_declaration", [$1; (Some (Leaf($3))); $4; $5; $6; (Some $7)]) }
 
 class_modifiers:
   | class_modifier { Tree("class_modifiers", [$1]) }
@@ -46,7 +46,7 @@ element_value_pairs:
   | element_value_pairs COMMA element_value_pair { Treeopt("element_value_pairs", [(Some $1); (Some $3)])  }
 
 element_value_pair:
-  | IDENTIFIER ASSIGN element_value { Tree("element_value_pair", [Leaf($1); $3])  }
+  | identifier ASSIGN element_value { Tree("element_value_pair", [Leaf($1); $3])  }
 
 element_value:
   | conditional_expression { Tree("element_value", [Leaf($1)])  }
@@ -131,7 +131,7 @@ variable_declarator:
   | variable_declarator_id ASSIGN variable_initializer { Tree("variable_declarator", [$1; $3])  }
 
 variable_declarator_id:
-  | IDENTIFIER { Tree("variable_declarator_id", [Leaf($1)])  }
+  | identifier { Tree("variable_declarator_id", [Leaf($1)])  }
 (*TODO: section 8.3 *)
 
 variable_initializer:

@@ -1,0 +1,3 @@
+{
+ synchronized (i=0) {;}
+}

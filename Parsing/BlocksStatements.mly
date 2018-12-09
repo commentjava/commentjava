@@ -43,7 +43,7 @@ statement:
 statement_without_trailing_substatement:
   | block { $1 }
   | empty_statement { $1 }
-  (* | expression_statement { $1 }
+  | expression_statement { $1 }
   | assert_statement { $1 }
   | switch_statement { $1 }
   | do_statement { $1 }
@@ -52,7 +52,7 @@ statement_without_trailing_substatement:
   | return_statement { $1 }
   | synchronized_statement { $1 }
   | throw_statement { $1 }
-  | try_statement { $1 } *)
+  (*| try_statement { $1 } require formal_parameter *) 
 
 statement_no_short_if:
   | statement_without_trailing_substatement { $1 }
@@ -100,39 +100,38 @@ if_then_else_statement_no_short_if:
   | IF L_PAR expression R_PAR statement_no_short_if ELSE statement_no_short_if { "if(" ^ $3 ^ ")" ^ $5 ^ "else" ^ $7 }
 
 (* 14.10 *)
-(* assert_statement:
-  | ASSERT expression SEMICOLON {}
-  | ASSERT expression COLON expression SEMICOLON {} *)
+assert_statement:
+  | ASSERT e=expression SEMICOLON { "assert(" ^ e ^ ")" }
+  | ASSERT e1=expression COLON e2=expression SEMICOLON { "assert(" ^ e1 ^ ":" ^ e2 ^ ")" }
 
 (* 14.11 *)
-(*
 switch_statement:
-  | SWITCH L_PAR expression R_PAR switch_block { "" }
+  | SWITCH L_PAR expression R_PAR switch_block { "switch(" ^ $3 ^ ")" ^ $5 }
 
 switch_block:
-  | L_BRACE R_BRACE { "" }
-  | L_BRACE switch_block_statement_groups R_BRACE { "" }
-  | L_BRACE switch_labels R_BRACE { "" }
-  | L_BRACE switch_block_statement_groups switch_labels R_BRACE { "" }
+  | L_BRACE R_BRACE { "{}" }
+  | L_BRACE switch_block_statement_groups R_BRACE { "{" ^ $2 ^ "}" }
+  | L_BRACE switch_labels R_BRACE { "{" ^ $2 ^ "}" }
+  | L_BRACE switch_block_statement_groups switch_labels R_BRACE { "{" ^ $2 ^ $3 ^ "}"  }
 
 switch_block_statement_groups:
   | switch_block_statement_group { $1 }
   | switch_block_statement_groups switch_block_statement_group { $1 ^ $2 }
 
 switch_block_statement_group:
-  | switch_labels block_statements {}
+  | switch_labels block_statements { $1 ^ $2 }
 
 switch_labels:
-  | switch_label
-  | switch_labels switch_label {}
+  | switch_label { $1 }
+  | switch_labels switch_label { $1 ^ $2 }
 
 switch_label:
-  | CASE constant_expression COLON
-  | CASE enum_constant_name COLON
-  | DEFAULT COLON {}
+  | CASE constant_expression COLON { "case(" ^ $2 ^ "): " }
+  (*| CASE enum_constant_name COLON { "caseTEST(" ^ $2 ^ "): "} NEVER MATCH SINCE constant_expression can also be indentifier? *)
+  | DEFAULT COLON { "default:" }
 
 enum_constant_name:
-  | identifier {} *)
+  | identifier { $1 }
 
 (* 14.12 *)
 while_statement:
@@ -142,13 +141,10 @@ while_statement_no_short_if:
   | WHILE L_PAR expression R_PAR statement_no_short_if { "while(" ^ $3 ^ ")" ^ $5 }
 
 (* 14.13 *)
-(*
 do_statement:
-  | DO statement WHILE L_PAR expression R_PAR SEMICOLON {}
-*)
+  | DO statement WHILE L_PAR expression R_PAR SEMICOLON { "do" ^ $2 ^ "while(" ^ $5 ^ "); " }
 
 (* 14.14 *)
-
 for_statement:
   | basic_for_statement { $1 }
   (*| enhanced_for_statement { $1 } *)
@@ -190,31 +186,27 @@ statement_expression_list:
   (*| FOR L_PAR variable_modifiers type_ identifier COLON expression R_PAR statement {}*)
 
 (* 14.15 *)
-(*break_statement:
-  | BREAK SEMICOLON {}
-  | BREAK identifier SEMICOLON {}
-  *)
+break_statement:
+  | BREAK SEMICOLON { "break; "}
+  | BREAK identifier SEMICOLON { "break(" ^ $2 ^ "); "}
 
 (* 14.16 *)
-(*
 continue_statement:
-  | CONTINUE SEMICOLON {}
-  | CONTINUE identifier SEMICOLON {}*)
+  | CONTINUE SEMICOLON { "continue; "}
+  | CONTINUE identifier SEMICOLON { "continue(" ^ $2 ^ "); "}
 
 (* 14.17 *)
-(*return_statement:
-  | RETURN SEMICOLON {}
-  | RETURN expression SEMICOLON {} *)
+return_statement:
+  | RETURN SEMICOLON { "return; " }
+  | RETURN expression SEMICOLON { "return(" ^ $2 ^ "); " }
 
 (* 14.18 *)
-(*throw_statement:
-  | THROW expression SEMICOLON {} *)
+throw_statement:
+  | THROW expression SEMICOLON { "throw(" ^ $2 ^")" }
 
 (* 14.19 *)
-(*
 synchronized_statement:
-  | SYNCHRONIZED L_PAR expression R_PAR block {}
-*)
+  | SYNCHRONIZED L_PAR e=expression R_PAR b=block { "synchronized(" ^ e ^ ")" ^ b }
 
 (* 14.20 *)
 (* 

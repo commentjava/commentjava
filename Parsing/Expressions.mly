@@ -7,6 +7,9 @@
 %public expression:
   | assignment_expression { $1 }
 
+%public constant_expression:
+  | expression { $1 }
+
 %public assignment:
   | left_hand_side assignment_operator assignment_expression { $1 ^ " " ^ $2 ^ " " ^ $3 }
   (* TODO: other assignment *)
@@ -16,12 +19,12 @@ left_hand_side:
   (* TODO: other left_hand_side *)
 
 expression_name:
-  | IDENTIFIER { $1 }
-  | ambiguous_name PERIOD IDENTIFIER { $1 }
+  | identifier { $1 }
+  | ambiguous_name PERIOD identifier { $1 }
 
 ambiguous_name:
-  | IDENTIFIER { $1 }
-  | ambiguous_name PERIOD IDENTIFIER { $1 }
+  | identifier { $1 }
+  | ambiguous_name PERIOD identifier { $1 }
 
 assignment_operator:
   | ASSIGN { $1 }
