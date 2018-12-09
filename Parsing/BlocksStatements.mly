@@ -26,7 +26,8 @@ block_statement:
 (* 14.4 *)
 (*local_variable_declaration_statement:
   | local_variable_declaration SEMICOLON { $1 ^ ";" }
-
+*)
+(*
 local_variable_declaration:
   | variable_modifiers type_ variable_declarators { "" } *)
 
@@ -37,7 +38,7 @@ statement:
   | if_then_statement { $1 }
   | if_then_else_statement { $1 }
   | while_statement { $1 }
-  (*| for_statement { $1 }*)
+  | for_statement { $1 }
 
 statement_without_trailing_substatement:
   | block { $1 }
@@ -150,7 +151,7 @@ do_statement:
 
 for_statement:
   | basic_for_statement { $1 }
-  (*| enhanced_for_statement { $1 }*) 
+  (*| enhanced_for_statement { $1 } *)
 
 basic_for_statement:
   | FOR L_PAR SEMICOLON SEMICOLON R_PAR s=statement { "for(;;)" ^ s }
@@ -183,11 +184,10 @@ statement_expression_list:
   | s=statement_expression { s }
   | sl=statement_expression_list COMMA s=statement_expression { sl ^ "," ^ s }
 
-(*
-enhanced_for_statement:
-  | FOR L_PAR type_ identifier COLON expression R_PAR statement {}
-  | FOR L_PAR variable_modifiers type_ identifier COLON expression R_PAR statement {}
-*)
+(*enhanced_for_statement:
+  | FOR L_PAR type_ identifier COLON expression R_PAR statement { "for(typeast " ^ $4 ^ " : " ^ $6 ^ ")" ^ $8 }*) 
+    (* reduce/reduce conflict ambiguous_name -> IDENTIFIER / type_name -> IDENTIFIER *)
+  (*| FOR L_PAR variable_modifiers type_ identifier COLON expression R_PAR statement {}*)
 
 (* 14.15 *)
 (*break_statement:
