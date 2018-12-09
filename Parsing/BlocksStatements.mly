@@ -31,7 +31,7 @@ local_variable_declaration:
 (* 14.5 *)
 statement:
   | statement_without_trailing_substatement { $1 }
-  (* | labeled_statement { "" } *)
+  | labeled_statement { $1 }
   (* | if_then_statement { "" } *)
   (* | if_then_else_statement { "" } *)
   (* | while_statement { "" } *)
@@ -60,13 +60,13 @@ statement_without_trailing_substatement:
 
 (* 14.6 *)
 empty_statement:
-  | SEMICOLON { ";" }
+  | SEMICOLON { ";" } 
 
 (* 14.7 *)
-(*
-labeled_statement:
-  | identifier COLON statement { "" }
 
+labeled_statement:
+  | identifier COLON statement { "labeled_statement(ident " ^ $1 ^ " : " ^ $3 ^ ")" }
+(*
 labeled_statement_no_short_if:
   | identifier COLON statement_no_short_if { "" }
 *)
