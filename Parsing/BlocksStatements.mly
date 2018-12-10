@@ -12,16 +12,16 @@
 (* 14.2 *)
 block:
   | L_BRACE R_BRACE { "{}" }
-  | L_BRACE block_statements R_BRACE { "{" ^ $2 ^ "}" }
+  | L_BRACE b=block_statements R_BRACE { "{" ^ b ^ "}" }
 
 block_statements:
-  | block_statement { $1 }
-  | block_statements block_statement { $1 ^ " " ^ $2 }
+  | b=block_statement { b }
+  | bs=block_statements b=block_statement { bs ^ " " ^ b }
 
 block_statement:
   (*| local_variable_declaration_statement { "" }*)
   (* | class_declaration { "" } *)
-  | statement { $1 }
+  | s=statement { s }
 
 (* 14.4 *)
 (*local_variable_declaration_statement:
@@ -33,32 +33,32 @@ local_variable_declaration:
 
 (* 14.5 *)
 statement:
-  | statement_without_trailing_substatement { $1 }
-  | labeled_statement { $1 }
-  | if_then_statement { $1 }
-  | if_then_else_statement { $1 }
-  | while_statement { $1 }
-  | for_statement { $1 }
+  | s=statement_without_trailing_substatement { s }
+  | s=labeled_statement { s }
+  | s=if_then_statement { s }
+  | s=if_then_else_statement { s }
+  | s=while_statement { s }
+  | s=for_statement { s }
 
 statement_without_trailing_substatement:
-  | block { $1 }
-  | empty_statement { $1 }
-  | expression_statement { $1 }
-  | assert_statement { $1 }
-  | switch_statement { $1 }
-  | do_statement { $1 }
-  | break_statement { $1 }
-  | continue_statement { $1 }
-  | return_statement { $1 }
-  | synchronized_statement { $1 }
-  | throw_statement { $1 }
+  | b=block { b }
+  | s=empty_statement { s }
+  | s=expression_statement { s }
+  | s=assert_statement { s }
+  | s=switch_statement { s }
+  | s=do_statement { s }
+  | s=break_statement { s }
+  | s=continue_statement { s }
+  | s=return_statement { s }
+  | s=synchronized_statement { s }
+  | s=throw_statement { s }
   (*| try_statement { $1 } require formal_parameter *) 
 
 statement_no_short_if:
-  | statement_without_trailing_substatement { $1 }
-  | labeled_statement_no_short_if { $1 }
-  | if_then_else_statement_no_short_if { $1 }
-  | while_statement_no_short_if { $1 }
+  | s=statement_without_trailing_substatement { s }
+  | s=labeled_statement_no_short_if { s }
+  | s=if_then_else_statement_no_short_if { s }
+  | s=while_statement_no_short_if { s }
   (*| for_statement_no_short_if { $1 }*)
 
 (* 14.6 *)
@@ -68,10 +68,10 @@ empty_statement:
 (* 14.7 *)
 
 labeled_statement:
-  | identifier COLON statement { "labeled_statement(" ^ $1 ^ " : " ^ $3 ^ ")" }
+  | i=identifier COLON s=statement { "labeled_statement(" ^ i ^ " : " ^ s ^ ")" }
 
 labeled_statement_no_short_if:
-  | identifier COLON statement_no_short_if { "labeled_statement(" ^ $1 ^ " : " ^ $3 ^ ")" }
+  | i=identifier COLON s=statement_no_short_if { "labeled_statement(" ^ i ^ " : " ^ s ^ ")" }
 
 (* 14.8 *)
 
@@ -79,7 +79,7 @@ expression_statement:
   | statement_expression SEMICOLON {""}
 
 statement_expression:
-  | assignment {"" }
+  | a=assignment { a }
   (*| pre_increment_expression
   | pre_decrement_expression
   | post_increment_expression
@@ -91,13 +91,13 @@ statement_expression:
 (* 14.9 *)
 
 if_then_statement:
-  | IF L_PAR expression R_PAR statement { "if(" ^ $3 ^ ")" ^ $5 }
+  | IF L_PAR e=expression R_PAR s=statement { "if(" ^ e ^ ")" ^ s }
 
 if_then_else_statement:
-  | IF L_PAR expression R_PAR statement_no_short_if ELSE statement { "if(" ^ $3 ^ ")" ^ $5 ^ "else" ^ $7 }
+  | IF L_PAR e=expression R_PAR s1=statement_no_short_if ELSE s2=statement { "if(" ^ e ^ ")" ^ s1 ^ "else" ^ s2 }
 
 if_then_else_statement_no_short_if:
-  | IF L_PAR expression R_PAR statement_no_short_if ELSE statement_no_short_if { "if(" ^ $3 ^ ")" ^ $5 ^ "else" ^ $7 }
+  | IF L_PAR e=expression R_PAR s1=statement_no_short_if ELSE s2=statement_no_short_if { "if(" ^ e ^ ")" ^ s1 ^ "else" ^ s2 }
 
 (* 14.10 *)
 assert_statement:
@@ -106,43 +106,43 @@ assert_statement:
 
 (* 14.11 *)
 switch_statement:
-  | SWITCH L_PAR expression R_PAR switch_block { "switch(" ^ $3 ^ ")" ^ $5 }
+  | SWITCH L_PAR e=expression R_PAR b=switch_block { "switch(" ^ e ^ ")" ^ b }
 
 switch_block:
   | L_BRACE R_BRACE { "{}" }
-  | L_BRACE switch_block_statement_groups R_BRACE { "{" ^ $2 ^ "}" }
-  | L_BRACE switch_labels R_BRACE { "{" ^ $2 ^ "}" }
-  | L_BRACE switch_block_statement_groups switch_labels R_BRACE { "{" ^ $2 ^ $3 ^ "}"  }
+  | L_BRACE b=switch_block_statement_groups R_BRACE { "{" ^ b ^ "}" }
+  | L_BRACE l=switch_labels R_BRACE { "{" ^ l ^ "}" }
+  | L_BRACE b=switch_block_statement_groups l=switch_labels R_BRACE { "{" ^ b ^ l ^ "}"  }
 
 switch_block_statement_groups:
-  | switch_block_statement_group { $1 }
-  | switch_block_statement_groups switch_block_statement_group { $1 ^ $2 }
+  | b=switch_block_statement_group { b }
+  | bs=switch_block_statement_groups b=switch_block_statement_group { bs ^ b }
 
 switch_block_statement_group:
-  | switch_labels block_statements { $1 ^ $2 }
+  | l=switch_labels b=block_statements { l ^ b }
 
 switch_labels:
-  | switch_label { $1 }
-  | switch_labels switch_label { $1 ^ $2 }
+  | l=switch_label { l }
+  | ls=switch_labels l=switch_label { ls ^ l }
 
 switch_label:
-  | CASE constant_expression COLON { "case(" ^ $2 ^ "): " }
+  | CASE e=constant_expression COLON { "case(" ^ e ^ "): " }
   (*| CASE enum_constant_name COLON { "caseTEST(" ^ $2 ^ "): "} NEVER MATCH SINCE constant_expression can also be indentifier? *)
   | DEFAULT COLON { "default:" }
 
 enum_constant_name:
-  | identifier { $1 }
+  | i=identifier { i }
 
 (* 14.12 *)
 while_statement:
-  | WHILE L_PAR expression R_PAR statement { "while(" ^ $3 ^ ")" ^ $5 }
+  | WHILE L_PAR e=expression R_PAR s=statement { "while(" ^ e ^ ")" ^ s }
 
 while_statement_no_short_if:
-  | WHILE L_PAR expression R_PAR statement_no_short_if { "while(" ^ $3 ^ ")" ^ $5 }
+  | WHILE L_PAR e=expression R_PAR s=statement_no_short_if { "while(" ^ e ^ ")" ^ s }
 
 (* 14.13 *)
 do_statement:
-  | DO statement WHILE L_PAR expression R_PAR SEMICOLON { "do" ^ $2 ^ "while(" ^ $5 ^ "); " }
+  | DO s=statement WHILE L_PAR e=expression R_PAR SEMICOLON { "do" ^ s ^ "while(" ^ e ^ "); " }
 
 (* 14.14 *)
 for_statement:
@@ -188,21 +188,21 @@ statement_expression_list:
 (* 14.15 *)
 break_statement:
   | BREAK SEMICOLON { "break; "}
-  | BREAK identifier SEMICOLON { "break(" ^ $2 ^ "); "}
+  | BREAK i=identifier SEMICOLON { "break(" ^ i ^ "); "}
 
 (* 14.16 *)
 continue_statement:
   | CONTINUE SEMICOLON { "continue; "}
-  | CONTINUE identifier SEMICOLON { "continue(" ^ $2 ^ "); "}
+  | CONTINUE i=identifier SEMICOLON { "continue(" ^ i ^ "); "}
 
 (* 14.17 *)
 return_statement:
   | RETURN SEMICOLON { "return; " }
-  | RETURN expression SEMICOLON { "return(" ^ $2 ^ "); " }
+  | RETURN e=expression SEMICOLON { "return(" ^ e ^ "); " }
 
 (* 14.18 *)
 throw_statement:
-  | THROW expression SEMICOLON { "throw(" ^ $2 ^")" }
+  | THROW e=expression SEMICOLON { "throw(" ^ e ^")" }
 
 (* 14.19 *)
 synchronized_statement:

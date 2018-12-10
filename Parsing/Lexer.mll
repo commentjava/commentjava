@@ -152,6 +152,17 @@ rule nexttoken = parse
   | "<<"   { LEFT_SHIFT "left_shift" }
   | ">>"   { RIGHT_SHIFT "right_shift" }
   | ">>>"  { RIGHT_SHIFT_UNSIGNED "right_shift_unsigned" }
+  | "+="   { PLUS_ASSIGN "plus_assign" }
+  | "-="   { MINUS_ASSIGN "minus_assign" }
+  | "*="   { MULTIPLY_ASSIGN "multiply_assign" }
+  | "/="   { DIVIDE_ASSIGN "divide_assign" }
+  | "%="   { MODULUS_ASSIGN "modulus_assign" }
+  | "&="   { AND_BITWISE_ASSIGN "and_bitwise_assign" }
+  | "|="   { OR_BITWISE_ASSIGN "or_bitwise_assign" }
+  | "^="   { XOR_ASSIGN "xor_assign" }
+  | "<<="  { LEFT_SHIFT_ASSIGN "left_shift_assign" }
+  | ">>="  { RIGHT_SHIFT_ASSIGN "right_shift_assign" }
+  | ">>>=" { RIGHT_SHIFT_UNSIGNED_ASSIGN "right_shift_unsigned_assign" }
 
 (* Error *)
   | _      { raise (Failure (create_error_message lexbuf)) }

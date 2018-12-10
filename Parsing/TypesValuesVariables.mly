@@ -52,9 +52,12 @@ type_decl_specifier:
   | type_name { Tree("type_decl_specifier", [$1])  }
   (*| class_or_interface_type PERIOD identifer { "" }*)
 
-%public type_name:
+(* type_name is also defined in 6.5 but with context distinction *)
+(*
+%public type_name: 
   | identifier { Tree("type_name", [Leaf($1)])  }
   | type_name PERIOD identifier { Tree("type_name", [$1; Leaf($3)])  } 
+*)
 
 type_variable:
   | identifier { Tree("type_variable", [Leaf($1)])  }
