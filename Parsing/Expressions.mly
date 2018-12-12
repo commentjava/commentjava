@@ -1,5 +1,9 @@
+%{
+    open Ast
+%}
+
 %start expression
-%type < string > expression
+%type < Ast.ast > expression
 
 %%
 
@@ -7,11 +11,11 @@
 
 (* 15.8 *)
 primary:
-  | p=primary_no_new_array { p }
+  | p=primary_no_new_array { Tree("primary", [p]) }
   (*| e=array_creation_expression { e }*)
 
 primary_no_new_array:
-  | l=literal { l }
+  | l=literal { Tree("primary_no_new_array", [l]) }
   (*| TYPE PERIOD CLASS {}*)
   (*| VOID PERIOD CLASS { $1 }*)
   (*| THIS { "this" }
@@ -23,12 +27,12 @@ primary_no_new_array:
   | array_access {}*)
 
 literal:
-  | l=INTEGER_LITERAL { l }
-  | l=FLOAT_LITERAL { l }
-  | l=BOOLEAN_LITERAL { l }
-  | l=CHAR_LITERAL { l }
-  | l=STRING_LITERAL { l }
-  | l=NULL_LITERAL { l }
+  | l=INTEGER_LITERAL { Tree("literal", [Leaf(l)]) }
+  | l=FLOAT_LITERAL { Tree("literal", [Leaf(l)]) }
+  | l=BOOLEAN_LITERAL { Tree("literal", [Leaf(l)]) }
+  | l=CHAR_LITERAL { Tree("literal", [Leaf(l)]) }
+  | l=STRING_LITERAL { Tree("literal", [Leaf(l)]) }
+  | l=NULL_LITERAL { Tree("literal", [Leaf(l)]) }
 
 (* 15.9 *)
 (*class_instance_creation_expression:
@@ -123,16 +127,16 @@ array_access:
 
 (* 15.14 *)
 postfix_expression:
-  | p=primary { p }
-  | en=expression_name { en }
+  | p=primary { Tree("postfix_expression", [p]) }
+  | en=expression_name { Tree("postfix_expression", [en]) }
   (*| e=post_increment_expression { e }
   | e=post_decrement_expression { e }*)
 
 post_increment_expression:
-  | e=postfix_expression INCREMENT { e ^ "++" }
+  | e=postfix_expression INCREMENT { Tree("post_increment_expression", [e]) }
 
 post_decrement_expression:
-  | e=postfix_expression DECREMENT { e ^ "--" }
+  | e=postfix_expression DECREMENT { Tree("post_decrement_expression", [e]) }
 
 (* 15.15 *)
 unary_expression:
@@ -140,7 +144,7 @@ unary_expression:
   | e=pre_decrement_expression { e } *)
   (*| PLUS e=unary_expression { "+" ^ e }
   | MINUS e=unary_expression { "-" ^ e }*)
-  | e=unary_expression_not_plus_minus { e }
+  | e=unary_expression_not_plus_minus { Tree("unary_expression", [e]) }
 
 (*
 pre_increment_expression:
@@ -151,7 +155,7 @@ pre_decrement_expression:
 *)
 
 unary_expression_not_plus_minus:
-  | e=postfix_expression { e }
+  | e=postfix_expression { Tree("unary_expression_not_plus_minus", [e]) }
   (*| COMPLEMENT_BITWISE e=unary_expression { "~" ^ e }
   | NOT_LOGICAL e=unary_expression { "!" ^ e }*)
   (*| e=cast_expresion { e }*)
@@ -166,7 +170,7 @@ cast_expresion:
 
 (* 15.17 *)
 multiplicative_expression:
-  | e=unary_expression { e }
+  | e=unary_expression { Tree("multiplicative_expression", [e]) }
   (*
   | me=multiplicative_expression MULTIPLY e=unary_expression { me ^ "*" e }
   | me=multiplicative_expression DIVIDE e=unary_expression { me ^ "/" e }
@@ -175,14 +179,14 @@ multiplicative_expression:
 
 (* 15.18 *)
 additive_expression:
-  | e=multiplicative_expression { e }
+  | e=multiplicative_expression { Tree("additive_expression", [e]) }
   (*| ae=additive_expression PLUS e=multiplicative_expression { ae ^ "+" ^ e }
   | ae=additive_expression MINUS e=multiplicative_expression { ae ^ "-" ^ e }
   *)
 
 (* 15.19 *)
 shift_expression:
-  | e=additive_expression { e }
+  | e=additive_expression { Tree("shift_expression", [e]) }
 (*
   | se=shift_expression LEFT_SHIFT e=addition_expression { se ^ "<<" ^ e }
   | se=shift_expression RIGHT_SHIFT e=addition_expression { se ^ "<<" ^ e }
@@ -191,7 +195,7 @@ shift_expression:
 
 (* 15.20 *)
 relational_expression:
-  | e=shift_expression { e }
+  | e=shift_expression { Tree("relational_expression", [e]) }
   (*
   | re=relational_expression LOWER e=shift_expression { re ^ "<" ^ e }
   | re=relational_expression GREATER e=shift_expression { re ^ ">" ^ e }
@@ -202,71 +206,71 @@ relational_expression:
 
 (* 15.21 *)
 equality_expression:
-  | e=relational_expression { e }
+  | e=relational_expression { Tree("equality_expression", [e]) }
   (*| ee=equality_expression EQUAL e=relational_expression { ee ^ "==" ^ e }*)
   (*| ee=equality_expression NOT_EQUAL e=relational_expression { ee ^ "!=" ^ e }*)
 
 (* 15.22 *)
 and_expression:
-  | e=equality_expression { e }
+  | e=equality_expression { Tree("and_expression", [e]) }
   (*| ae=and_expression AND_BITWISE e=equality_expression { ae ^ "&" ^ }*)
 
 exclusive_or_expression:
-  | e=and_expression { e }
+  | e=and_expression { Tree("exclusive_or_expression", [e]) }
   (*| ee=exclusive_or_expression XOR_BITWISE e=and_expression { ee ^ "^" ^ e }*)
 
 inclusive_or_expression:
-  | e=exclusive_or_expression { e }
+  | e=exclusive_or_expression { Tree("inclusive_or_expression", [e]) }
   (*| ie=inclusive_or_expression OR_BITWISE e=exclusive_or_expression { ie ^ "|" ^ e }*)
 
 (* 15.23 *)
 conditional_and_expression:
-  | e=inclusive_or_expression { e }
+  | e=inclusive_or_expression { Tree("conditional_and_expression", [e]) }
  (* | ce=conditional_and_expression AND_LOGICAL e=inclusive_or_expression { ce ^ "&&" ^ e }*)
 
 (* 15.24 *)
 conditional_or_expression:
-  | e=conditional_and_expression { e }
+  | e=conditional_and_expression { Tree("conditional_or_expression", [e]) }
   (*| ce=conditional_or_expression OR_LOGICAL e=conditional_and_expression { ce ^ "||" ^ e }*)
 
 (* 15.25 *)
 %public conditional_expression:
-  | e=conditional_or_expression { e }
+  | e=conditional_or_expression { Tree("conditional_expression", [e]) }
   (*| coe=conditional_or_expression QUESTION_MARK e=expression COLON ce=conditional_expression { coe ^ "?" ^ e ^ ":" ^ ce }*)
 
 (* 15.26 *)
 assignment_expression:
-  | a=conditional_expression { a }
-  | a=assignment { a }
+  | e=conditional_expression { Tree("assignment_expression", [e]) }
+  | a=assignment { Tree("assignment_expression", [a]) }
 
 %public assignment:
-  | ls=left_hand_side op=assignment_operator e=assignment_expression { ls ^ op ^ e }
+  | lhs=left_hand_side o=assignment_operator e=assignment_expression { Tree("assignment", [lhs; o; e]) }
 
 left_hand_side:
-  | n=expression_name { n }
-  (* 
+  | n=expression_name { Tree("left_hand_side", [n]) }
+  (*
   | a=field_access { a }
   | a=array_access { a }
   *)
 
 assignment_operator:
-  | ASSIGN { "=" }
-  | PLUS_ASSIGN { "+=" }
-  | MINUS_ASSIGN { "-=" }
-  | MULTIPLY_ASSIGN { "*=" }
-  | DIVIDE_ASSIGN { "/=" }
-  | MODULUS_ASSIGN { "%=" }
-  | AND_BITWISE_ASSIGN { "&=" }
-  | OR_BITWISE_ASSIGN { "|=" }
-  | XOR_ASSIGN { "^=" }
-  | LEFT_SHIFT_ASSIGN { "<<=" }
-  | RIGHT_SHIFT_ASSIGN { ">>=" }
-  | RIGHT_SHIFT_UNSIGNED_ASSIGN { ">>>=" }
+  | ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
+  | PLUS_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
+  | MINUS_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
+  | MULTIPLY_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
+  | DIVIDE_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
+  | MODULUS_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
+  | AND_BITWISE_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
+  | OR_BITWISE_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
+  | XOR_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
+  | LEFT_SHIFT_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
+  | RIGHT_SHIFT_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
+  | RIGHT_SHIFT_UNSIGNED_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
 
 (* 15.27 *)
 %public expression:
-  | e=assignment_expression { e }
+  | e=assignment_expression { Tree("expression", [e]) }
 
 (* 15.28 *)
 %public constant_expression:
-  | e=expression { e }
+  | e=expression { Tree("constant_expression", [e]) }

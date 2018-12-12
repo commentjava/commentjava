@@ -4,7 +4,7 @@
 
 (* 3.1 *)
 %public identifier:
-  | IDENTIFIER { "ident(" ^ $1 ^ ")" }
+  | IDENTIFIER { Tree("identifier", [Leaf($1)]) }
 
 (* 4.1 *)
 %public type_:
@@ -54,15 +54,15 @@ type_decl_specifier:
 
 (* type_name is also defined in 6.5 but with context distinction *)
 (*
-%public type_name: 
+%public type_name:
   | identifier { Tree("type_name", [Leaf($1)])  }
-  | type_name PERIOD identifier { Tree("type_name", [$1; Leaf($3)])  } 
+  | type_name PERIOD identifier { Tree("type_name", [$1; Leaf($3)])  }
 *)
 
 type_variable:
-  | identifier { Tree("type_variable", [Leaf($1)])  }
+  | identifier { Tree("type_variable", [$1])  }
 
-(* 
+(*
 array_type:
   | type_ L_BRACKET R_BRACKET { "" }
 *)
@@ -98,4 +98,4 @@ wildcard:
 
 wildcard_bounds:
   | EXTENDS reference_type { Tree("wildcard_bounds", [$2])  }
-  | SUPER reference_type { Tree("wildcard_bounds", [$2])  } 
+  | SUPER reference_type { Tree("wildcard_bounds", [$2])  }

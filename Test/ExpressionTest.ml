@@ -1,10 +1,11 @@
 open Parser
+open Ast
 
 let tests_dir = "Test/expression_files/"
 
 let rec print_lexbuf lexbuf =
   let exp = expression Lexer.nexttoken lexbuf  in
-    print_string exp
+    print_ast exp
 
 let check_expression file =
   (* Raise an execption if the file can't be interpreted by the lexer *)
@@ -13,4 +14,3 @@ let check_expression file =
 
 let () =
   TestHelper.test_dir tests_dir check_expression
-  
