@@ -113,6 +113,7 @@ rule nexttoken = parse
   | float_literal as f { FLOAT_LITERAL f }
   | boolean_literal as b { BOOLEAN_LITERAL b }
   | char_literal as c { CHAR_LITERAL c }
+  | "null" as n { NULL_LITERAL n }
 
 (* Separators - 3.11 *)
   | "("   { L_PAR "l_par" }

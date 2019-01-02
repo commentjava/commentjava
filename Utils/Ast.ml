@@ -1,7 +1,9 @@
-type ast = 
+type ast =
     Tree of string * (ast list)
   | Treeopt of string * (ast option list)
   | Leaf of string
+  | NumberLiteral of string
+  | Literal of string
 
 let print_ast ast =
     let rec print_d d =
@@ -24,6 +26,16 @@ let print_ast ast =
             print_string name;
             print_newline ()
     in
+    let print_number_literal value deep =
+        print_d deep;
+        print_string value;
+        print_newline ()
+    in
+    let print_literal value deep =
+        print_d deep;
+        print_string value;
+        print_newline ()
+    in
     let rec print_ast_rec ast deep =
         let rec print_list list_to_print deep =
             match list_to_print with
@@ -40,6 +52,8 @@ let print_ast ast =
           | Tree (name, astlist) -> print_elt name deep; print_list astlist (deep + 1)
           | Treeopt (name, astlist) -> print_elt name deep; print_list_opt astlist (deep + 1)
           | Leaf (name) -> print_leaf name deep
+          | NumberLiteral(value) -> print_literal value deep
+          | Literal(value) -> print_literal value deep
     in
     print_ast_rec ast 0
 ;;
