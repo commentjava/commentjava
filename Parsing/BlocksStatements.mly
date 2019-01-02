@@ -68,10 +68,10 @@ empty_statement:
 (* 14.7 *)
 
 labeled_statement:
-  | i=identifier COLON s=statement { Tree("labeled_statement", [i; s]) }
+  | i=identifier COLON s=statement { Tree("labeled_statement", [Leaf(i); s]) }
 
 labeled_statement_no_short_if:
-  | i=identifier COLON s=statement_no_short_if { Tree("labeled_statement_no_short_if", [i; s]) }
+  | i=identifier COLON s=statement_no_short_if { Tree("labeled_statement_no_short_if", [Leaf(i); s]) }
 
 (* 14.8 *)
 
@@ -79,7 +79,7 @@ expression_statement:
   | e=statement_expression SEMICOLON { Tree("expression_statement", [e]) }
 
 statement_expression:
-  | a=assignment { Tree("statement_expression", [a]) }
+  | a=assignment { Tree("statement_expression", [Expression(a)]) }
   (*| pre_increment_expression
   | pre_decrement_expression
   | post_increment_expression
@@ -131,7 +131,7 @@ switch_label:
   | DEFAULT COLON { Leaf("switch_label") }
 
 enum_constant_name:
-  | i=identifier { Tree("enum_constant_name", [i]) }
+  | i=identifier { Tree("enum_constant_name", [Leaf(i)]) }
 
 (* 14.12 *)
 while_statement:
@@ -188,12 +188,12 @@ statement_expression_list:
 (* 14.15 *)
 break_statement:
   | BREAK SEMICOLON { Leaf("break_statement") }
-  | BREAK i=identifier SEMICOLON { Tree("break_statement", [i]) }
+  | BREAK i=identifier SEMICOLON { Tree("break_statement", [Leaf(i)]) }
 
 (* 14.16 *)
 continue_statement:
   | CONTINUE SEMICOLON { Leaf("continue_statement") }
-  | CONTINUE i=identifier SEMICOLON { Tree("continue_statement", [i]) }
+  | CONTINUE i=identifier SEMICOLON { Tree("continue_statement", [Leaf(i)]) }
 
 (* 14.17 *)
 return_statement:

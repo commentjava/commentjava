@@ -1,10 +1,11 @@
+%type < string > identifier
 %%
 
 (* Section 4 Types, Values and Variables *)
 
 (* 3.1 *)
 %public identifier:
-  | IDENTIFIER { Tree("identifier", [Leaf($1)]) }
+  | IDENTIFIER { $1 }
 
 (* 4.1 *)
 %public type_:
@@ -60,7 +61,7 @@ type_decl_specifier:
 *)
 
 type_variable:
-  | identifier { Tree("type_variable", [$1])  }
+  | identifier { Tree("type_variable", [Leaf($1)])  }
 
 (*
 array_type:

@@ -20,7 +20,7 @@ primary_no_new_array:
   (*| t=VOID PERIOD CLASS { TypeLiteral(t) }*)
   (*| THIS { "this" }
   | class_name PERIOD THIS { "" }
-  | L_PAR e=expression R_PAR { e }
+  | L_PAR e=expression R_PAR { ParenthesizedExpression(e) }
   | class_instance_creation_expression { "" }
   | field_access {}
   | method_invocation {}
@@ -29,10 +29,10 @@ primary_no_new_array:
 literal:
   | l=INTEGER_LITERAL { NumberLiteral(l) }
   | l=FLOAT_LITERAL { NumberLiteral(l) }
-  | l=BOOLEAN_LITERAL { Literal(l) }
-  | l=CHAR_LITERAL { Literal(l) }
-  | l=STRING_LITERAL { Literal(l) }
-  | l=NULL_LITERAL { Literal(l) }
+  | l=BOOLEAN_LITERAL { BooleanLiteral(l) }
+  | l=CHAR_LITERAL { CharacterLiteral(l) }
+  | l=STRING_LITERAL { StringLiteral(l) }
+  | l=NULL_LITERAL { NullLiteral }
 
 (* 15.9 *)
 (*class_instance_creation_expression:
@@ -127,38 +127,38 @@ array_access:
 
 (* 15.14 *)
 postfix_expression:
-  | p=primary { Tree("postfix_expression", [p]) }
-  | en=expression_name { Tree("postfix_expression", [en]) }
+  | p=primary { p }
+  | en=expression_name { en }
   (*| e=post_increment_expression { e }
   | e=post_decrement_expression { e }*)
 
 post_increment_expression:
-  | e=postfix_expression INCREMENT { Tree("post_increment_expression", [e]) }
+  | e=postfix_expression INCREMENT { PostfixExpression(e, INCREMENT) }
 
 post_decrement_expression:
-  | e=postfix_expression DECREMENT { Tree("post_decrement_expression", [e]) }
+  | e=postfix_expression DECREMENT { PostfixExpression(e, DECREMENT) }
 
 (* 15.15 *)
 unary_expression:
   (*| e=pre_increment_expression { e }
-  | e=pre_decrement_expression { e } *)
-  (*| PLUS e=unary_expression { "+" ^ e }
-  | MINUS e=unary_expression { "-" ^ e }*)
-  | e=unary_expression_not_plus_minus { Tree("unary_expression", [e]) }
+  | e=pre_decrement_expression { e }
+  | PLUS e=unary_expression { PrefixExpression(e, PLUS) }
+  | MINUS e=unary_expression { PrefixExpression(e, MINUS) }*)
+  | e=unary_expression_not_plus_minus { e }
 
 (*
 pre_increment_expression:
-  | INCREMENT e=unary_expression { "++" ^ e }
+  | INCREMENT e=unary_expression { PrefixExpression(e, INCREMENT) }
 
 pre_decrement_expression:
-  | DECREMENT e=unary_expression { "--" ^ e }
+  | DECREMENT e=unary_expression { PrefixExpression(e, DECREMENT) }
 *)
 
 unary_expression_not_plus_minus:
   | e=postfix_expression { e }
-  (*| COMPLEMENT_BITWISE e=unary_expression { "~" ^ e }
-  | NOT_LOGICAL e=unary_expression { "!" ^ e }*)
-  (*| e=cast_expresion { e }*)
+  (*| COMPLEMENT_BITWISE e=unary_expression { PrefixExpression(e, COMPLEMENT) }
+  | NOT_LOGICAL e=unary_expression { PrefixExpression(e, NOT) } )
+  | e=cast_expresion { e }*)
 
 (* 15.16 *)
 (*
@@ -201,7 +201,7 @@ relational_expression:
   | re=relational_expression GREATER e=shift_expression { re ^ ">" ^ e }
   | re=relational_expression LOWER_OR_EQUAL e=shift_expression { re ^ "<=" ^ e }
   | re=relational_expression GREATER_OR_EQUAL e=shift_expression { re ^ ">=" ^ e }
-  | re=relational_expression INSTANCEOF t=reference_type { re ^ " instanceof " ^ t }
+  | re=relational_expression INSTANCEOF t=reference_type { InstanceofExpression(re, t) }
   *)
 
 (* 15.21 *)
@@ -236,7 +236,7 @@ conditional_or_expression:
 (* 15.25 *)
 %public conditional_expression:
   | e=conditional_or_expression { e }
-  (*| coe=conditional_or_expression QUESTION_MARK e=expression COLON ce=conditional_expression { coe ^ "?" ^ e ^ ":" ^ ce }*)
+  (*| coe=conditional_or_expression QUESTION_MARK e=expression COLON ce=conditional_expression { ConditionalExpression(cor, e, ce) } *)
 
 (* 15.26 *)
 assignment_expression:
@@ -244,33 +244,33 @@ assignment_expression:
   | a=assignment { a }
 
 %public assignment:
-  | lhs=left_hand_side o=assignment_operator e=assignment_expression { Tree("assignment", [lhs; o; e]) }
+  | lhs=left_hand_side o=assignment_operator e=assignment_expression { Assignment(lhs, o, e) }
 
 left_hand_side:
-  | n=expression_name { Tree("left_hand_side", [n]) }
+  | n=expression_name { n }
   (*
   | a=field_access { a }
   | a=array_access { a }
   *)
 
 assignment_operator:
-  | ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
-  | PLUS_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
-  | MINUS_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
-  | MULTIPLY_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
-  | DIVIDE_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
-  | MODULUS_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
-  | AND_BITWISE_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
-  | OR_BITWISE_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
-  | XOR_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
-  | LEFT_SHIFT_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
-  | RIGHT_SHIFT_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
-  | RIGHT_SHIFT_UNSIGNED_ASSIGN { Tree("assignment_operator", [Leaf($1)]) }
+  | ASSIGN { ASSIGN }
+  | PLUS_ASSIGN { PLUS_ASSIGN }
+  | MINUS_ASSIGN { MINUS_ASSIGN }
+  | MULTIPLY_ASSIGN { MULTIPLY_ASSIGN }
+  | DIVIDE_ASSIGN { DIVIDE_ASSIGN }
+  | MODULUS_ASSIGN { MODULUS_ASSIGN }
+  | AND_BITWISE_ASSIGN { AND_BITWISE_ASSIGN }
+  | OR_BITWISE_ASSIGN { OR_BITWISE_ASSIGN }
+  | XOR_ASSIGN { XOR_ASSIGN }
+  | LEFT_SHIFT_ASSIGN { LEFT_SHIFT_ASSIGN }
+  | RIGHT_SHIFT_ASSIGN { RIGHT_SHIFT_ASSIGN }
+  | RIGHT_SHIFT_UNSIGNED_ASSIGN { RIGHT_SHIFT_UNSIGNED_ASSIGN }
 
 (* 15.27 *)
 %public expression:
-  | e=assignment_expression { Tree("expression", [e]) }
+  | e=assignment_expression { Expression(e) }
 
 (* 15.28 *)
 %public constant_expression:
-  | e=expression { Tree("constant_expression", [e]) }
+  | e=expression { e }
