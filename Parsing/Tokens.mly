@@ -34,7 +34,7 @@
 %token <string> BOOLEAN_LITERAL
 %token <string> CHAR_LITERAL
 %token <string> STRING_LITERAL
-%token <string> NULL_LITERAL
+%token NULL_LITERAL
 
 (* Separators - 3.11 *)
 %token <string> L_PAR R_PAR

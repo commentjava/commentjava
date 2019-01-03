@@ -18,6 +18,9 @@ let identifier = java_letter (java_letter | digit )*
 (* Boolean Literals *)
 let boolean_literal = "true" | "false"
 
+(* Boolean Literals *)
+let null_literal = "null"
+
 (* Integer Literals *)
 let decimal_numeral = '0' | non_zero_digit digit*
 let integer_literal = decimal_numeral ('l' | 'L')?
@@ -113,7 +116,7 @@ rule nexttoken = parse
   | float_literal as f { FLOAT_LITERAL f }
   | boolean_literal as b { BOOLEAN_LITERAL b }
   | char_literal as c { CHAR_LITERAL c }
-  | "null" as n { NULL_LITERAL n }
+  | null_literal { NULL_LITERAL }
 
 (* Separators - 3.11 *)
   | "("   { L_PAR "l_par" }

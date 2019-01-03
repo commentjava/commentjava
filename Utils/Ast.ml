@@ -78,15 +78,10 @@ let rec print_d d =
         end
 ;;
 
-let print_name name =
-    let rec format_qualified_name names =
-        match names with
-            [] -> ""
-            | e::l -> e ^ "." ^ format_qualified_name l
-    in
+let print_global_name name =
     match name with
-        | SimpleName (name) -> print_string ("SimpleName: " ^ name)
-        | QualifiedName (names) -> print_string ("QualifiedName: " ^ format_qualified_name names)
+        | SimpleName (name) -> print_string ("SimpleName(" ^ name ^ ")")
+        | QualifiedName (names) -> print_string ("QualifiedName(" ^ (String.concat "." names) ^ ")")
 ;;
 
 let operator_to_string op =
@@ -120,6 +115,27 @@ let rec print_expression e deep =
         print_expression e (deep + 1);
         print_newline ()
     in
+    let print_name name deep =
+        print_d deep;
+        print_string "Name: ";
+        print_global_name name;
+        print_newline ()
+    in
+    let print_bool_literal bool_ deep =
+        print_d deep;
+        print_string ("BooleanLiteral: " ^ bool_);
+        print_newline ()
+    in
+    let print_char_literal char_ deep =
+        print_d deep;
+        print_string ("CharacterLiteral: " ^ char_);
+        print_newline ()
+    in
+    let print_null_literal deep =
+        print_d deep;
+        print_string "NullLiteral";
+        print_newline ()
+    in
     let print_number_literal number deep =
         print_d deep;
         print_string ("NumberLiteral: " ^ number);
@@ -130,18 +146,15 @@ let rec print_expression e deep =
         print_string ("StringLiteral: " ^ string_);
         print_newline ()
     in
-    let print_char_literal char_ deep =
-        print_d deep;
-        print_string ("CharacterLiteral: " ^ char_);
-        print_newline ()
-    in
     match e with
         | Assignment (lfs, op, e) -> print_assignment lfs op e deep
-        | ExpressionName (name) -> print_d deep; print_name name; print_newline ()
-        | NullLiteral -> print_d deep; print_string "null"; print_newline ()
+        | ExpressionName (name) -> print_name name deep
+        | BooleanLiteral (bool_) -> print_bool_literal bool_ deep
+        | CharacterLiteral (char_) -> print_char_literal char_ deep
+        | NullLiteral -> print_null_literal deep
         | NumberLiteral (number) -> print_number_literal number deep
         | StringLiteral (string_) -> print_string_literal string_ deep
-        | CharacterLiteral (char_) -> print_char_literal char_ deep
+
 ;;
 
 let print_ast ast =
