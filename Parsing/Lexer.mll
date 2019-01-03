@@ -107,16 +107,18 @@ rule nexttoken = parse
   | "volatile"     { VOLATILE "volatile" }
   | "while"        { WHILE "while" }
 
+(* Literals - 3.10 *)
+(* Has to be before identifier in order to parse booleans and null and not identifiers instead *)
+  | boolean_literal as b { BOOLEAN_LITERAL b }
+  | char_literal as c { CHAR_LITERAL c }
+  | float_literal as f { FLOAT_LITERAL f }
+  | integer_literal as i { INTEGER_LITERAL i }
+  | null_literal { NULL_LITERAL }
+  | string_literal as s { STRING_LITERAL s }
+
 (* Identifiers - 3.8 *)
   | identifier as ident { IDENTIFIER ident }
 
-(* Literals - 3.10 *)
-  | integer_literal as i { INTEGER_LITERAL i }
-  | string_literal as s { STRING_LITERAL s }
-  | float_literal as f { FLOAT_LITERAL f }
-  | boolean_literal as b { BOOLEAN_LITERAL b }
-  | char_literal as c { CHAR_LITERAL c }
-  | null_literal { NULL_LITERAL }
 
 (* Separators - 3.11 *)
   | "("   { L_PAR "l_par" }
