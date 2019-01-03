@@ -1,0 +1,1 @@
+myObject.myVar += 3
