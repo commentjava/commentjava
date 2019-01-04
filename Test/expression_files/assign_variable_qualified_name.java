@@ -1,0 +1,1 @@
+myVar = myOtherVar.Values.value

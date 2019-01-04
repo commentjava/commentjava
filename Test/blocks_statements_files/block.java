@@ -4,5 +4,6 @@
     maVar : ;
     ; {}
     ;;
+    myVar = myOtherVar.value;
  }
 }
