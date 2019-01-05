@@ -82,8 +82,8 @@ expression_statement:
 
 statement_expression:
   | a=assignment { a }
-  /* | e=pre_increment_expression { e }
-  | e=pre_decrement_expression { e } */
+  | e=pre_increment_expression { e }
+  | e=pre_decrement_expression { e }
   | e=post_increment_expression { e }
   | e=post_decrement_expression { e }
   /* | method_invocation

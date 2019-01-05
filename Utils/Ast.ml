@@ -2,7 +2,7 @@ type names =
     SimpleName of string
   | QualifiedName of string list
 
-type assignment_operator =
+type operator =
     ASSIGN
   | PLUS_ASSIGN
   | MINUS_ASSIGN
@@ -15,25 +15,21 @@ type assignment_operator =
   | LEFT_SHIFT_ASSIGN
   | RIGHT_SHIFT_ASSIGN
   | RIGHT_SHIFT_UNSIGNED_ASSIGN
-
-type prefix_operator =
-    INCREMENT
+  (* post & prefix *)
+  | INCREMENT
   | DECREMENT
+  (* prefix *)
   | PLUS
   | MINUS
   | COMPLEMENT
   | NOT
-
-type postfix_operator =
-    INCREMENT
-  | DECREMENT
 
 type expression =
     (* Annotation *)
   (* | ArrayAccess *)
   (* | ArrayCreation *)
   (* | ArrayInitializer *)
-  | Assignment of expression * assignment_operator * expression
+  | Assignment of expression * operator * expression
   | BooleanLiteral of string
   (* | CastExpression *)
   | CharacterLiteral of string
@@ -51,8 +47,8 @@ type expression =
   | NullLiteral
   | NumberLiteral of string
   | ParenthesizedExpression of expression
-  | PostfixExpression of expression * postfix_operator
-  | PrefixExpression of expression * postfix_operator
+  | PostfixExpression of expression * operator
+  | PrefixExpression of expression * operator
   | StringLiteral of string
   (* | SuperFieldAccess *)
   (* | SuperMethodInvocation *)
@@ -123,6 +119,12 @@ let string_of_operator op =
         | LEFT_SHIFT_ASSIGN -> "<<="
         | RIGHT_SHIFT_ASSIGN -> ">>="
         | RIGHT_SHIFT_UNSIGNED_ASSIGN -> ">>>="
+        | INCREMENT -> "++"
+        | DECREMENT -> "--"
+        | PLUS -> "+"
+        | MINUS -> "-"
+        | COMPLEMENT -> "~"
+        | NOT -> "!"
 ;;
 
 let print_opt_string s deep =
@@ -177,18 +179,22 @@ let rec print_expression e deep =
         print_string ("StringLiteral: " ^ string_);
     in
     let print_postfix_expression e op deep =
-        let string_of_postfix_op op =
-            match op with
-                | INCREMENT -> "++"
-                | DECREMENT -> "--"
-        in
         print_newline ();
         print_d deep;
-        print_string ("Postfix Expression");
+        print_string ("PostfixExpression");
         print_expression e (deep+1);
         print_newline ();
         print_d (deep+1);
-        print_string (string_of_postfix_op op);
+        print_string (string_of_operator op);
+    in
+    let print_prefix_expression e op deep =
+        print_newline ();
+        print_d deep;
+        print_string ("PrefixExpression");
+        print_expression e (deep+1);
+        print_newline ();
+        print_d (deep+1);
+        print_string (string_of_operator op);
     in
     match e with
         | Assignment (lfs, op, e) -> print_assignment lfs op e deep
@@ -199,6 +205,7 @@ let rec print_expression e deep =
         | NumberLiteral (number) -> print_number_literal number deep
         | StringLiteral (string_) -> print_string_literal string_ deep
         | PostfixExpression (e, op) -> print_postfix_expression e op deep
+        | PrefixExpression (e, op) -> print_prefix_expression e op deep
 ;;
 
 let print_opt_expression e deep=

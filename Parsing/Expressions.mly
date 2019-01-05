@@ -140,25 +140,23 @@ postfix_expression:
 
 (* 15.15 *)
 unary_expression:
-  (*| e=pre_increment_expression { e }
+  | e=pre_increment_expression { e }
   | e=pre_decrement_expression { e }
   | PLUS e=unary_expression { PrefixExpression(e, PLUS) }
-  | MINUS e=unary_expression { PrefixExpression(e, MINUS) }*)
+  | MINUS e=unary_expression { PrefixExpression(e, MINUS) }
   | e=unary_expression_not_plus_minus { e }
 
-(*
-pre_increment_expression:
+%public pre_increment_expression:
   | INCREMENT e=unary_expression { PrefixExpression(e, INCREMENT) }
 
-pre_decrement_expression:
+%public pre_decrement_expression:
   | DECREMENT e=unary_expression { PrefixExpression(e, DECREMENT) }
-*)
 
 unary_expression_not_plus_minus:
   | e=postfix_expression { e }
-  (*| COMPLEMENT_BITWISE e=unary_expression { PrefixExpression(e, COMPLEMENT) }
-  | NOT_LOGICAL e=unary_expression { PrefixExpression(e, NOT) } )
-  | e=cast_expresion { e }*)
+  | COMPLEMENT_BITWISE e=unary_expression { PrefixExpression(e, COMPLEMENT) }
+  | NOT_LOGICAL e=unary_expression { PrefixExpression(e, NOT) }
+  /* | e=cast_expresion { e } */
 
 (* 15.16 *)
 (*
