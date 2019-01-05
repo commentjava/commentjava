@@ -26,7 +26,7 @@ type operator =
 
 type expression =
     (* Annotation *)
-  (* | ArrayAccess *)
+  | ArrayAccess of expression * expression
   (* | ArrayCreation *)
   (* | ArrayInitializer *)
   | Assignment of expression * operator * expression
@@ -134,17 +134,21 @@ let print_opt_string s deep =
 ;;
 
 let rec print_expression e deep =
-    let print_assignment_operator op deep =
+    let print_array_access e1 e2 deep =
         print_newline ();
         print_d deep;
-        print_string ("Operator: " ^ string_of_operator op);
+        print_string "ArrayAccess";
+        print_expression e1 (deep + 1);
+        print_expression e2 (deep + 1);
     in
     let print_assignment lfs op e deep =
         print_newline ();
         print_d deep;
         print_string "Assignment";
         print_expression lfs (deep + 1);
-        print_assignment_operator op (deep + 1);
+        print_newline ();
+        print_d (deep+1);
+        print_string ("Operator: " ^ string_of_operator op);
         print_expression e (deep + 1);
     in
     let print_name name deep =
@@ -197,6 +201,7 @@ let rec print_expression e deep =
         print_string (string_of_operator op);
     in
     match e with
+        | ArrayAccess(e1, e2) -> print_array_access e1 e2 deep
         | Assignment (lfs, op, e) -> print_assignment lfs op e deep
         | ExpressionName (name) -> print_name name deep
         | BooleanLiteral (bool_) -> print_bool_literal bool_ deep

@@ -23,8 +23,8 @@ primary_no_new_array:
   | L_PAR e=expression R_PAR { ParenthesizedExpression(e) }
   | class_instance_creation_expression { "" }
   | field_access {}
-  | method_invocation {}
-  | array_access {}*)
+  | method_invocation {}*)
+  | a=array_access { a }
 
 literal:
   | l=INTEGER_LITERAL { NumberLiteral(l) }
@@ -119,11 +119,9 @@ method_invocation:
 *)
 
 (* 15.13 *)
-(*
 array_access:
-  | en=expression_name L_BRACKET e=expression R_BRACKET { en ^ "[" ^ e ^ "]" }
-  | p=primary_no_new_array L_BRACKET e=expression R_BRACKET { p ^ "[" ^ e ^ "]" }
-*)
+  | en=expression_name L_BRACKET e=expression R_BRACKET { ArrayAccess(en, e) }
+  | p=primary_no_new_array L_BRACKET e=expression R_BRACKET { ArrayAccess(p, e) }
 
 (* 15.14 *)
 postfix_expression:
@@ -246,10 +244,8 @@ assignment_expression:
 
 left_hand_side:
   | n=expression_name { n }
-  (*
-  | a=field_access { a }
+  /* | a=field_access { a } */
   | a=array_access { a }
-  *)
 
 assignment_operator:
   | ASSIGN { ASSIGN }
