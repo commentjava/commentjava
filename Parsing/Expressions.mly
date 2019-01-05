@@ -132,10 +132,10 @@ postfix_expression:
   | e=post_increment_expression { e }
   | e=post_decrement_expression { e }
 
-post_increment_expression:
+%public post_increment_expression:
   | e=postfix_expression INCREMENT { PostfixExpression(e, INCREMENT) }
 
-post_decrement_expression:
+%public post_decrement_expression:
   | e=postfix_expression DECREMENT { PostfixExpression(e, DECREMENT) }
 
 (* 15.15 *)

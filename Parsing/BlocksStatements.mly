@@ -8,7 +8,7 @@
 %%
 
 %public block_main:
-  | b=block { Statement(b)}
+  | b=block { Statement(b) }
 (* Section 14 Blocks and Statement *)
 
 (* 14.2 *)
@@ -82,12 +82,12 @@ expression_statement:
 
 statement_expression:
   | a=assignment { a }
-  (*| pre_increment_expression
-  | pre_decrement_expression
-  | post_increment_expression
-  | post_decrement_rexpression
-  | method_invocation
-  | class_instance_creation_expression {}*)
+  /* | e=pre_increment_expression { e }
+  | e=pre_decrement_expression { e } */
+  | e=post_increment_expression { e }
+  | e=post_decrement_expression { e }
+  /* | method_invocation
+  | class_instance_creation_expression {} */
 
 
 (* 14.9 *)
