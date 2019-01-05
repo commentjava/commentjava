@@ -4,8 +4,8 @@ open Ast
 let tests_dir = "Test/expression_files/"
 
 let rec print_lexbuf lexbuf =
-  let exp = expression Lexer.nexttoken lexbuf  in
-    print_ast exp
+  let block = block_main Lexer.nexttoken lexbuf  in
+    print_ast block
 
 let check_expression file =
   (* Raise an execption if the file can't be interpreted by the lexer *)

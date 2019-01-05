@@ -3,7 +3,7 @@
 %}
 
 %start expression
-%type < Ast.ast > expression
+%type < Ast.expression > expression
 
 %%
 
@@ -129,8 +129,8 @@ array_access:
 postfix_expression:
   | p=primary { p }
   | en=expression_name { en }
-  (*| e=post_increment_expression { e }
-  | e=post_decrement_expression { e }*)
+  | e=post_increment_expression { e }
+  | e=post_decrement_expression { e }
 
 post_increment_expression:
   | e=postfix_expression INCREMENT { PostfixExpression(e, INCREMENT) }
@@ -269,7 +269,7 @@ assignment_operator:
 
 (* 15.27 *)
 %public expression:
-  | e=assignment_expression { Expression(e) }
+  | e=assignment_expression { e }
 
 (* 15.28 *)
 %public constant_expression:

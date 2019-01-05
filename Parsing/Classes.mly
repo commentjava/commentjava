@@ -135,5 +135,5 @@ variable_declarator_id:
 (*TODO: section 8.3 *)
 
 variable_initializer:
-  | expression { Tree("variable_initializer", [$1])  }
+  | expression { Tree("variable_initializer", [Expression($1)])  }
 (*TODO: section 8.3 *)

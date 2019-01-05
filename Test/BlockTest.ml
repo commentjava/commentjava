@@ -4,7 +4,7 @@ open Ast
 let tests_dir = "Test/blocks_statements_files/"
 
 let rec print_lexbuf lexbuf =
-  let exp = block Lexer.nexttoken lexbuf  in
+  let exp = block_main Lexer.nexttoken lexbuf  in
     print_ast exp
 
 let check_expression file =
