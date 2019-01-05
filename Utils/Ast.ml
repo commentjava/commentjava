@@ -186,6 +186,7 @@ let rec print_expression e deep =
         print_d deep;
         print_string ("Postfix Expression");
         print_expression e (deep+1);
+        print_newline ();
         print_d (deep+1);
         print_string (string_of_postfix_op op);
     in
