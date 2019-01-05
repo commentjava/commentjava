@@ -28,7 +28,7 @@ type expression =
     (* Annotation *)
   | ArrayAccess of expression * expression
   (* | ArrayCreation *)
-  (* | ArrayInitializer *)
+  | ArrayInitializer of expression list option
   | Assignment of expression * operator * expression
   | BooleanLiteral of string
   (* | CastExpression *)
@@ -134,12 +134,28 @@ let print_opt_string s deep =
 ;;
 
 let rec print_expression e deep =
+    let rec print_expression_list s deep =
+        match s with
+            | [] -> ()
+            | e::l -> print_expression e deep; print_expression_list l deep;
+    in
     let print_array_access e1 e2 deep =
         print_newline ();
         print_d deep;
         print_string "ArrayAccess";
         print_expression e1 (deep + 1);
         print_expression e2 (deep + 1);
+    in
+    let print_array_initializer e deep =
+        let print_opt_exp_list e deep =
+            match e with
+                | None -> ()
+                | Some e -> print_expression_list e deep
+        in
+        print_newline ();
+        print_d deep;
+        print_string "ArrayInitializer";
+        print_opt_exp_list e (deep+1)
     in
     let print_assignment lfs op e deep =
         print_newline ();
@@ -202,6 +218,7 @@ let rec print_expression e deep =
     in
     match e with
         | ArrayAccess(e1, e2) -> print_array_access e1 e2 deep
+        | ArrayInitializer(e) -> print_array_initializer e deep
         | Assignment (lfs, op, e) -> print_assignment lfs op e deep
         | ExpressionName (name) -> print_name name deep
         | BooleanLiteral (bool_) -> print_bool_literal bool_ deep

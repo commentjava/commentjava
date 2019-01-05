@@ -128,12 +128,14 @@ field_modifier:
 
 variable_declarator:
   | variable_declarator_id { Tree("variable_declarator", [$1])  }
-  | variable_declarator_id ASSIGN variable_initializer { Tree("variable_declarator", [$1; $3])  }
+  | variable_declarator_id ASSIGN variable_initializer { Tree("variable_declarator", [$1; Expression($3)])  }
 
 variable_declarator_id:
   | identifier { Tree("variable_declarator_id", [Leaf($1)])  }
 (*TODO: section 8.3 *)
 
-variable_initializer:
-  | expression { Tree("variable_initializer", [Expression($1)])  }
+%public variable_initializer:
+  | e=expression { e }
+  | ai=array_initializer { ai }
+
 (*TODO: section 8.3 *)

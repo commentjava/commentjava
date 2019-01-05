@@ -1,0 +1,5 @@
+{
+    myVar++;
+    myVar--;
+    myVar = myOtherVar++;
+}
