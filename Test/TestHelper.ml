@@ -51,5 +51,6 @@ let test_dir dir assert_fct =
       print_endline (">>> Passed: " ^ (string_of_int !successCount));
       print_endline (">>> Failed: " ^ (string_of_int !failCount));
       match !failCount with
-        | 0 -> print_endline (green ^ "SUCCESS\n" ^ reset_color)
-        | _ -> print_endline (red ^ "FAILURE\n" ^ reset_color)
+        | 0 -> print_endline (green ^ "SUCCESS\n" ^ reset_color);
+        | _ -> print_endline (red ^ "FAILURE\n" ^ reset_color);
+      exit !failCount;;
