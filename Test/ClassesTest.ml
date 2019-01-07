@@ -3,8 +3,14 @@ open Ast
 
 let tests_dir = "Test/classes_files/"
 
+let get_nexttoken lexbuf =
+    let res = Lexer.nexttoken lexbuf in
+    Token2str.print_token res;
+    res
+;;
+
 let rec print_lexbuf lexbuf =
-  let exp = class_declaration Lexer.nexttoken lexbuf  in
+  let exp = compilation_unit get_nexttoken lexbuf  in
     print_ast exp
 
 let check_expression file =

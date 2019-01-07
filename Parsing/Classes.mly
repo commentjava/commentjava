@@ -3,17 +3,48 @@
 %}
 
 
-%start class_declaration
-%type <Ast.ast> class_declaration
+%start compilation_unit
+%type <Ast.ast> compilation_unit
 
 %%
 
-class_declaration :
-  | normal_class_declaration { Tree("class_declaration", [$1])  }
- (*TODO: section 8.1 *)
+(* section 7.3 *)
+compilation_unit:
+  | p=package_declaration? i=import_declarations? t=type_declarations? EOF { CompilationUnit(CompilationUnit_(None, None, t)) }
 
-normal_class_declaration:
-  | class_modifiers? CLASS identifier type_parameters? super? interfaces? class_body { Treeopt("normal_class_declaration", [$1; (Some (Leaf($3))); $4; $5; $6; (Some $7)]) }
+type_declarations:
+  | t=type_declaration { [t] }
+  | ts=type_declarations t=type_declaration { ts @ [t] }
+
+import_declarations:
+  | i=import_declaration { [i] }
+  | is=import_declarations i=import_declaration { is @ [i] }
+
+(* section 7.4 *)
+
+package_declaration:
+  | a=annotations? PACKAGE p=package_name { PackageDeclaration_("a", "p") } 
+
+(* section 7.5 *)
+
+import_declaration:
+  | IMPORT STATIC n=type_name PERIOD MULTIPLY { ImportDeclaration_(true, "n", true) }
+  | IMPORT n=type_name PERIOD MULTIPLY { ImportDeclaration_(false, "n", true) }
+  | IMPORT STATIC n=type_name { ImportDeclaration_(true, "n", false) }
+  | IMPORT n=type_name { ImportDeclaration_(false, "n", false) }
+
+(* section 7.6 *)
+
+type_declaration:
+  | c=class_declaration { c }
+(* TODO interface *)
+(* TODO enum declaration *)
+(* TODO | SEMICOLON { }*)
+
+(* section 8.1 *)
+
+class_declaration:
+  | cm=class_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body { ClassDeclaration(Some "cm", i, Some "tp", Some "s", Some "it", "cb") (*Treeopt("normal_class_declaration", [$1; (Some (Leaf($3))); $4; $5; $6; (Some $7)])*) }
 
 class_modifiers:
   | class_modifier { Tree("class_modifiers", [$1]) }

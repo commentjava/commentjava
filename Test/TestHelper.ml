@@ -13,7 +13,12 @@ let test_file assert_fct file =
     assert_fct file;
     successCount := !successCount + 1; print_endline (green ^ "\n> " ^ file ^ " passed \n" ^ reset_color)
   with
-    _ -> failCount := !failCount + 1; print_endline (red ^ "\n/!\\/!\\ " ^ file ^ " failed /!\\/!\\\n" ^ reset_color)
+    error ->
+        let msg = Printexc.to_string error
+        and stack = Printexc.get_backtrace ()
+        in print_endline ("Error : " ^ msg);
+        print_endline ("Stack : " ^ stack);
+        failCount := !failCount + 1; print_endline (red ^ "\n/!\\/!\\ " ^ file ^ " failed /!\\/!\\\n" ^ reset_color)
 
 let dir_is_empty dir =
   (* Return true if dir is empty except . and .. *)

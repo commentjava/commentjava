@@ -103,11 +103,32 @@ type statement =
   (* | VariableDeclarationStatement *)
   | WhileStatement of expression * statement
 
+type bodyDeclaration =
+  (* | AbstractTypeDeclaration_AnnotationTypeDeclaration *)
+  (* | AbstractTypeDeclaration_EnumDeclaration *)
+  | ClassDeclaration of string option * string * string option * string option * string option * string (* ExtendedModifier list * Identifier * TypeParameter list * Type option * Type list * ClassBodyDeclaration list *)
+  (* | AbstractTypeDeclaration_TypeDeclaration_InterfaceDeclaration *)
+  (* | AnnotationTypeMemberDeclaration *)
+  (* | EnumConstantDeclaration *)
+  (* | FieldDeclaration *)
+  (* | Initializer *)
+  (* | MethodDeclaration *)
+
+type importDeclaration =
+    ImportDeclaration_ of bool (* static *) * string (* name *) * bool (* .* : import all *)
+
+type packageDeclaration =
+    PackageDeclaration_ of string (* annotations *) * string (* name *)
+
+type compilationUnit =
+    CompilationUnit_ of packageDeclaration option (* PackageDeclaration *) * importDeclaration list option (* ImportDeclaration *) * bodyDeclaration list option
+
 type ast =
     | Tree of string * (ast list)
     | Treeopt of string * (ast option list)
     | Expression of expression
     | Statement of statement
+    | CompilationUnit of compilationUnit
     | Leaf of string
 
 let rec print_d d =
@@ -466,6 +487,94 @@ let rec print_statement s deep =
         | ThrowStatement (e) -> print_throw_statement e deep
         | WhileStatement (e, s) -> print_while_statement e s deep
 ;;
+(*
+let rec print_bodyDeclaration bd deep =
+    let print_string_deep a deep =
+        print_newline ();
+        print_d deep;
+        print_string a
+    in
+    let print_opt f aOpt deep =
+        match aOpt with
+            | None -> ()
+            | Some a -> f a deep
+    in
+    let rec print_list f aList deep =
+        match aList with
+            | [] -> ()
+            | a::restList -> f a deep; print_list f restList deep
+    in
+    let print_classDeclaration jdOpt emList i tpList tOpt tList cbdList deep =
+        print_string_deep "ClassDeclaration" deep;
+        print_opt   print_string_deep jdOpt   (deep + 1);
+        print_list  print_string_deep emList  (deep + 1);
+        print_string_deep i (deep + 1);
+        print_list  print_string_deep tpList  (deep + 1);
+        print_opt   print_string_deep tOpt    (deep + 1);
+        print_list  print_string_deep tList   (deep + 1);
+        print_list  print_string_deep cbdList (deep + 1);
+    in
+    match bd with
+        | ClassDeclaration (jdOpt, emList, i, tpList, tOpt, tList, cbdList) -> print_classDeclaration jdOpt emList i tpList tOpt tList cbdList deep
+;;
+*)
+(**)
+let print_string_deep s deep =
+    print_newline ();
+    print_d deep;
+    print_string s
+;;
+
+let apply_opt f aOpt deep =
+    match aOpt with
+        | None -> ()
+        | Some a -> f a deep
+;;
+
+let rec apply_list f aList deep =
+    match aList with
+        | [] -> ()
+        | a::restList -> f a deep; apply_list f restList deep
+;;
+
+let print_packageDeclaration p deep =
+    match p with
+        | PackageDeclaration_(annotations, name) ->
+            print_string_deep "PackageDeclaration" deep;
+            print_string_deep "annotations" deep;
+            print_string_deep "name" deep
+;;
+
+let print_importDeclaration i deep =
+    match i with
+        | ImportDeclaration_(static, name, import_all) ->
+            print_string_deep "ImportDeclaration" deep;
+            print_string_deep (string_of_bool static) (deep + 1);
+            print_string_deep "name" (deep + 1);
+            print_string_deep (string_of_bool import_all) (deep + 1)
+;;
+
+let print_bodyDeclaration bd deep =
+    match bd with
+        | ClassDeclaration(cm, i, tp, s, it, cb) ->
+            print_string_deep "ClassDeclaration" deep;
+            print_string_deep "ClassModifier" (deep + 1);
+            print_string_deep i (deep + 1);
+            print_string_deep "TypeParameter" (deep + 1);
+            print_string_deep "super" (deep + 1);
+            print_string_deep "Interfaces" (deep + 1);
+            print_string_deep "ClassBody" (deep + 1)
+;;
+            
+
+let print_compilationUnit cu deep =
+    match cu with
+        | CompilationUnit_(p, i, t) ->
+            print_string_deep "CompilationUnit" deep;
+            apply_opt print_packageDeclaration             p (deep + 1);
+            apply_opt (apply_list print_importDeclaration) i (deep + 1);
+            apply_opt (apply_list print_bodyDeclaration)   t (deep + 1)
+;;
 
 let print_ast ast =
 
@@ -498,6 +607,7 @@ let print_ast ast =
           | Leaf (name) -> print_leaf name deep
           | Expression (e) -> print_expression e (deep + 1)
           | Statement (s) -> print_statement s (deep + 1)
+          | CompilationUnit (cu) -> print_compilationUnit cu (deep + 1)
     in
     print_ast_rec ast 0
 ;;
