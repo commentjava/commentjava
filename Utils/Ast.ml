@@ -19,10 +19,30 @@ type operator =
   | INCREMENT
   | DECREMENT
   (* prefix *)
-  | PLUS
-  | MINUS
   | COMPLEMENT
   | NOT
+  (* prefix & infix *)
+  | PLUS
+  | MINUS
+  (* infix *)
+  | MULTIPLY
+  | DIVIDE
+  | MODULO
+  | LEFT_SHIFT
+  | RIGHT_SHIFT
+  | RIGHT_SHIFT_UNSIGNED
+  | LOWER
+  | GREATER
+  | LOWER_OR_EQUAL
+  | GREATER_OR_EQUAL
+  | EQUAL
+  | NOT_EQUAL
+  | XOR_BITWISE
+  | AND_BITWISE
+  | OR_BITWISE
+  | AND_LOGICAL
+  | OR_LOGICAL
+
 
 type expression =
     (* Annotation *)
@@ -34,11 +54,12 @@ type expression =
   (* | CastExpression *)
   | CharacterLiteral of string
   (* | ClassInstanceCreation *)
-  (* | ConditionalExpression of expression * expression * expression *)
+  | ConditionalExpression of expression * expression * expression
   (* | CreationReference *)
   (* | ExpressionMethodReference *)
+  (* Different from doc where InfixExpression is: Expression InfixOperator Expression { InfixOperator Expression } *)
+  | InfixExpression of expression * operator * expression
   (* | FieldAccess *)
-  (* | InfixExpression *)
   (* | InstanceofExpression of expression * string TODOreplace string by type *)
   (* | LambdaExpression *)
   (* | MethodInvocation *)
@@ -125,6 +146,23 @@ let string_of_operator op =
         | MINUS -> "-"
         | COMPLEMENT -> "~"
         | NOT -> "!"
+        | MULTIPLY -> "*"
+        | DIVIDE -> "/"
+        | MODULO -> "%"
+        | LEFT_SHIFT -> "<<"
+        | RIGHT_SHIFT -> ">>"
+        | RIGHT_SHIFT_UNSIGNED -> ">>>"
+        | LOWER -> "<"
+        | GREATER -> ">"
+        | LOWER_OR_EQUAL -> "<="
+        | GREATER_OR_EQUAL -> ">="
+        | EQUAL -> "=="
+        | NOT_EQUAL -> "!="
+        | XOR_BITWISE -> "|"
+        | AND_BITWISE -> "&"
+        | OR_BITWISE -> "^"
+        | AND_LOGICAL -> "&&"
+        | OR_LOGICAL -> "||"
 ;;
 
 let print_opt_string s deep =
@@ -167,12 +205,6 @@ let rec print_expression e deep =
         print_string ("Operator: " ^ string_of_operator op);
         print_expression e (deep + 1);
     in
-    let print_name name deep =
-        print_newline ();
-        print_d deep;
-        print_string "Name: ";
-        print_global_name name;
-    in
     let print_bool_literal bool_ deep =
         print_newline ();
         print_d deep;
@@ -182,6 +214,30 @@ let rec print_expression e deep =
         print_newline ();
         print_d deep;
         print_string ("CharacterLiteral: " ^ char_);
+    in
+    let print_conditional_expression e1 e2 e3 deep =
+        print_newline ();
+        print_d deep;
+        print_string ("ConditionalExpression");
+        print_expression e1 (deep+1);
+        print_expression e2 (deep+1);
+        print_expression e3 (deep+1);
+    in
+    let print_infix_expression e1 op e2 deep =
+        print_newline ();
+        print_d deep;
+        print_string ("InfixExpression");
+        print_expression e1 (deep+1);
+        print_newline ();
+        print_d (deep+1);
+        print_string ("Operator: " ^ string_of_operator op);
+        print_expression e2 (deep+1);
+    in
+    let print_name name deep =
+        print_newline ();
+        print_d deep;
+        print_string "Name: ";
+        print_global_name name;
     in
     let print_null_literal deep =
         print_newline ();
@@ -193,10 +249,11 @@ let rec print_expression e deep =
         print_d deep;
         print_string ("NumberLiteral: " ^ number);
     in
-    let print_string_literal string_ deep =
+    let print_parenthesized_expression e deep =
         print_newline ();
         print_d deep;
-        print_string ("StringLiteral: " ^ string_);
+        print_string ("ParenthesizedExpression");
+        print_expression e (deep+1);
     in
     let print_postfix_expression e op deep =
         print_newline ();
@@ -215,19 +272,27 @@ let rec print_expression e deep =
         print_newline ();
         print_d (deep+1);
         print_string (string_of_operator op);
+        in
+    let print_string_literal string_ deep =
+        print_newline ();
+        print_d deep;
+        print_string ("StringLiteral: " ^ string_);
     in
     match e with
         | ArrayAccess(e1, e2) -> print_array_access e1 e2 deep
         | ArrayInitializer(e) -> print_array_initializer e deep
         | Assignment (lfs, op, e) -> print_assignment lfs op e deep
-        | ExpressionName (name) -> print_name name deep
         | BooleanLiteral (bool_) -> print_bool_literal bool_ deep
         | CharacterLiteral (char_) -> print_char_literal char_ deep
+        | ConditionalExpression(e1, e2, e3) -> print_conditional_expression e1 e2 e3 deep
+        | ExpressionName (name) -> print_name name deep
+        | InfixExpression (e1, op, e2) -> print_infix_expression e1 op e2 deep
         | NullLiteral -> print_null_literal deep
         | NumberLiteral (number) -> print_number_literal number deep
-        | StringLiteral (string_) -> print_string_literal string_ deep
+        | ParenthesizedExpression (e) -> print_parenthesized_expression e deep
         | PostfixExpression (e, op) -> print_postfix_expression e op deep
         | PrefixExpression (e, op) -> print_prefix_expression e op deep
+        | StringLiteral (string_) -> print_string_literal string_ deep
 ;;
 
 let print_opt_expression e deep=

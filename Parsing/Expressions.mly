@@ -18,10 +18,10 @@ primary_no_new_array:
   | l=literal { l }
   (*| t=type_ PERIOD CLASS { TypeLiteral(t) }*)
   (*| t=VOID PERIOD CLASS { TypeLiteral(t) }*)
-  (*| THIS { "this" }
-  | class_name PERIOD THIS { "" }
+  (* | THIS { "this" }
+  | class_name PERIOD THIS { "" } *)
   | L_PAR e=expression R_PAR { ParenthesizedExpression(e) }
-  | class_instance_creation_expression { "" }
+  (*| class_instance_creation_expression { "" }
   | field_access {}
   | method_invocation {}*)
   | a=array_access { a }
@@ -167,72 +167,65 @@ cast_expresion:
 (* 15.17 *)
 multiplicative_expression:
   | e=unary_expression { e }
-  (*
-  | me=multiplicative_expression MULTIPLY e=unary_expression { me ^ "*" e }
-  | me=multiplicative_expression DIVIDE e=unary_expression { me ^ "/" e }
-  | me=multiplicative_expression MODULO e=unary_expression { me ^ "%" e }
-*)
+  | me=multiplicative_expression MULTIPLY e=unary_expression { InfixExpression(me, MULTIPLY, e) }
+  | me=multiplicative_expression DIVIDE e=unary_expression { InfixExpression(me, DIVIDE, e) }
+  | me=multiplicative_expression MODULO e=unary_expression { InfixExpression(me, MODULO, e) }
 
 (* 15.18 *)
 additive_expression:
   | e=multiplicative_expression { e }
-  (*| ae=additive_expression PLUS e=multiplicative_expression { ae ^ "+" ^ e }
-  | ae=additive_expression MINUS e=multiplicative_expression { ae ^ "-" ^ e }
-  *)
+  | ae=additive_expression PLUS e=multiplicative_expression { InfixExpression(ae, PLUS, e) }
+  | ae=additive_expression MINUS e=multiplicative_expression { InfixExpression(ae, MINUS, e) }
 
 (* 15.19 *)
 shift_expression:
   | e=additive_expression { e }
-(*
-  | se=shift_expression LEFT_SHIFT e=addition_expression { se ^ "<<" ^ e }
-  | se=shift_expression RIGHT_SHIFT e=addition_expression { se ^ "<<" ^ e }
-  | se=shift_expression RIGHT_SHIFT_UNSIGNED e=addition_expression { se ^ "<<<" ^ e }
-*)
+  | se=shift_expression LEFT_SHIFT e=additive_expression { InfixExpression(se,LEFT_SHIFT, e) }
+  | se=shift_expression RIGHT_SHIFT e=additive_expression { InfixExpression(se,RIGHT_SHIFT, e) }
+  | se=shift_expression RIGHT_SHIFT_UNSIGNED e=additive_expression { InfixExpression(se,RIGHT_SHIFT_UNSIGNED, e) }
 
 (* 15.20 *)
 relational_expression:
   | e=shift_expression { e }
-  (*
-  | re=relational_expression LOWER e=shift_expression { re ^ "<" ^ e }
-  | re=relational_expression GREATER e=shift_expression { re ^ ">" ^ e }
-  | re=relational_expression LOWER_OR_EQUAL e=shift_expression { re ^ "<=" ^ e }
-  | re=relational_expression GREATER_OR_EQUAL e=shift_expression { re ^ ">=" ^ e }
-  | re=relational_expression INSTANCEOF t=reference_type { InstanceofExpression(re, t) }
-  *)
+  | re=relational_expression LOWER e=shift_expression { InfixExpression(re, LOWER, e) }
+  | re=relational_expression GREATER e=shift_expression { InfixExpression(re, GREATER, e) }
+  | re=relational_expression LOWER_OR_EQUAL e=shift_expression { InfixExpression(re, LOWER_OR_EQUAL, e) }
+  | re=relational_expression GREATER_OR_EQUAL e=shift_expression { InfixExpression(re, GREATER_OR_EQUAL, e) }
+  /* | re=relational_expression INSTANCEOF t=reference_type { InstanceofExpression(re, t) } */
 
 (* 15.21 *)
 equality_expression:
   | e=relational_expression { e }
-  (*| ee=equality_expression EQUAL e=relational_expression { ee ^ "==" ^ e }*)
-  (*| ee=equality_expression NOT_EQUAL e=relational_expression { ee ^ "!=" ^ e }*)
+  | ee=equality_expression EQUAL e=relational_expression { InfixExpression(ee, EQUAL, e) }
+  | ee=equality_expression NOT_EQUAL e=relational_expression { InfixExpression(ee, NOT_EQUAL, e) }
 
 (* 15.22 *)
 and_expression:
   | e=equality_expression { e }
-  (*| ae=and_expression AND_BITWISE e=equality_expression { ae ^ "&" ^ }*)
+  | ae=and_expression AND_BITWISE e=equality_expression { InfixExpression(ae, AND_BITWISE, e) }
 
 exclusive_or_expression:
   | e=and_expression { e }
-  (*| ee=exclusive_or_expression XOR_BITWISE e=and_expression { ee ^ "^" ^ e }*)
+  | ee=exclusive_or_expression XOR_BITWISE e=and_expression { InfixExpression(ee, XOR_BITWISE, e) }
 
 inclusive_or_expression:
   | e=exclusive_or_expression { e }
-  (*| ie=inclusive_or_expression OR_BITWISE e=exclusive_or_expression { ie ^ "|" ^ e }*)
+  | ie=inclusive_or_expression OR_BITWISE e=exclusive_or_expression { InfixExpression(ie, OR_BITWISE, e) }
 
 (* 15.23 *)
 conditional_and_expression:
   | e=inclusive_or_expression { e }
- (* | ce=conditional_and_expression AND_LOGICAL e=inclusive_or_expression { ce ^ "&&" ^ e }*)
+  | ce=conditional_and_expression AND_LOGICAL e=inclusive_or_expression { InfixExpression(ce, AND_LOGICAL, e) }
 
 (* 15.24 *)
 conditional_or_expression:
   | e=conditional_and_expression { e }
-  (*| ce=conditional_or_expression OR_LOGICAL e=conditional_and_expression { ce ^ "||" ^ e }*)
+  | ce=conditional_or_expression OR_LOGICAL e=conditional_and_expression { InfixExpression(ce, OR_LOGICAL, e) }
 
 (* 15.25 *)
 %public conditional_expression:
   | e=conditional_or_expression { e }
-  (*| coe=conditional_or_expression QUESTION_MARK e=expression COLON ce=conditional_expression { ConditionalExpression(cor, e, ce) } *)
+  | coe=conditional_or_expression QUESTION_MARK e=expression COLON ce=conditional_expression { ConditionalExpression(coe, e, ce) }
 
 (* 15.26 *)
 assignment_expression:
