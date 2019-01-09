@@ -22,7 +22,7 @@
                                        }
   | i=identifier { Expression(ExpressionName(SimpleName(i))) }
 
-package_or_type_name:
+%public package_or_type_name:
   | package_or_type_name PERIOD identifier { Tree("package_or_type_name", [$1; Leaf($3)]) }
   | identifier { Tree("package_or_type_name", [Leaf($1)]) }
 

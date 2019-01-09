@@ -28,10 +28,10 @@ package_declaration:
 (* section 7.5 *)
 
 import_declaration:
-  | IMPORT STATIC n=type_name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(true, "n", true) }
-  | IMPORT n=type_name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(false, "n", true) }
-  | IMPORT STATIC n=type_name SEMICOLON { ImportDeclaration_(true, "n", false) }
-  | IMPORT n=type_name SEMICOLON { ImportDeclaration_(false, "n", false) }
+  | IMPORT STATIC n=package_or_type_name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(true, "n", true) }
+  | IMPORT n=package_or_type_name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(false, "n", true) }
+  | IMPORT STATIC n=package_or_type_name SEMICOLON { ImportDeclaration_(true, "n", false) }
+  | IMPORT n=package_or_type_name SEMICOLON { ImportDeclaration_(false, "n", false) }
 
 (* section 7.6 *)
 
