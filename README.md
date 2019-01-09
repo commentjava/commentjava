@@ -42,3 +42,8 @@ To list existing tests receipes:
 ```bash
 make test-list
 ```
+
+To create the `_build/errors.txt` file which list the possible error states
+```bash
+make list-errors
+```

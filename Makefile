@@ -1,4 +1,5 @@
 OCAMLBUILD := ocamlbuild
+OCAMLFLAGS := -yaccflag --dump
 
 EXT := native
 
@@ -15,16 +16,18 @@ MLY_FILES := $(shell find . -name '*.mly' )
 MLL_FILES := $(shell find . -name '*.mll' )
 ML_FILES := $(shell find . -name '*.ml' )
 
+ERRORS_FILE := _build/errors.txt
+
 .PHONY: all clean test-all $(RUN_TESTS)
 
 # Building receipes
 all: $(MAIN).native
 
-$(MAIN).native: $(ML_FILES) $(MLL_FILES) $(MLY_FILES)
-	$(OCAMLBUILD) $(MAIN_DIR)/$(MAIN).$(EXT)
+$(MAIN).native: $(ML_FILES) $(MLL_FILES) $(MLY_FILES) Makefile
+	$(OCAMLBUILD) $(OCAMLFLAGS) $(MAIN_DIR)/$(MAIN).$(EXT)
 
-$(TEST_BINS): $(ML_FILES) $(MLL_FILES) $(MLY_FILES)
-	$(OCAMLBUILD) $(TEST_DIR)/$@
+$(TEST_BINS): $(ML_FILES) $(MLL_FILES) $(MLY_FILES) Makefile
+	$(OCAMLBUILD) $(OCAMLFLAGS) $(TEST_DIR)/$@
 
 # Tests receipes
 test-all: $(RUN_TESTS)
@@ -38,7 +41,12 @@ test-list:
 	done;
 	@echo "test-all"
 
+# TODO: In the future the ERRORS_FILE should be commited
+list-errors: $(MAIN).native
+	menhir --list-errors Parsing/*.mly --base result > $(ERRORS_FILE)
+
 # Clean receipes
 clean:
+	rm $(ERRORS_FILE)
 	$(OCAMLBUILD) -clean
 
