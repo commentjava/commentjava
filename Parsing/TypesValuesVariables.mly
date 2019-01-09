@@ -50,14 +50,14 @@ class_or_interface_type:
 (*TODO not sure if type_argument is opt section 4.3*)
 
 type_decl_specifier:
-  | type_name { Tree("type_decl_specifier", [$1])  }
+  | name { Tree("type_decl_specifier", [Expression($1)])  }
   (*| class_or_interface_type PERIOD identifer { "" }*)
 
-(* type_name is also defined in 6.5 but with context distinction *)
+(* name is also defined in 6.5 but with context distinction *)
 (*
-%public type_name:
-  | identifier { Tree("type_name", [Leaf($1)])  }
-  | type_name PERIOD identifier { Tree("type_name", [$1; Leaf($3)])  }
+%public name:
+  | identifier { Tree("name", [Leaf($1)])  }
+  | name PERIOD identifier { Tree("name", [$1; Leaf($3)])  }
 *)
 
 type_variable:

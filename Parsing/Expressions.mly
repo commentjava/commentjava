@@ -93,13 +93,13 @@ dims:
 field_access:
   | p=primary PERIOD i=identifier { FieldAccess(p, ExpressionName(SimpleName(i))) }
   | SUPER PERIOD i=identifier { SuperFieldAccess(None, ExpressionName(SimpleName(i))) }
-  | n=expression_name PERIOD SUPER PERIOD i=identifier { SuperFieldAccess(Some n, ExpressionName(SimpleName(i))) }
+  | n=name PERIOD SUPER PERIOD i=identifier { SuperFieldAccess(Some n, ExpressionName(SimpleName(i))) }
 
 (* 15.12 *)
 (*
 method_invocation:
-  | method_name L_PAR R_PAR {}
-  | method_name L_PAR argument_list R_PAR {}
+  | name L_PAR R_PAR {}
+  | name L_PAR argument_list R_PAR {}
   | primary PERIOD identifier L_PAR R_PAR {}
   | primary PERIOD non_wild_type_arguments identifier L_PAR R_PAR {}
   | primary PERIOD identifier L_PAR argument_list R_PAR {}
@@ -112,19 +112,19 @@ method_invocation:
   | class_name PERIOD SUPER PERIOD non_wild_type_arguments identifier L_PAR R_PAR {}
   | class_name PERIOD SUPER PERIOD identifier L_PAR argument_list R_PAR {}
   | class_name PERIOD SUPER PERIOD non_wild_type_arguments identifier L_PAR argument_list R_PAR {}
-  | type_name PERIOD non_wild_type_arguments identifier L_PAR R_PAR {}
-  | type_name PERIOD non_wild_type_arguments identifier L_PAR argument_list R_PAR {}
+  | name PERIOD non_wild_type_arguments identifier L_PAR R_PAR {}
+  | name PERIOD non_wild_type_arguments identifier L_PAR argument_list R_PAR {}
 *)
 
 (* 15.13 *)
 array_access:
-  | en=expression_name L_BRACKET e=expression R_BRACKET { ArrayAccess(en, e) }
+  | en=name L_BRACKET e=expression R_BRACKET { ArrayAccess(en, e) }
   | p=primary_no_new_array L_BRACKET e=expression R_BRACKET { ArrayAccess(p, e) }
 
 (* 15.14 *)
 postfix_expression:
   | p=primary { p }
-  | en=expression_name { en }
+  | en=name { en }
   | e=post_increment_expression { e }
   | e=post_decrement_expression { e }
 
@@ -234,7 +234,7 @@ assignment_expression:
   | lhs=left_hand_side o=assignment_operator e=assignment_expression { Assignment(lhs, o, e) }
 
 left_hand_side:
-  | n=expression_name { n }
+  | n=name { n }
   | a=field_access { a }
   | a=array_access { a }
 

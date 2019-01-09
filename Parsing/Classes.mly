@@ -23,15 +23,15 @@ import_declarations:
 (* section 7.4 *)
 
 package_declaration:
-  | a=annotations? PACKAGE p=package_name SEMICOLON { PackageDeclaration_("a", "p") }
+  | a=annotations? PACKAGE n=name SEMICOLON { PackageDeclaration_("a", "n") }
 
 (* section 7.5 *)
 
 import_declaration:
-  | IMPORT STATIC n=package_or_type_name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(true, "n", true) }
-  | IMPORT n=package_or_type_name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(false, "n", true) }
-  | IMPORT STATIC n=package_or_type_name SEMICOLON { ImportDeclaration_(true, "n", false) }
-  | IMPORT n=package_or_type_name SEMICOLON { ImportDeclaration_(false, "n", false) }
+  | IMPORT STATIC n=name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(true, "n", true) }
+  | IMPORT n=name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(false, "n", true) }
+  | IMPORT STATIC n=name SEMICOLON { ImportDeclaration_(true, "n", false) }
+  | IMPORT n=name SEMICOLON { ImportDeclaration_(false, "n", false) }
 
 (* section 7.6 *)
 
@@ -71,7 +71,7 @@ annotation:
   | single_element_annotation { SingleMemberAnnotation (* Tree("annotation", [$1])*)  }
 
 normal_annotation:
-  | AT tn=type_name L_PAR evpL=element_value_pairs? R_PAR { NormalAnnotation("tn", evpL) }
+  | AT tn=name L_PAR evpL=element_value_pairs? R_PAR { NormalAnnotation("tn", evpL) } /* TODO use real type name instead of string */
 
 element_value_pairs:
   | evp=element_value_pair { [evp] }
@@ -93,10 +93,10 @@ element_values:
   | element_values COMMA element_value { Treeopt("element_values", [(Some $1); (Some $3)])  }
 
 single_element_annotation:
-  | AT type_name L_PAR element_value R_PAR { Tree("single_element_annotation", [$2; $4])  }
+  | AT name L_PAR element_value R_PAR { Tree("single_element_annotation", [Expression($2); $4])  }
 
 marker_annotation:
-  | AT type_name { Tree("marker_annotation", [$2])  }
+  | AT name { Tree("marker_annotation", [Expression($2)])  }
 
 type_parameters:
   | LOWER type_parameter_list GREATER { Tree("type_parameters", [$2]) }

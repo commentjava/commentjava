@@ -1,6 +1,6 @@
-type names =
+type name =
     SimpleName of string
-  | QualifiedName of string list
+  | QualifiedName of name * name
 
 type operator =
     ASSIGN
@@ -69,7 +69,7 @@ and expression =
   (* | LambdaExpression *)
   (* | MethodInvocation *)
   (* | MethodReference *)
-  | ExpressionName of names
+  | ExpressionName of name
   | NullLiteral
   | NumberLiteral of string
   | ParenthesizedExpression of expression
@@ -177,10 +177,11 @@ let rec apply_opt_list f aOptList deep =
 
 
 
-let print_global_name name =
+let rec print_name name =
     match name with
         | SimpleName (name) -> print_string ("SimpleName(" ^ name ^ ")")
-        | QualifiedName (names) -> print_string ("QualifiedName(" ^ (String.concat "." names) ^ ")")
+        | QualifiedName (n1, n2)
+            -> print_string ("QualifiedName("); print_name n1; print_string " . "; print_name n2; print_string ")"
 ;;
 
 let string_of_operator op =
@@ -309,11 +310,11 @@ and print_expression e deep =
         print_string ("Operator: " ^ string_of_operator op);
         print_expression e2 (deep+1);
     in
-    let print_name name deep =
+    let print_expression_name name deep =
         print_newline ();
         print_d deep;
         print_string "Name: ";
-        print_global_name name;
+        print_name name;
     in
     let print_null_literal deep =
         print_newline ();
@@ -375,7 +376,7 @@ and print_expression e deep =
         | BooleanLiteral (bool_) -> print_bool_literal bool_ deep
         | CharacterLiteral (char_) -> print_char_literal char_ deep
         | ConditionalExpression(e1, e2, e3) -> print_conditional_expression e1 e2 e3 deep
-        | ExpressionName (name) -> print_name name deep
+        | ExpressionName (name) -> print_expression_name name deep
         | FieldAccess (e1, e2) -> print_field_access e1 e2 deep
         | InfixExpression (e1, op, e2) -> print_infix_expression e1 op e2 deep
         | NullLiteral -> print_null_literal deep
