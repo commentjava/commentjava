@@ -108,6 +108,7 @@ let string_of_token token = match token with
 | LEFT_SHIFT_ASSIGN _ -> "LEFT_SHIFT_ASSIGN"
 | RIGHT_SHIFT_ASSIGN _ -> "RIGHT_SHIFT_ASSIGN"
 | RIGHT_SHIFT_UNSIGNED_ASSIGN _ -> "RIGHT_SHIFT_UNSIGNED_ASSIGN"
+| AT _ -> "AT"
 | _ -> "UNKN"
 
 

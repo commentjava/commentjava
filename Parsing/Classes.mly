@@ -58,31 +58,31 @@ class_modifier:
   | STATIC { Modifier("Static") }
   | FINAL { Modifier("Final") }
   | STRICTFP { Modifier("Strictfp") }
-  | annotation { Modifier("Annotation") } (* TODO : change to ...Annotation *)
+  | a=annotation { a } (* TODO : change to ...Annotation *)
 
 (* section 9.7 Annotations *)
 annotations:
-  | annotation { Treeopt("annotations", [(Some $1); None])  }
-  | annotations annotation { Treeopt("annotations", [(Some $1); (Some $2)])  }
+  | an=annotation { [an] }
+  | an=annotation ans=annotations { an::ans }
 
 annotation:
-  | normal_annotation { Tree("annotation", [$1])  }
-  | marker_annotation { Tree("annotation", [$1])  }
-  | single_element_annotation { Tree("annotation", [$1])  }
+  | na=normal_annotation { na (*Tree("annotation", [$1])*)  }
+  | marker_annotation { MarkerAnnotation (* Tree("annotation", [$1]) *)  }
+  | single_element_annotation { SingleMemberAnnotation (* Tree("annotation", [$1])*)  }
 
 normal_annotation:
-  | AT type_name L_PAR element_value_pairs? R_PAR { Treeopt("normal_annotation", [(Some $2); $4])  }
+  | AT tn=type_name L_PAR evpL=element_value_pairs? R_PAR { NormalAnnotation("tn", evpL) }
 
 element_value_pairs:
-  | element_value_pair { Treeopt("element_value_pairs", [None; (Some $1)])  }
-  | element_value_pairs COMMA element_value_pair { Treeopt("element_value_pairs", [(Some $1); (Some $3)])  }
+  | evp=element_value_pair { [evp] }
+  | evp=element_value_pair COMMA evpL=element_value_pairs { evp::evpL }
 
 element_value_pair:
-  | identifier ASSIGN element_value { Tree("element_value_pair", [Leaf($1); $3])  }
+  | i=identifier ASSIGN ev=element_value { MemberValuePair(i, "ev") }
 
 element_value:
   | conditional_expression { Tree("element_value", [Expression($1)])  }
-  | annotation { Tree("element_value", [$1])  }
+  | annotation { Tree("element_value", [])  }
   | element_value_array_initializer { Tree("element_value", [$1])  }
 
 element_value_array_initializer:

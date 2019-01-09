@@ -1,5 +1,5 @@
 @AnnotationName(annotationAttribute = true)
-class MyClass {
-
+class myClass {
+  int laba = 12;
 }
 

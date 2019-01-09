@@ -116,10 +116,6 @@ rule nexttoken = parse
   | null_literal { NULL_LITERAL }
   | string_literal as s { STRING_LITERAL s }
 
-(* Identifiers - 3.8 *)
-  | identifier as ident { IDENTIFIER ident }
-
-
 (* Separators - 3.11 *)
   | "("   { L_PAR "l_par" }
   | ")"   { R_PAR "r_par" }
@@ -169,6 +165,11 @@ rule nexttoken = parse
   | "<<="  { LEFT_SHIFT_ASSIGN "left_shift_assign" }
   | ">>="  { RIGHT_SHIFT_ASSIGN "right_shift_assign" }
   | ">>>=" { RIGHT_SHIFT_UNSIGNED_ASSIGN "right_shift_unsigned_assign" }
+  | "@"    { AT "at" }
+
+
+(* Identifiers - 3.8 *)
+  | identifier as ident { IDENTIFIER ident }
 
 (* Error *)
   | _      { raise (Failure (create_error_message lexbuf)) }

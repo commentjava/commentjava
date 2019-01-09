@@ -43,9 +43,11 @@ type operator =
   | AND_LOGICAL
   | OR_LOGICAL
 
+type memberValuePair =
+  | MemberValuePair of string (* name *) * string
 
-type expression =
-    NormalAnnotation
+and expression =
+    NormalAnnotation of string (* type name *) * memberValuePair list option (* element valie pairs *)
   | MarkerAnnotation
   | SingleMemberAnnotation
   | Modifier (* because of ExtendedModifier *) of string
@@ -226,7 +228,14 @@ let print_opt_string s deep =
         | Some str -> print_newline (); print_d deep; print_string str
 ;;
 
-let rec print_expression e deep =
+let rec print_memberValuePair mvp deep =
+    match mvp with
+        | MemberValuePair (n, e) ->
+            print_string_deep "MemberValuePair" deep;
+            print_string_deep n (deep + 1);
+            print_string_deep e (deep + 1) 
+
+and print_expression e deep =
     let rec print_expression_list s deep =
         match s with
             | [] -> ()
@@ -353,7 +362,9 @@ let rec print_expression e deep =
         print_expression e2 (deep+1);
     in
     match e with
-        | NormalAnnotation -> ()
+        | NormalAnnotation(tn, evpL) ->
+            print_string_deep ("NormalAnnotation : " ^ tn) deep;
+            apply_opt_list print_memberValuePair evpL (deep + 1)
         | MarkerAnnotation -> ()
         | SingleMemberAnnotation -> ()
         | Modifier (s) ->
