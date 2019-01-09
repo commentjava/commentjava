@@ -33,12 +33,12 @@ let dir_contents dir =
           |> List.map (Filename.concat f)
           |> List.append fs
           |> loop result
-    | f::fs -> loop (f::result) fs
+    | f::fs -> loop (result @ [f]) fs
     | []    -> result
   in
     loop [] [dir]
 
-let rec filter_java files = 
+let rec filter_java files =
   match files with
     | [] -> []
     | hd :: tl when Filename.check_suffix hd ".java" -> hd :: (filter_java tl)
