@@ -9,17 +9,22 @@
   | package_or_type_name { Tree("type_name", [$1]) }
 
 %public expression_name:
-  | ambiguous_name PERIOD identifier { ExpressionName(QualifiedName($1 @ [$3])) }
-  | identifier { ExpressionName(SimpleName($1)) }
-
+  | en=expression_name PERIOD i=identifier { match en with 
+                                              | ExpressionName(SimpleName (n)) -> ExpressionName(QualifiedName([n] @ [i]))
+                                              | ExpressionName(QualifiedName (ln)) -> ExpressionName(QualifiedName(ln @ [i]))
+                                           }
+  | i=identifier { ExpressionName(SimpleName(i)) }
+  
 %public method_name:
-  | ambiguous_name PERIOD identifier { Tree("method_name", [$1; Leaf($3)]) }
-  | identifier { Tree("method_name", [Leaf($1)]) }
+  | en=method_name PERIOD i=identifier { match en with 
+                                              | Expression(ExpressionName(SimpleName (n))) -> Expression(ExpressionName(QualifiedName([n] @ [i])))
+                                              | Expression(ExpressionName(QualifiedName (ln))) -> Expression(ExpressionName(QualifiedName(ln @ [i])))
+                                       }
+  | i=identifier { Expression(ExpressionName(SimpleName(i))) }
 
 package_or_type_name:
   | package_or_type_name PERIOD identifier { Tree("package_or_type_name", [$1; Leaf($3)]) }
   | identifier { Tree("package_or_type_name", [Leaf($1)]) }
 
-ambiguous_name:
-  | ambiguous_name PERIOD identifier { $1 @ [$3] }
-  | identifier { [$1] }
+%public class_name:
+  | en=expression_name { en }

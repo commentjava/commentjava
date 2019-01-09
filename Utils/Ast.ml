@@ -59,7 +59,7 @@ type expression =
   (* | ExpressionMethodReference *)
   (* Different from doc where InfixExpression is: Expression InfixOperator Expression { InfixOperator Expression } *)
   | InfixExpression of expression * operator * expression
-  (* | FieldAccess *)
+  | FieldAccess of expression * expression
   (* | InstanceofExpression of expression * string TODOreplace string by type *)
   (* | LambdaExpression *)
   (* | MethodInvocation *)
@@ -71,7 +71,7 @@ type expression =
   | PostfixExpression of expression * operator
   | PrefixExpression of expression * operator
   | StringLiteral of string
-  (* | SuperFieldAccess *)
+  | SuperFieldAccess of expression option * expression
   (* | SuperMethodInvocation *)
   (* | SuperMethodReference *)
   (* | ThisExpression *)
@@ -198,6 +198,11 @@ let rec print_expression e deep =
             | [] -> ()
             | e::l -> print_expression e deep; print_expression_list l deep;
     in
+    let print_opt_expression e deep=
+        match e with
+            | None -> ()
+            | Some ex -> print_expression ex deep
+    in
     let print_array_access e1 e2 deep =
         print_newline ();
         print_d deep;
@@ -243,6 +248,13 @@ let rec print_expression e deep =
         print_expression e1 (deep+1);
         print_expression e2 (deep+1);
         print_expression e3 (deep+1);
+    in
+    let print_field_access e1 e2 deep =
+        print_newline ();
+        print_d deep;
+        print_string ("FieldAccess");
+        print_expression e1 (deep+1);
+        print_expression e2 (deep+1);
     in
     let print_infix_expression e1 op e2 deep =
         print_newline ();
@@ -299,6 +311,13 @@ let rec print_expression e deep =
         print_d deep;
         print_string ("StringLiteral: " ^ string_);
     in
+    let print_super_field_access e1 e2 deep =
+        print_newline ();
+        print_d deep;
+        print_string ("SuperFieldAccess");
+        print_opt_expression e1 (deep+1);
+        print_expression e2 (deep+1);
+    in
     match e with
         | ArrayAccess(e1, e2) -> print_array_access e1 e2 deep
         | ArrayInitializer(e) -> print_array_initializer e deep
@@ -307,6 +326,7 @@ let rec print_expression e deep =
         | CharacterLiteral (char_) -> print_char_literal char_ deep
         | ConditionalExpression(e1, e2, e3) -> print_conditional_expression e1 e2 e3 deep
         | ExpressionName (name) -> print_name name deep
+        | FieldAccess (e1, e2) -> print_field_access e1 e2 deep
         | InfixExpression (e1, op, e2) -> print_infix_expression e1 op e2 deep
         | NullLiteral -> print_null_literal deep
         | NumberLiteral (number) -> print_number_literal number deep
@@ -314,6 +334,7 @@ let rec print_expression e deep =
         | PostfixExpression (e, op) -> print_postfix_expression e op deep
         | PrefixExpression (e, op) -> print_prefix_expression e op deep
         | StringLiteral (string_) -> print_string_literal string_ deep
+        | SuperFieldAccess(e1, e2) -> print_super_field_access e1 e2 deep
 ;;
 
 let print_opt_expression e deep=

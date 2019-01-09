@@ -18,12 +18,12 @@ primary_no_new_array:
   | l=literal { l }
   (*| t=type_ PERIOD CLASS { TypeLiteral(t) }*)
   (*| t=VOID PERIOD CLASS { TypeLiteral(t) }*)
-  (* | THIS { "this" }
-  | class_name PERIOD THIS { "" } *)
+  (* | THIS { ThisExpression(None) }
+  | n=class_name PERIOD THIS { ThisExpression(Some n) } *)
   | L_PAR e=expression R_PAR { ParenthesizedExpression(e) }
-  (*| class_instance_creation_expression { "" }
-  | field_access {}
-  | method_invocation {}*)
+  (*| class_instance_creation_expression { "" } *)
+  | a=field_access { a }
+  /* | method_invocation {}*) */
   | a=array_access { a }
 
 literal:
@@ -90,12 +90,10 @@ dims:
 *)
 
 (* 15.11 *)
-(*
 field_access:
-  | primary PERIOD identifier {}
-  | SUPER PERIOD identifier {}
-  | class_name PERIOD SUPER PERIOD identifier {}
-*)
+  | p=primary PERIOD i=identifier { FieldAccess(p, ExpressionName(SimpleName(i))) }
+  | SUPER PERIOD i=identifier { SuperFieldAccess(None, ExpressionName(SimpleName(i))) }
+  | n=expression_name PERIOD SUPER PERIOD i=identifier { SuperFieldAccess(Some n, ExpressionName(SimpleName(i))) }
 
 (* 15.12 *)
 (*
@@ -237,7 +235,7 @@ assignment_expression:
 
 left_hand_side:
   | n=expression_name { n }
-  /* | a=field_access { a } */
+  | a=field_access { a }
   | a=array_access { a }
 
 assignment_operator:
