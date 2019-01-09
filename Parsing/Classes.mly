@@ -23,7 +23,7 @@ import_declarations:
 (* section 7.4 *)
 
 package_declaration:
-  | a=annotations? PACKAGE p=package_name { PackageDeclaration_("a", "p") } 
+  | a=annotations? PACKAGE p=package_name SEMICOLON { PackageDeclaration_("a", "p") }
 
 (* section 7.5 *)
 
