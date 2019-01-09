@@ -34,42 +34,26 @@ floating_point_type:
 
 (* 4.3 *)
 reference_type:
-  | t=class_or_interface_type { Byte }
-  (*| type_variable { "" } *)
-  (*| array_type { "" } *)
+  | t=class_or_interface_type { t }
+  /* | t=type_variable { t } */
+  | t=array_type { t }
 
-class_or_interface_type:
-  | t=class_type { t }
-  | t=interface_type { t }
-
-%public class_type:
-  | ds=type_decl_specifier a=type_arguments? { ParameterizedType(ds, a) }
-
-%public interface_type:
-  | ds=type_decl_specifier a=type_arguments? { ParameterizedType(ds, a) }
-
-type_decl_specifier:
-  | n=name { n }
-  /* | class_or_interface_type PERIOD i=identifier { ExpressionName(SimpleName(i)) } */
-
-(* name is also defined in 6.5 but with context distinction *)
-(*
-%public name:
-  | identifier { Tree("name", [Leaf($1)])  }
-  | name PERIOD identifier { Tree("name", [$1; Leaf($3)])  }
-*)
+%public class_or_interface_type:
+  | n=name { SimpleType(n) }
+  | n=name a=type_arguments { ParameterizedType(SimpleType(n), Some a) }
+  /* | t=class_or_interface_type PERIOD i=identifier a=type_arguments { ParameterizedType(QualifiedType(t, ExpressionName(SimpleName(i))), Some a) } */
+  /* | t=class_or_interface_type PERIOD i=identifier { QualifiedType(t, ExpressionName(SimpleName(i))) } */
+  
 
 type_variable:
-  | identifier { Tree("type_variable", [Leaf($1)])  }
+  | i=identifier { SimpleType(ExpressionName(SimpleName(i))) }
 
-(*
 array_type:
-  | type_ L_BRACKET R_BRACKET { "" }
-*)
+  | t=type_ L_BRACKET R_BRACKET { ArrayType(t) }
 
 (* 4.4 *)
 %public type_parameter:
-  | type_variable type_bound? { Treeopt("type_parameter", [(Some $1); $2])  }
+  | type_variable type_bound? { Treeopt("type_parameter", [(Some (Type($1))); $2])  }
 
 type_bound:
   | EXTENDS class_or_interface_type additional_bound_list? { Treeopt("type_bound", [Some(Type($2)); $3])  }
@@ -79,7 +63,7 @@ additional_bound_list:
   | additional_bound { Tree("additional_bound_list", [$1])  }
 
 additional_bound:
-  | AND_BITWISE interface_type { Tree("additional_bound", [Type($2)])  }
+  | AND_BITWISE class_or_interface_type { Tree("additional_bound", [Type($2)])  }
 
 (* 4.5 *)
 type_arguments:

@@ -16,8 +16,8 @@ primary:
 
 primary_no_new_array:
   | l=literal { l }
-  /* | t=type_ PERIOD CLASS { TypeLiteral(Some t) } */
-  /* | VOID PERIOD CLASS { TypeLiteral(None) } */
+  | t=type_ PERIOD CLASS { TypeLiteral(Some t) }
+  | VOID PERIOD CLASS { TypeLiteral(None) }
   | THIS { ThisExpression(None) }
   | n=name PERIOD THIS { ThisExpression(Some n) }
   | L_PAR e=expression R_PAR { ParenthesizedExpression(e) }

@@ -61,11 +61,11 @@ and type_ =
   | Double
   | Boolean
   | Void
-  (* | QualifiedType of type_ * Annotation * SimpleName *)
-  (* | SimpleType of Annotation * *)
+  | QualifiedType of type_ * expression
+  | SimpleType of expression
   | WildcardType of type_ option
   | ArrayType of type_
-  | ParameterizedType of expression * type_ list option
+  | ParameterizedType of type_ * type_ list option
   (* | UnionType *)
   (* | IntersectionType *)
 and expression =
@@ -277,7 +277,44 @@ and print_memberValuePair mvp deep =
             print_string_deep "MemberValuePair" deep;
             print_string_deep n (deep + 1);
             print_expression e (deep + 1)
-
+and print_type t deep=
+    match t with
+        | Byte -> print_newline(); print_d deep; print_string "Byte"
+        | Short -> print_newline(); print_d deep; print_string "Short"
+        | Char -> print_newline(); print_d deep; print_string "Char"
+        | Int -> print_newline(); print_d deep; print_string "Int"
+        | Long -> print_newline(); print_d deep; print_string "Long"
+        | Float -> print_newline(); print_d deep; print_string "Float"
+        | Double -> print_newline(); print_d deep; print_string "Double"
+        | Boolean -> print_newline(); print_d deep; print_string "Boolean"
+        | Void -> print_newline(); print_d deep; print_string "Void"
+        | QualifiedType (t, e) ->
+            print_newline();
+            print_d deep;
+            print_string "QualifiedType";
+            print_type t (deep+1);
+            print_expression e (deep+1);
+        | SimpleType (e) ->
+            print_newline();
+            print_d deep;
+            print_string "SimpleType";
+            print_expression e (deep+1);
+        | WildcardType (t) ->
+            print_newline();
+            print_d deep;
+            print_string "WildcardType";
+            apply_opt print_type t (deep+1)
+        | ArrayType (t) ->
+            print_newline();
+            print_d deep;
+            print_string "ArrayType";
+            print_type t (deep+1)
+        | ParameterizedType (t, tl) ->
+            print_newline();
+            print_d deep;
+            print_string "ParameterizedType";
+            print_type t (deep+1);
+            apply_opt_list print_type tl (deep+1)
 and print_expression e deep =
     let rec print_expression_list s deep =
         match s with
@@ -410,6 +447,12 @@ and print_expression e deep =
         print_string ("ThisExpression");
         print_opt_expression e (deep+1);
     in
+    let print_type_literal t deep =
+        print_newline ();
+        print_d deep;
+        print_string ("TypeLiteral");
+        apply_opt print_type t (deep+1);
+    in
     match e with
         | NormalAnnotation(tn, evpL) ->
             print_string_deep "NormalAnnotation" deep;
@@ -441,6 +484,7 @@ and print_expression e deep =
         | StringLiteral (string_) -> print_string_literal string_ deep
         | SuperFieldAccess(e1, e2) -> print_super_field_access e1 e2 deep
         | ThisExpression (e) -> print_this_expression e deep
+        | TypeLiteral (t) -> print_type_literal t deep
 ;;
 
 let print_opt_expression e deep=
@@ -681,7 +725,7 @@ let rec print_bodyDeclaration bd deep =
             print_string_deep t (deep + 1);
             apply_list print_variableDeclaration vdL (deep + 1)
 ;;
-            
+
 
 let print_compilationUnit cu deep =
     match cu with

@@ -72,15 +72,15 @@ type_parameter_list: (* typeParameter list *) (* TODO *)
 
 (* SECTION 8.1.4 *)
 super:
-  | EXTENDS class_type { Tree("super", [Type($2)])  }
+  | EXTENDS class_or_interface_type { Tree("super", [Type($2)])  }
 
 (* SECTION 8.1.5 *)
 interfaces:
   | IMPLEMENTS interface_type_list { Tree("interfaces", [$2])  }
 
 interface_type_list:
-  | interface_type { Treeopt("interface_type_list", [None; (Some (Type($1)))])  }
-  | interface_type_list COMMA interface_type { Treeopt("interface_type_list", [(Some $1); (Some (Type($3)))])  }
+  | class_or_interface_type { Treeopt("interface_type_list", [None; (Some (Type($1)))])  }
+  | interface_type_list COMMA class_or_interface_type { Treeopt("interface_type_list", [(Some $1); (Some (Type($3)))])  }
 
 (* SECTION 8.1.6 *)
 class_body: (* bodyDeclaration list option *)
