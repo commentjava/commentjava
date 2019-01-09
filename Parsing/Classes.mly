@@ -62,7 +62,8 @@ class_modifier:
 
 (* section 9.7 Annotations *)
 annotations:
-  | annotations? annotation { Treeopt("annotations", [$1; (Some $2)])  }
+  | annotation { Treeopt("annotations", [(Some $1); None])  }
+  | annotations annotation { Treeopt("annotations", [(Some $1); (Some $2)])  }
 
 annotation:
   | normal_annotation { Tree("annotation", [$1])  }
