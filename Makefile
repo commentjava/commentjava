@@ -1,5 +1,5 @@
 OCAMLBUILD := ocamlbuild
-OCAMLFLAGS := -yaccflag --dump
+OCAMLFLAGS := -yaccflag --dump -yaccflag --log-automaton=2
 
 EXT := native
 
@@ -47,6 +47,6 @@ list-errors: $(MAIN).native
 
 # Clean receipes
 clean:
-	rm $(ERRORS_FILE)
+	rm -f $(ERRORS_FILE)
 	$(OCAMLBUILD) -clean
 
