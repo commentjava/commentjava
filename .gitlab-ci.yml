@@ -8,6 +8,7 @@ build-test:
   artifacts:
     untracked: true
   before_script:
+    - opam update
     - opam install -q -y menhir
   script:
     - make test-all

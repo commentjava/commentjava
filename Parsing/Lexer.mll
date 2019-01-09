@@ -2,9 +2,10 @@
   open Parser
 
   let create_error_message (lexbuf: Lexing.lexbuf) =
-    lexbuf.lex_curr_p.pos_fname ^ ": cannot find symbol"
-    ^ ":line " ^ (string_of_int lexbuf.lex_curr_p.pos_lnum)
-    ^ ":column " ^ (string_of_int (lexbuf.lex_curr_p.pos_cnum - lexbuf.lex_curr_p.pos_bol))
+    lexbuf.lex_curr_p.pos_fname ^ ": unknown symbol "
+    ^ "'" ^ Lexing.lexeme lexbuf ^ "' "
+    ^ "line " ^ (string_of_int lexbuf.lex_curr_p.pos_lnum)
+    ^ " column " ^ (string_of_int (lexbuf.lex_curr_p.pos_cnum - lexbuf.lex_curr_p.pos_bol))
 }
 
 let java_letter = ['a'-'z' 'A'-'Z' '_' '$']
