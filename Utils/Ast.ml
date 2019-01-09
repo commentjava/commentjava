@@ -79,7 +79,7 @@ and expression =
   | SuperFieldAccess of expression option * expression
   (* | SuperMethodInvocation *)
   (* | SuperMethodReference *)
-  (* | ThisExpression *)
+  | ThisExpression of expression option
   (* | TypeLiteral *)
   (* | TypeMethodReference *)
   (* | VariableDeclarationExpression *)
@@ -362,6 +362,12 @@ and print_expression e deep =
         print_opt_expression e1 (deep+1);
         print_expression e2 (deep+1);
     in
+    let print_this_expression e deep =
+        print_newline ();
+        print_d deep;
+        print_string ("ThisExpression");
+        print_opt_expression e (deep+1);
+    in
     match e with
         | NormalAnnotation(tn, evpL) ->
             print_string_deep ("NormalAnnotation : " ^ tn) deep;
@@ -386,6 +392,7 @@ and print_expression e deep =
         | PrefixExpression (e, op) -> print_prefix_expression e op deep
         | StringLiteral (string_) -> print_string_literal string_ deep
         | SuperFieldAccess(e1, e2) -> print_super_field_access e1 e2 deep
+        | ThisExpression (e) -> print_this_expression e deep
 ;;
 
 let print_opt_expression e deep=

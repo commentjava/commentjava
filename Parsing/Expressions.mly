@@ -18,8 +18,8 @@ primary_no_new_array:
   | l=literal { l }
   (*| t=type_ PERIOD CLASS { TypeLiteral(t) }*)
   (*| t=VOID PERIOD CLASS { TypeLiteral(t) }*)
-  (* | THIS { ThisExpression(None) }
-  | n=class_name PERIOD THIS { ThisExpression(Some n) } *)
+  | THIS { ThisExpression(None) }
+  | n=name PERIOD THIS { ThisExpression(Some n) }
   | L_PAR e=expression R_PAR { ParenthesizedExpression(e) }
   (*| class_instance_creation_expression { "" } *)
   | a=field_access { a }
