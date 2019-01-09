@@ -11,8 +11,8 @@
 (* section 7.3 *)
 compilation_unit:
   | t=type_declarations? EOF { CompilationUnit_(None, None, t) }
-  | i=import_declarations t=type_declarations? EOF { CompilationUnit_(None, None, t) }
-  | p=package_declaration i=import_declarations? t=type_declarations? EOF { CompilationUnit_(None, None, t) } 
+  | i=import_declarations t=type_declarations? EOF { CompilationUnit_(None, (Some i), t) }
+  | p=package_declaration i=import_declarations? t=type_declarations? EOF { CompilationUnit_((Some p), i, t) } 
 
 type_declarations:
   | t=type_declaration { [t] }
@@ -25,15 +25,15 @@ import_declarations:
 (* section 7.4 *)
 
 package_declaration:
-  | a=annotations? PACKAGE p=name SEMICOLON { PackageDeclaration_("a", "p") }
+  | a=annotations? PACKAGE p=name SEMICOLON { PackageDeclaration_(a, p) }
 
 (* section 7.5 *)
 
 import_declaration:
-  | IMPORT STATIC n=name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(true, "n", true) }
-  | IMPORT n=name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(false, "n", true) }
-  | IMPORT STATIC n=name SEMICOLON { ImportDeclaration_(true, "n", false) }
-  | IMPORT n=name SEMICOLON { ImportDeclaration_(false, "n", false) }
+  | IMPORT STATIC n=name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(true, n, true) }
+  | IMPORT n=name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(false, n, true) }
+  | IMPORT STATIC n=name SEMICOLON { ImportDeclaration_(true, n, false) }
+  | IMPORT n=name SEMICOLON { ImportDeclaration_(false, n, false) }
 
 (* section 7.6 *)
 
@@ -73,7 +73,7 @@ annotation:
   | single_element_annotation { SingleMemberAnnotation (* Tree("annotation", [$1])*)  }
 
 normal_annotation:
-  | AT tn=name L_PAR evpL=element_value_pairs? R_PAR { NormalAnnotation("tn", evpL) } /* TODO use real type name instead of string */
+  | AT tn=name L_PAR evpL=element_value_pairs? R_PAR { NormalAnnotation(tn, evpL) } (* TODO use real type name instead of string *)
 
 element_value_pairs:
   | evp=element_value_pair { [evp] }

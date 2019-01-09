@@ -64,7 +64,7 @@ and type_ =
   (* | UnionType *)
   (* | IntersectionType *)
 and expression =
-    NormalAnnotation of string (* type name *) * memberValuePair list option (* element valie pairs *)
+    NormalAnnotation of expression (* type name *) * memberValuePair list option (* element valie pairs *)
   | MarkerAnnotation
   | SingleMemberAnnotation
   | Modifier (* because of ExtendedModifier *) of string
@@ -137,10 +137,10 @@ type bodyDeclaration =
   (* | MethodDeclaration *)
 
 type importDeclaration =
-    ImportDeclaration_ of bool (* static *) * string (* name *) * bool (* .* : import all *)
+    ImportDeclaration_ of bool (* static *) * expression (* name *) * bool (* .* : import all *)
 
 type packageDeclaration =
-    PackageDeclaration_ of string (* annotations *) * string (* name *)
+    PackageDeclaration_ of expression list option (* annotations *) * expression (* name *)
 
 type compilationUnit =
     CompilationUnit_ of packageDeclaration option (* PackageDeclaration *) * importDeclaration list option (* ImportDeclaration *) * bodyDeclaration list option
@@ -389,10 +389,13 @@ and print_expression e deep =
     in
     match e with
         | NormalAnnotation(tn, evpL) ->
-            print_string_deep ("NormalAnnotation : " ^ tn) deep;
+            print_string_deep "NormalAnnotation" deep;
+            print_expression tn (deep + 1);
             apply_opt_list print_memberValuePair evpL (deep + 1)
-        | MarkerAnnotation -> ()
-        | SingleMemberAnnotation -> ()
+        | MarkerAnnotation -> 
+            print_string_deep "MarkerAnnotation" deep
+        | SingleMemberAnnotation -> 
+            print_string_deep "SingleMemberAnnotation" deep
         | Modifier (s) ->
             print_string_deep ("Modifier : " ^ s) deep
         | ArrayAccess(e1, e2) -> print_array_access e1 e2 deep
@@ -621,8 +624,10 @@ let print_packageDeclaration p deep =
     match p with
         | PackageDeclaration_(annotations, name) ->
             print_string_deep "PackageDeclaration" deep;
-            print_string_deep "annotations" deep;
-            print_string_deep "name" deep
+            apply_opt_list print_expression annotations (deep + 1);
+            (*print_string_deep "annotations" deep;*)
+            print_expression name (deep + 1)
+            (*print_string_deep "name" deep*)
 ;;
 
 let print_importDeclaration i deep =
@@ -630,7 +635,7 @@ let print_importDeclaration i deep =
         | ImportDeclaration_(static, name, import_all) ->
             print_string_deep "ImportDeclaration" deep;
             print_string_deep (string_of_bool static) (deep + 1);
-            print_string_deep "name" (deep + 1);
+            print_expression name (deep + 1);
             print_string_deep (string_of_bool import_all) (deep + 1)
 ;;
 
