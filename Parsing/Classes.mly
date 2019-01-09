@@ -10,7 +10,9 @@
 
 (* section 7.3 *)
 compilation_unit:
-  | p=package_declaration? i=import_declarations? t=type_declarations? EOF { CompilationUnit_(None, None, t) }
+  | t=type_declarations? EOF { CompilationUnit_(None, None, t) }
+  | i=import_declarations t=type_declarations? EOF { CompilationUnit_(None, None, t) }
+  | p=package_declaration i=import_declarations? t=type_declarations? EOF { CompilationUnit_(None, None, t) } 
 
 type_declarations:
   | t=type_declaration { [t] }
@@ -23,7 +25,7 @@ import_declarations:
 (* section 7.4 *)
 
 package_declaration:
-  | a=annotations? PACKAGE n=name SEMICOLON { PackageDeclaration_("a", "n") }
+  | a=annotations? PACKAGE p=name SEMICOLON { PackageDeclaration_("a", "p") }
 
 (* section 7.5 *)
 
