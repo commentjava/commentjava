@@ -4,13 +4,13 @@
 
 
 %start compilation_unit
-%type <Ast.ast> compilation_unit
+%type <Ast.compilationUnit> compilation_unit
 
 %%
 
 (* section 7.3 *)
 compilation_unit:
-  | p=package_declaration? i=import_declarations? t=type_declarations? EOF { CompilationUnit(CompilationUnit_(None, None, t)) }
+  | p=package_declaration? i=import_declarations? t=type_declarations? EOF { CompilationUnit_(None, None, t) }
 
 type_declarations:
   | t=type_declaration { [t] }
@@ -44,21 +44,21 @@ type_declaration:
 (* section 8.1 *)
 
 class_declaration:
-  | cm=class_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body { ClassDeclaration(Some "cm", i, Some "tp", Some "s", Some "it", "cb") (*Treeopt("normal_class_declaration", [$1; (Some (Leaf($3))); $4; $5; $6; (Some $7)])*) }
+  | cm=class_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body { ClassDeclaration(cm, i, Some "tp", Some "s", Some "it", "cb") (*Treeopt("normal_class_declaration", [$1; (Some (Leaf($3))); $4; $5; $6; (Some $7)])*) }
 
 class_modifiers:
-  | class_modifier { Tree("class_modifiers", [$1]) }
-  | class_modifiers class_modifier { Tree("class_modifiers", [$1; $2]) }
+  | cm=class_modifier { [cm] }
+  | cm=class_modifier cms=class_modifiers { cm::cms }
 
 class_modifier:
-  | PUBLIC { Tree("class_modifier", [Leaf($1)]) }
-  | PROTECTED { Tree("class_modifier", [Leaf($1)]) }
-  | PRIVATE { Tree("class_modifier", [Leaf($1)]) }
-  | ABSTRACT { Tree("class_modifier", [Leaf($1)]) }
-  | STATIC { Tree("class_modifier", [Leaf($1)]) }
-  | FINAL { Tree("class_modifier", [Leaf($1)]) }
-  | STRICTFP { Tree("class_modifier", [Leaf($1)]) }
-  | annotation { Tree("class_modifier", [$1]) } (* TODO : isn't there a problem here? annotation -> annotations *)
+  | PUBLIC { Modifier("Public") }
+  | PROTECTED { Modifier("Protected") }
+  | PRIVATE { Modifier("Private") }
+  | ABSTRACT { Modifier("Abstract") }
+  | STATIC { Modifier("Static") }
+  | FINAL { Modifier("Final") }
+  | STRICTFP { Modifier("Strictfp") }
+  | annotation { Modifier("Annotation") } (* TODO : change to ...Annotation *)
 
 (* section 9.7 Annotations *)
 annotations:

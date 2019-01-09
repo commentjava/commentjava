@@ -45,7 +45,10 @@ type operator =
 
 
 type expression =
-    (* Annotation *)
+    NormalAnnotation
+  | MarkerAnnotation
+  | SingleMemberAnnotation
+  | Modifier (* because of ExtendedModifier *) of string
   | ArrayAccess of expression * expression
   (* | ArrayCreation *)
   | ArrayInitializer of expression list option
@@ -106,7 +109,7 @@ type statement =
 type bodyDeclaration =
   (* | AbstractTypeDeclaration_AnnotationTypeDeclaration *)
   (* | AbstractTypeDeclaration_EnumDeclaration *)
-  | ClassDeclaration of string option * string * string option * string option * string option * string (* ExtendedModifier list * Identifier * TypeParameter list * Type option * Type list * ClassBodyDeclaration list *)
+  | ClassDeclaration of expression list option * string * string option * string option * string option * string (* ExtendedModifier list * Identifier * TypeParameter list * Type option * Type list * ClassBodyDeclaration list *)
   (* | AbstractTypeDeclaration_TypeDeclaration_InterfaceDeclaration *)
   (* | AnnotationTypeMemberDeclaration *)
   (* | EnumConstantDeclaration *)
@@ -128,9 +131,15 @@ type ast =
     | Treeopt of string * (ast option list)
     | Expression of expression
     | Statement of statement
-    | CompilationUnit of compilationUnit
     | Leaf of string
 
+
+(*                    *)
+(* PRINTING FUNCTIONS *)
+(*                    *)
+
+
+(* Standard functions for printing and applying *)
 let rec print_d d =
     if d <= 0 then
         ()
@@ -140,6 +149,31 @@ let rec print_d d =
             print_d (d - 1)
         end
 ;;
+let print_string_deep s deep =
+    print_newline ();
+    print_d deep;
+    print_string s
+;;
+
+let apply_opt f aOpt deep =
+    match aOpt with
+        | None -> ()
+        | Some a -> f a deep
+;;
+
+let rec apply_list f aList deep =
+    match aList with
+        | [] -> ()
+        | a::restList -> f a deep; apply_list f restList deep
+;;
+
+let rec apply_opt_list f aOptList deep =
+    apply_opt (apply_list f) aOptList deep
+;;
+(**)
+
+
+
 
 let print_global_name name =
     match name with
@@ -319,6 +353,11 @@ let rec print_expression e deep =
         print_expression e2 (deep+1);
     in
     match e with
+        | NormalAnnotation -> ()
+        | MarkerAnnotation -> ()
+        | SingleMemberAnnotation -> ()
+        | Modifier (s) ->
+            print_string_deep ("Modifier : " ^ s) deep
         | ArrayAccess(e1, e2) -> print_array_access e1 e2 deep
         | ArrayInitializer(e) -> print_array_initializer e deep
         | Assignment (lfs, op, e) -> print_assignment lfs op e deep
@@ -539,24 +578,6 @@ let rec print_bodyDeclaration bd deep =
         | ClassDeclaration (jdOpt, emList, i, tpList, tOpt, tList, cbdList) -> print_classDeclaration jdOpt emList i tpList tOpt tList cbdList deep
 ;;
 *)
-(**)
-let print_string_deep s deep =
-    print_newline ();
-    print_d deep;
-    print_string s
-;;
-
-let apply_opt f aOpt deep =
-    match aOpt with
-        | None -> ()
-        | Some a -> f a deep
-;;
-
-let rec apply_list f aList deep =
-    match aList with
-        | [] -> ()
-        | a::restList -> f a deep; apply_list f restList deep
-;;
 
 let print_packageDeclaration p deep =
     match p with
@@ -579,7 +600,7 @@ let print_bodyDeclaration bd deep =
     match bd with
         | ClassDeclaration(cm, i, tp, s, it, cb) ->
             print_string_deep "ClassDeclaration" deep;
-            print_string_deep "ClassModifier" (deep + 1);
+            apply_opt_list print_expression cm (deep + 1);
             print_string_deep i (deep + 1);
             print_string_deep "TypeParameter" (deep + 1);
             print_string_deep "super" (deep + 1);
@@ -628,7 +649,6 @@ let print_ast ast =
           | Leaf (name) -> print_leaf name deep
           | Expression (e) -> print_expression e (deep + 1)
           | Statement (s) -> print_statement s (deep + 1)
-          | CompilationUnit (cu) -> print_compilationUnit cu (deep + 1)
     in
     print_ast_rec ast 0
 ;;

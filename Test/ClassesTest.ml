@@ -11,7 +11,7 @@ let get_nexttoken lexbuf =
 
 let rec print_lexbuf lexbuf =
   let exp = compilation_unit get_nexttoken lexbuf  in
-    print_ast exp
+    print_compilationUnit exp 0
 
 let check_expression file =
   (* Raise an execption if the file can't be interpreted by the lexer *)
