@@ -17,8 +17,8 @@ type_declarations:
   | ts=type_declarations t=type_declaration { ts @ [t] }
 
 import_declarations:
-  | i=import_declaration { [i] }
   | is=import_declarations i=import_declaration { is @ [i] }
+  | i=import_declaration { [i] }
 
 (* section 7.4 *)
 
@@ -28,10 +28,10 @@ package_declaration:
 (* section 7.5 *)
 
 import_declaration:
-  | IMPORT STATIC n=type_name PERIOD MULTIPLY { ImportDeclaration_(true, "n", true) }
-  | IMPORT n=type_name PERIOD MULTIPLY { ImportDeclaration_(false, "n", true) }
-  | IMPORT STATIC n=type_name { ImportDeclaration_(true, "n", false) }
-  | IMPORT n=type_name { ImportDeclaration_(false, "n", false) }
+  | IMPORT STATIC n=type_name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(true, "n", true) }
+  | IMPORT n=type_name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(false, "n", true) }
+  | IMPORT STATIC n=type_name SEMICOLON { ImportDeclaration_(true, "n", false) }
+  | IMPORT n=type_name SEMICOLON { ImportDeclaration_(false, "n", false) }
 
 (* section 7.6 *)
 
