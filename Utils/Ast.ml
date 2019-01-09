@@ -45,7 +45,24 @@ type operator =
 
 type memberValuePair =
   | MemberValuePair of string (* name *) * string
-
+and type_ =
+  (*| NameQualifiedType of ExpressionName (* * Annotation *) * SimpleName *)
+  | Byte
+  | Short
+  | Char
+  | Int
+  | Long
+  | Float
+  | Double
+  | Boolean
+  | Void
+  (* | QualifiedType of type_ * Annotation * SimpleName *)
+  (* | SimpleType of Annotation * *)
+  | WildcardType of type_ option
+  | ArrayType of type_
+  | ParameterizedType of expression * type_ list option
+  (* | UnionType *)
+  (* | IntersectionType *)
 and expression =
     NormalAnnotation of string (* type name *) * memberValuePair list option (* element valie pairs *)
   | MarkerAnnotation
@@ -80,7 +97,7 @@ and expression =
   (* | SuperMethodInvocation *)
   (* | SuperMethodReference *)
   | ThisExpression of expression option
-  (* | TypeLiteral *)
+  | TypeLiteral of type_ option
   (* | TypeMethodReference *)
   (* | VariableDeclarationExpression *)
 
@@ -133,6 +150,8 @@ type ast =
     | Treeopt of string * (ast option list)
     | Expression of expression
     | Statement of statement
+    | Type of type_
+    | CompilationUnit of compilationUnit
     | Leaf of string
 
 

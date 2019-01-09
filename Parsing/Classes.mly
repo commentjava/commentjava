@@ -110,7 +110,7 @@ type_parameter_list:
 (* SECTION 8.1.4 *)
 
 super:
-  | EXTENDS class_type { Tree("super", [$2])  }
+  | EXTENDS class_type { Tree("super", [Type($2)])  }
 
 (* SECTION 8.1.5 *)
 
@@ -118,8 +118,8 @@ interfaces:
   | IMPLEMENTS interface_type_list { Tree("interfaces", [$2])  }
 
 interface_type_list:
-  | interface_type { Treeopt("interface_type_list", [None; (Some $1)])  }
-  | interface_type_list COMMA interface_type { Treeopt("interface_type_list", [(Some $1); (Some $3)])  }
+  | interface_type { Treeopt("interface_type_list", [None; (Some (Type($1)))])  }
+  | interface_type_list COMMA interface_type { Treeopt("interface_type_list", [(Some $1); (Some (Type($3)))])  }
 
 (* SECTION 8.1.6 *)
 
@@ -140,7 +140,7 @@ class_member_declaration:
 
 (* SECTION 8.3*)
 field_declaration:
-  | field_modifiers? type_ variable_declarators SEMICOLON { Treeopt("field_declaration", [$1; (Some $2); (Some $3)])  }
+  | field_modifiers? type_ variable_declarators SEMICOLON { Treeopt("field_declaration", [$1; (Some (Type($2))); (Some $3)])  }
 
 field_modifiers:
   | field_modifier { Treeopt("field_modifiers", [None; (Some $1)])  } (* TODO : good optimization? *)
