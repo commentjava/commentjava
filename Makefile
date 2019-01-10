@@ -1,4 +1,4 @@
-MENHIR := MENHIR
+MENHIR := menhir
 OCAMLBUILD := ocamlbuild
 MENHIRFLAGS := --table --dump
 OCAMLFLAGS := -use-ocamlfind -use-menhir -menhir "$(MENHIR) $(MENHIRFLAGS)" -package menhirLib
