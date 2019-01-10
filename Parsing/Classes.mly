@@ -9,27 +9,27 @@
 %%
 
 (* section 7.3 *)
-compilation_unit:
+compilation_unit: (* compilationUnit *)
   | t=type_declarations? EOF { CompilationUnit_(None, None, t) }
   | i=import_declarations t=type_declarations? EOF { CompilationUnit_(None, (Some i), t) }
   | p=package_declaration i=import_declarations? t=type_declarations? EOF { CompilationUnit_((Some p), i, t) } 
 
-type_declarations:
+type_declarations: (* bodyDeclaration list *)
   | t=type_declaration { [t] }
   | ts=type_declarations t=type_declaration { ts @ [t] }
 
-import_declarations:
+import_declarations: (* importDeclaration list *)
   | is=import_declarations i=import_declaration { is @ [i] }
   | i=import_declaration { [i] }
 
 (* section 7.4 *)
 
-package_declaration:
+package_declaration: (* packageDeclaration *)
   | a=annotations? PACKAGE p=name SEMICOLON { PackageDeclaration_(a, p) }
 
 (* section 7.5 *)
 
-import_declaration:
+import_declaration: (* importDeclaration *)
   | IMPORT STATIC n=name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(true, n, true) }
   | IMPORT n=name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(false, n, true) }
   | IMPORT STATIC n=name SEMICOLON { ImportDeclaration_(true, n, false) }
@@ -37,7 +37,7 @@ import_declaration:
 
 (* section 7.6 *)
 
-type_declaration:
+type_declaration: (* bodyDeclaration *)
   | c=class_declaration { c }
 (* TODO interface *)
 (* TODO enum declaration *)
@@ -45,14 +45,14 @@ type_declaration:
 
 (* section 8.1 *)
 
-class_declaration:
+class_declaration: (* bodyDeclaration *)
   | cm=class_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body { ClassDeclaration(cm, i, Some "tp", Some "s", Some "it", "cb") (*Treeopt("normal_class_declaration", [$1; (Some (Leaf($3))); $4; $5; $6; (Some $7)])*) }
 
-class_modifiers:
+class_modifiers: (* expression list *)
   | cm=class_modifier { [cm] }
   | cm=class_modifier cms=class_modifiers { cm::cms }
 
-class_modifier:
+class_modifier: (* expression *)
   | PUBLIC { Modifier("Public") }
   | PROTECTED { Modifier("Protected") }
   | PRIVATE { Modifier("Private") }
@@ -60,51 +60,51 @@ class_modifier:
   | STATIC { Modifier("Static") }
   | FINAL { Modifier("Final") }
   | STRICTFP { Modifier("Strictfp") }
-  | a=annotation { a } (* TODO : change to ...Annotation *)
+  | a=annotation { a } 
 
 (* section 9.7 Annotations *)
-annotations:
+annotations: (* expression list *)
   | an=annotation { [an] }
   | an=annotation ans=annotations { an::ans }
 
-annotation:
-  | na=normal_annotation { na (*Tree("annotation", [$1])*)  }
-  | marker_annotation { MarkerAnnotation (* Tree("annotation", [$1]) *)  }
-  | single_element_annotation { SingleMemberAnnotation (* Tree("annotation", [$1])*)  }
+annotation: (* expression *)
+  | na=normal_annotation { na }
+  | ma=marker_annotation { ma }
+  | sea=single_element_annotation { sea }
 
-normal_annotation:
-  | AT tn=name L_PAR evpL=element_value_pairs? R_PAR { NormalAnnotation(tn, evpL) } (* TODO use real type name instead of string *)
+normal_annotation: (* expression *)
+  | AT tn=name L_PAR evpL=element_value_pairs? R_PAR { NormalAnnotation(tn, evpL) }
 
-element_value_pairs:
+element_value_pairs: (* memberValuePair list *)
   | evp=element_value_pair { [evp] }
   | evp=element_value_pair COMMA evpL=element_value_pairs { evp::evpL }
 
-element_value_pair:
-  | i=identifier ASSIGN ev=element_value { MemberValuePair(i, "ev") }
+element_value_pair: (* memberValuePair *)
+  | i=identifier ASSIGN ev=element_value { MemberValuePair(i, ev) }
 
-element_value:
-  | conditional_expression { Tree("element_value", [Expression($1)])  }
-  | annotation { Tree("element_value", [])  }
-  | element_value_array_initializer { Tree("element_value", [$1])  }
+element_value: (* expression *)
+  | ce=conditional_expression { ce }
+  | an=annotation { an }
+  | evai=element_value_array_initializer { evai }
 
-element_value_array_initializer:
-  | L_BRACE element_values? COMMA? { Treeopt("element_value_array_initializer", [$2])  } (* TODO : are we sure of this one? *)
+element_value_array_initializer: (*expression *)
+  | L_BRACE ev=element_values? COMMA? R_BRACE { ArrayInitializer(ev) }
 
-element_values:
-  | element_value { Treeopt("element_values", [None; (Some $1)])  }
-  | element_values COMMA element_value { Treeopt("element_values", [(Some $1); (Some $3)])  }
+element_values: (* expression list *)
+  | ev=element_value { [ev] }
+  | ev=element_value COMMA evs=element_values { ev::evs }
 
-single_element_annotation:
-  | AT name L_PAR element_value R_PAR { Tree("single_element_annotation", [Expression($2); $4])  }
+single_element_annotation: (* expression *)
+  | AT n=name L_PAR ev=element_value R_PAR { SingleMemberAnnotation(n, ev)  }
 
-marker_annotation:
-  | AT name { Tree("marker_annotation", [Expression($2)])  }
+marker_annotation: (* expression *)
+  | AT n=name { MarkerAnnotation(n) }
 
-type_parameters:
-  | LOWER type_parameter_list GREATER { Tree("type_parameters", [$2]) }
+type_parameters: (* typeParameter list *) (* TODO *)
+  | LOWER tpl=type_parameter_list GREATER { tpl }
 
-type_parameter_list:
-  | type_parameter_list PERIOD type_parameter { Tree("type_parameter_list", [$1; $3])  }
+type_parameter_list: (* typeParameter list *) (* TODO *)
+  | type_parameter PERIOD type_parameter_list { Tree("type_parameter_list", [$1; $3])  }
   | type_parameter { Tree("type_parameter_list", [$1])  }
 
 (* SECTION 8.1.4 *)

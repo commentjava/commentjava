@@ -43,8 +43,10 @@ type operator =
   | AND_LOGICAL
   | OR_LOGICAL
 
-type memberValuePair =
-  | MemberValuePair of string (* name *) * string
+type typeParameter = (*needs types *)
+  | TypeParameter of expression list option (*extendedModifier*) * string (*identifier*) * string list option (*extends: Type*)
+and memberValuePair =
+  | MemberValuePair of string (* name *) * expression
 and type_ =
   (*| NameQualifiedType of ExpressionName (* * Annotation *) * SimpleName *)
   | Byte
@@ -65,8 +67,8 @@ and type_ =
   (* | IntersectionType *)
 and expression =
     NormalAnnotation of expression (* type name *) * memberValuePair list option (* element valie pairs *)
-  | MarkerAnnotation
-  | SingleMemberAnnotation
+  | MarkerAnnotation of expression (*type name*)
+  | SingleMemberAnnotation of expression (*type name*) * expression
   | Modifier (* because of ExtendedModifier *) of string
   | ArrayAccess of expression * expression
   (* | ArrayCreation *)
@@ -248,12 +250,20 @@ let print_opt_string s deep =
         | Some str -> print_newline (); print_d deep; print_string str
 ;;
 
-let rec print_memberValuePair mvp deep =
+let rec print_typeParameter tp deep =
+    match tp with
+        | TypeParameter (em, i, tL) ->
+            print_string_deep "TypeParameter" deep;
+            apply_opt_list print_expression em (deep + 1);
+            print_string_deep i (deep + 1);
+            apply_opt_list print_string_deep tL (deep + 1)
+
+and print_memberValuePair mvp deep =
     match mvp with
         | MemberValuePair (n, e) ->
             print_string_deep "MemberValuePair" deep;
             print_string_deep n (deep + 1);
-            print_string_deep e (deep + 1) 
+            print_expression e (deep + 1)
 
 and print_expression e deep =
     let rec print_expression_list s deep =
@@ -392,10 +402,13 @@ and print_expression e deep =
             print_string_deep "NormalAnnotation" deep;
             print_expression tn (deep + 1);
             apply_opt_list print_memberValuePair evpL (deep + 1)
-        | MarkerAnnotation -> 
-            print_string_deep "MarkerAnnotation" deep
-        | SingleMemberAnnotation -> 
-            print_string_deep "SingleMemberAnnotation" deep
+        | MarkerAnnotation (tn) ->
+            print_string_deep "MarkerAnnotation" deep;
+            print_expression tn (deep + 1)
+        | SingleMemberAnnotation (tn, e) ->
+            print_string_deep "SingleMemberAnnotation" deep;
+            print_expression tn (deep + 1);
+            print_expression e (deep + 1)
         | Modifier (s) ->
             print_string_deep ("Modifier : " ^ s) deep
         | ArrayAccess(e1, e2) -> print_array_access e1 e2 deep
