@@ -1,3 +1,6 @@
+module I =
+  Parser.MenhirInterpreter
+
 let successCount = ref 0
 let failCount = ref 0
 
@@ -59,3 +62,7 @@ let test_dir dir assert_fct =
         | 0 -> print_endline (green ^ "SUCCESS\n" ^ reset_color);
         | _ -> print_endline (red ^ "FAILURE\n" ^ reset_color);
       exit !failCount;;
+
+let loop lexbuf result succeed fail =
+  let supplier = I.lexer_lexbuf_to_supplier Lexer.nexttoken lexbuf in
+  I.loop_handle succeed (fail lexbuf) supplier result

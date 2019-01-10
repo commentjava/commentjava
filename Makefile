@@ -1,5 +1,7 @@
+MENHIR := MENHIR
 OCAMLBUILD := ocamlbuild
-OCAMLFLAGS := -yaccflag --dump -yaccflag --log-automaton=2
+MENHIRFLAGS := --table --dump
+OCAMLFLAGS := -use-ocamlfind -use-menhir -menhir "$(MENHIR) $(MENHIRFLAGS)" -package menhirLib
 
 EXT := native
 

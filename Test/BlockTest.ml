@@ -3,9 +3,15 @@ open Ast
 
 let tests_dir = "Test/blocks_statements_files/"
 
-let rec print_lexbuf lexbuf =
-  let exp = block_main Lexer.nexttoken lexbuf  in
-    print_ast exp
+let fail lexbuf checkpoint =
+  ErrorHandling.report lexbuf checkpoint;
+  assert false
+
+let succeed ast =
+  Ast.print_ast ast
+
+let print_lexbuf lexbuf =
+  TestHelper.loop lexbuf (Incremental.block_main lexbuf.lex_curr_p) succeed fail
 
 let check_expression file =
   (* Raise an execption if the file can't be interpreted by the lexer *)
