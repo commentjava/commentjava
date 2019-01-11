@@ -29,8 +29,8 @@ let report lexbuf checkpoint =
       "%sLine %d: Col: %d-%d syntax error\n\n%!"
       red
       (startp.pos_lnum)
-      (startp.pos_cnum)
-      (endp.pos_cnum)
+      (startp.pos_cnum - startp.pos_bol + 1)
+      (endp.pos_cnum - endp.pos_bol + 1)
   ;
   Printf.fprintf stderr
       "Unexpected token '%s'\n%!"

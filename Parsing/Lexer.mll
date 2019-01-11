@@ -47,13 +47,21 @@ let space = [' ' '\t' '\x0C']
 let newline = ['\n' '\r'] | '\r' '\n'
 
 let eol_comment = "//" [^ '\n' '\r']* newline
+let traditional_comment_start = "/*"
+let traditional_comment_end = "*/"
+
+
 let traditional_comment = "/*" ([^'*'] | '*' [^'/'])* "*/"
 
-rule nexttoken = parse
+rule tradcomment = parse
+  | newline { Lexing.new_line lexbuf; tradcomment lexbuf }
+  | traditional_comment_end { nexttoken lexbuf }
+  | _ { tradcomment lexbuf }
+and nexttoken = parse
 
 (* Comments *)
-  | eol_comment    { Lexing.new_line lexbuf; nexttoken lexbuf }
-  | traditional_comment { nexttoken lexbuf }
+  | eol_comment    { Lexing.new_line lexbuf;  nexttoken lexbuf }
+  | traditional_comment_start { tradcomment lexbuf }
 
 (* White Space - 3.6 *)
   | newline        { Lexing.new_line lexbuf; nexttoken lexbuf }
