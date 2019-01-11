@@ -45,7 +45,7 @@ type_declaration: (* bodyDeclaration *)
 
 (* SECTION 8.1 *)
 %inline class_declaration: (* bodyDeclaration *)
-  | em=extended_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body { ClassDeclaration(em, i, Some "tp", Some "s", Some "it", cb) }
+  | em=extended_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body { ClassDeclaration(em, i, tp, s, it, cb) }
 
 (* SECTION 8.1.1 *)
 (* WARNING : Eclipse spec used -> class_modifiers replaced by extended_modifiers *)
@@ -64,24 +64,24 @@ extended_modifier: (* expression *)
   | a=annotation { a } 
 
 (* SECTION 8.1.2 *)
-type_parameters: (* typeParameter list *) (* TODO *)
+type_parameters: (* typeParameter list *)
   | LOWER tpl=type_parameter_list GREATER { tpl }
 
-type_parameter_list: (* typeParameter list *) (* TODO *)
-  | type_parameter PERIOD type_parameter_list { Tree("type_parameter_list", [$1; $3]) } (* TODO : isn't it COMMA ? *)
-  | type_parameter { Tree("type_parameter_list", [$1])  }
+type_parameter_list: (* typeParameter list *)
+  | tp=type_parameter COMMA tpl=type_parameter_list { tp::tpl }
+  | tp=type_parameter { [tp] }
 
 (* SECTION 8.1.4 *)
-super:
-  | EXTENDS class_or_interface_type { Tree("super", [Type($2)])  }
+super: (* type_ *)
+  | EXTENDS cit=class_or_interface_type { cit }
 
 (* SECTION 8.1.5 *)
-interfaces:
-  | IMPLEMENTS interface_type_list { Tree("interfaces", [$2])  }
+interfaces: (* type_ list *)
+  | IMPLEMENTS itl=interface_type_list { itl }
 
-interface_type_list:
-  | class_or_interface_type { Treeopt("interface_type_list", [None; (Some (Type($1)))])  }
-  | interface_type_list COMMA class_or_interface_type { Treeopt("interface_type_list", [(Some $1); (Some (Type($3)))])  }
+interface_type_list: (* type_ list *)
+  | cit=class_or_interface_type { [cit] }
+  | itl=interface_type_list COMMA cit=class_or_interface_type { itl @ [cit] }
 
 (* SECTION 8.1.6 *)
 %public class_body: (* bodyDeclaration list option *)
@@ -141,7 +141,7 @@ field_modifier: (* expression *)
 
 (* SECTION 9.1 *)
 %inline interface_declaration: (* bodyDeclaration *)
-  | em=extended_modifiers? INTERFACE i=identifier tp=type_parameters? ei=extends_interfaces? ib=interface_body { InterfaceDeclaration(em, i, "tp", ei, ib) }
+  | em=extended_modifiers? INTERFACE i=identifier tp=type_parameters? ei=extends_interfaces? ib=interface_body { InterfaceDeclaration(em, i, tp, ei, ib) }
 
 (* SECTION 9.1.1 *)
 (* WARNING : Eclipse spec used -> interface_modifiers replaced by extended_modifiers *)
@@ -149,7 +149,7 @@ field_modifier: (* expression *)
 (* SECTION 9.1.3 *)
 extends_interfaces: (* type_ list *)
   | EXTENDS it=class_or_interface_type { [it] }
-  | eis=extends_interfaces it=class_or_interface_type { eis @ [it] }
+  | eis=extends_interfaces COMMA it=class_or_interface_type { eis @ [it] }
 
 (* SECTION 9.1.4 *)
 interface_body: (* bodyDeclaration list option *)
@@ -206,10 +206,10 @@ single_element_annotation: (* expression *)
 
 (* SECTION 8.7 *)
 
-/* ExplicitConstructorInvocation:
+(* ExplicitConstructorInvocation:
   NonWildTypeArgumentsopt this ( ArgumentListopt ) ;
   NonWildTypeArgumentsopt super ( ArgumentListopt ) ;
-  Primary. NonWildTypeArgumentsopt super ( ArgumentListopt ) ; */
+  Primary. NonWildTypeArgumentsopt super ( ArgumentListopt ) ; *)
 
 %public non_wild_type_arguments:
   | LOWER tl=reference_type_list GREATER { tl }

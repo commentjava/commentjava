@@ -38,32 +38,32 @@ floating_point_type:
   /* | t=type_variable { t } */
   | t=array_type { t }
 
-%public class_or_interface_type:
+%public class_or_interface_type: (* type_ *)
   | n=name { SimpleType(n) }
   | n=name a=type_arguments { ParameterizedType(SimpleType(n), Some a) }
   /* | t=class_or_interface_type PERIOD i=identifier a=type_arguments { ParameterizedType(QualifiedType(t, ExpressionName(SimpleName(i))), Some a) } */
   /* | t=class_or_interface_type PERIOD i=identifier { QualifiedType(t, ExpressionName(SimpleName(i))) } */
 
 
-type_variable:
+type_variable: (* type_ *)
   | i=identifier { SimpleType(ExpressionName(SimpleName(i))) }
 
 array_type:
   | t=type_ L_BRACKET R_BRACKET { ArrayType(t) }
 
 (* 4.4 *)
-%public type_parameter:
-  | type_variable type_bound? { Treeopt("type_parameter", [(Some (Type($1))); $2])  }
+%public type_parameter: (* type_parameter *)
+  | tv=type_variable tb=type_bound? { TypeParameter(tv, tb) }
 
-type_bound:
-  | EXTENDS class_or_interface_type additional_bound_list? { Treeopt("type_bound", [Some(Type($2)); $3])  }
+type_bound: (* type_ list *)
+  | EXTENDS cit=class_or_interface_type abl=additional_bound_list? { match abl with Some l -> cit::l | None -> [cit] }
 
-additional_bound_list:
-  | additional_bound additional_bound_list { Tree("additional_bound_list", [$1; $2])  } (* TODO : optimize? *)
-  | additional_bound { Tree("additional_bound_list", [$1])  }
+additional_bound_list: (* type_ list *)
+  | ab=additional_bound abl=additional_bound_list { ab::abl }
+  | ab=additional_bound { [ab] }
 
-additional_bound:
-  | AND_BITWISE class_or_interface_type { Tree("additional_bound", [Type($2)])  }
+additional_bound: (* type_ *)
+  | AND_BITWISE cit=class_or_interface_type { cit }
 
 (* 4.5 *)
 %public type_arguments:

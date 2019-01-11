@@ -47,7 +47,7 @@ type variableDeclaration =
   | SingleVariableDeclaration
   | VariableDeclarationFragment of string (*identifier*) * int (*dimensions*) * expression option (*expression*)
 and typeParameter = (*needs types *)
-  | TypeParameter of expression list option (*extendedModifier*) * string (*identifier*) * string list option (*extends: Type*)
+  | TypeParameter of type_ (*identifier*) * type_ list option (*extends: Type*)
 and memberValuePair =
   | MemberValuePair of string (* name *) * expression
 and type_ =
@@ -108,13 +108,25 @@ and expression =
 and bodyDeclaration =
   (* | AbstractTypeDeclaration_AnnotationTypeDeclaration *)
   (* | AbstractTypeDeclaration_EnumDeclaration *)
-  | ClassDeclaration of expression list option * string * string option * string option * string option * bodyDeclaration list option (* ExtendedModifier list * Identifier * TypeParameter list * Type option * Type list * ClassBodyDeclaration list *)
-  | InterfaceDeclaration of expression list option (*interface_modifiers*) * string (*identifier*) * string (*type_parameters*) * type_ list option (*extends_interface*) * bodyDeclaration list option (*interface_body*)
+  | ClassDeclaration of expression list option (* Extended modifier list *) * string (* Identifier *) * typeParameter list option (* TypeParameter list *) * type_ option (* Type option *) * type_ list option (* Type list *) * bodyDeclaration list option (* ClassBodyDeclaration list *)
+  | InterfaceDeclaration of expression list option (*interface_modifiers*) * string (*identifier*) * typeParameter list option (*type_parameters*) * type_ list option (*extends_interface*) * bodyDeclaration list option (*interface_body*)
   (* | AnnotationTypeMemberDeclaration *)
   (* | EnumConstantDeclaration *)
   | FieldDeclaration of expression list option (*field modifiers*) * string (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
   (* | Initializer *)
   (* | MethodDeclaration *)
+(*
+type bodyDeclaration =
+  (* | AbstractTypeDeclaration_AnnotationTypeDeclaration *)
+  (* | AbstractTypeDeclaration_EnumDeclaration *)
+  | ClassDeclaration of expression list option (* Extended modifier list *) * string (* Identifier *) * typeParameter list option (* TypeParameter list *) * type_ option (* Type option *) * type_ list option (* Type list *) * bodyDeclaration list option (* ClassBodyDeclaration list *)
+  | InterfaceDeclaration of expression list option (*interface_modifiers*) * string (*identifier*) * typeParameter list option (*type_parameters*) * type_ list option (*extends_interface*) * bodyDeclaration list option (*interface_body*)
+  (* | AnnotationTypeMemberDeclaration *)
+  (* | EnumConstantDeclaration *)
+  | FieldDeclaration of expression list option (*field modifiers*) * string (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
+  (* | Initializer *)
+  (* | MethodDeclaration *)
+*)
 
 type statement =
     AssertStatement of expression list
@@ -264,11 +276,10 @@ let rec print_variableDeclaration vd deep =
 
 and print_typeParameter tp deep =
     match tp with
-        | TypeParameter (em, i, tL) ->
+        | TypeParameter (i, tL) ->
             print_string_deep "TypeParameter" deep;
-            apply_opt_list print_expression em (deep + 1);
-            print_string_deep i (deep + 1);
-            apply_opt_list print_string_deep tL (deep + 1)
+            print_type i (deep + 1);
+            apply_opt_list print_type tL (deep + 1)
 
 and print_memberValuePair mvp deep =
     match mvp with
@@ -662,25 +673,25 @@ and print_importDeclaration i deep =
 and print_bodyDeclaration bd deep =
     match bd with
         | ClassDeclaration(cm, i, tp, s, it, cbLO) ->
-            print_string_deep "ClassDeclaration" deep;
-            apply_opt_list print_expression cm (deep + 1);
-            print_string_deep i (deep + 1);
-            print_string_deep "TypeParameter" (deep + 1);
-            print_string_deep "super" (deep + 1);
-            print_string_deep "Interfaces" (deep + 1);
+            print_string_deep "ClassDeclaration"       deep;
+            apply_opt_list print_expression      cm   (deep + 1);
+            print_string_deep                    i    (deep + 1);
+            apply_opt_list print_typeParameter   tp   (deep + 1);
+            apply_opt print_type                 s    (deep + 1);
+            apply_opt_list print_type            it   (deep + 1);
             apply_opt_list print_bodyDeclaration cbLO (deep + 1)
         | InterfaceDeclaration (im, i, tp, ei, ib) ->
-            print_string_deep "InterfaceDeclaration" deep;
-            apply_opt_list print_expression im (deep + 1);
-            print_string_deep i (deep + 1);
-            print_string_deep "tp" (deep + 1);
-            (*apply_opt_list (**);*)
-            apply_opt_list print_bodyDeclaration ib (deep + 1);
+            print_string_deep "InterfaceDeclaration"   deep;
+            apply_opt_list print_expression      im   (deep + 1);
+            print_string_deep                    i    (deep + 1);
+            apply_opt_list print_typeParameter   tp   (deep + 1);
+            apply_opt_list print_type            ei   (deep + 1);
+            apply_opt_list print_bodyDeclaration ib   (deep + 1);
         | FieldDeclaration(fm, t, vdL) ->
             print_string_deep "FieldDeclaration" deep;
-            apply_opt_list print_expression fm (deep + 1);
-            print_string_deep t (deep + 1);
-            apply_list print_variableDeclaration vdL (deep + 1)
+            apply_opt_list print_expression      fm   (deep + 1);
+            print_string_deep                    t    (deep + 1);
+            apply_list print_variableDeclaration vdL  (deep + 1)
 ;;
 
 
