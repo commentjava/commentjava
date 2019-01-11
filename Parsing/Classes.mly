@@ -148,8 +148,8 @@ field_modifier: (* expression *)
 
 (* SECTION 9.1.3 *)
 extends_interfaces: (* type_ list *)
-  | EXTENDS it=interface_type  { [it] }
-  | eis=extends_interfaces it=interface_type { eis @ [it] }
+  | EXTENDS it=class_or_interface_type { [it] }
+  | eis=extends_interfaces it=class_or_interface_type { eis @ [it] }
 
 (* SECTION 9.1.4 *)
 interface_body: (* bodyDeclaration list option *)
