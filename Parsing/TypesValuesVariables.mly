@@ -13,7 +13,7 @@
   | t=reference_type { t }
 
 (* 4.2 *)
-primitive_type:
+%public primitive_type:
   | t=numeric_type { t }
   | BOOLEAN { Boolean }
 
