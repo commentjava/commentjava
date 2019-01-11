@@ -714,7 +714,8 @@ let print_ast ast =
           | Expression (e) -> print_expression e (deep + 1)
           | Statement (s) -> print_statement s (deep + 1)
     in
-    print_ast_rec ast 0
+    print_ast_rec ast 0;
+    print_newline ()
 ;;
 
 (*
