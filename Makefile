@@ -14,19 +14,24 @@ TESTS := $(basename $(notdir $(TEST_FILES)))
 TEST_BINS := $(addsuffix .$(EXT), $(TESTS))
 RUN_TESTS := $(addprefix test-, $(TEST_BINS))
 
+TEST_JDK = TestJDK
+
 MLY_FILES := $(shell find . -name '*.mly' )
 MLL_FILES := $(shell find . -name '*.mll' )
 ML_FILES := $(shell find . -name '*.ml' )
 
 ERRORS_FILE := _build/errors.txt
 
-.PHONY: all clean test-all $(RUN_TESTS)
+.PHONY: all clean test-all $(RUN_TESTS) test-jdk
 
 # Building receipes
 all: $(MAIN).native
 
 $(MAIN).native: $(ML_FILES) $(MLL_FILES) $(MLY_FILES) Makefile
 	$(OCAMLBUILD) $(OCAMLFLAGS) $(MAIN_DIR)/$(MAIN).$(EXT)
+
+$(TEST_JDK).native: $(ML_FILES) $(MLL_FILES) $(MLY_FILES) Makefile
+	$(OCAMLBUILD) $(OCAMLFLAGS) $(TEST_DIR)/$(TEST_JDK).$(EXT)
 
 $(TEST_BINS): $(ML_FILES) $(MLL_FILES) $(MLY_FILES) Makefile
 	$(OCAMLBUILD) $(OCAMLFLAGS) $(TEST_DIR)/$@
@@ -42,6 +47,10 @@ test-list:
 	echo "$$t" ; \
 	done;
 	@echo "test-all"
+	@echo "test-jdk"
+
+test-jdk: $(TEST_JDK).native
+	./_build/$(TEST_DIR)/$(TEST_JDK).native
 
 # TODO: In the future the ERRORS_FILE should be commited
 list-errors: $(MAIN).native
