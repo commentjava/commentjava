@@ -21,7 +21,7 @@ primary_no_new_array:
   | THIS { ThisExpression(None) }
   | n=name PERIOD THIS { ThisExpression(Some n) }
   | L_PAR e=expression R_PAR { ParenthesizedExpression(e) }
-  (*| class_instance_creation_expression { "" } *)
+  | c=class_instance_creation_expression { c }
   | a=field_access { a }
   | mi=method_invocation { mi }
   | a=array_access { a }
@@ -35,31 +35,31 @@ literal:
   | l=NULL_LITERAL { NullLiteral }
 
 (* 15.9 *)
-(*class_instance_creation_expression:
-  | NEW class_or_interface_type L_PAR R_PAR {}
-  | NEW type_arguments class_or_interface_type L_PAR R_PAR {}
-  | NEW class_or_interface_type L_PAR argument_list R_PAR {}
-  | NEW class_or_interface_type L_PAR R_PAR class_body {}
-  | NEW type_arguments class_or_interface_type L_PAR argument_list R_PAR {}
-  | NEW type_arguments class_or_interface_type L_PAR R_PAR class_body {}
-  | NEW class_or_interface_type L_PAR argument_list R_PAR class_body {}
-  | NEW type_arguments class_or_interface_type L_PAR argument_list R_PAR class_body {} *)
-  (*| primary PERIOD NEW identifier L_PAR R_PAR {}
-  | primary PERIOD NEW type_arguments identifier L_PAR R_PAR {}
-  | primary PERIOD NEW identifier type_arguments L_PAR R_PAR {}
-  | primary PERIOD NEW identifier L_PAR argument_list R_PAR {}
-  | primary PERIOD NEW identifier L_PAR R_PAR class_body {}
-  | primary PERIOD NEW type_arguments identifier type_arguments L_PAR R_PAR {}
-  | primary PERIOD NEW type_arguments identifier L_PAR argument_list R_PAR {}
-  | primary PERIOD NEW type_arguments identifier L_PAR R_PAR class_body {}
-  | primary PERIOD NEW identifier type_arguments L_PAR argument_list R_PAR {}
-  | primary PERIOD NEW identifier type_arguments L_PAR R_PAR class_body {}
-  | primary PERIOD NEW identifier L_PAR argument_list R_PAR class_body {}
-  | primary PERIOD NEW type_arguments identifier type_arguments L_PAR argument_list R_PAR {}
-  | primary PERIOD NEW type_arguments identifier type_arguments L_PAR R_PAR class_body {}
-  | primary PERIOD NEW type_arguments identifier L_PAR argument_list R_PAR class_body {}
-  | primary PERIOD NEW identifier type_arguments L_PAR argument_list R_PAR class_body {}
-  | primary PERIOD NEW type_arguments identifier type_arguments L_PAR argument_list R_PAR class_body {}*)
+class_instance_creation_expression:
+  | NEW t=class_or_interface_type L_PAR R_PAR { ClassInstanceCreation(None, None, t, None, None) }
+  | NEW a=type_arguments t=class_or_interface_type L_PAR R_PAR { ClassInstanceCreation(None, Some a, t, None, None) }
+  | NEW t=class_or_interface_type L_PAR al=argument_list R_PAR { ClassInstanceCreation(None, None, t, Some al, None) }
+  | NEW t=class_or_interface_type L_PAR R_PAR cb=class_body { ClassInstanceCreation(None, None, t, None, cb) }
+  | NEW a=type_arguments t=class_or_interface_type L_PAR al=argument_list R_PAR { ClassInstanceCreation(None, Some a, t, Some al, None) }
+  | NEW a=type_arguments t=class_or_interface_type L_PAR R_PAR cb=class_body { ClassInstanceCreation(None, Some a, t, None, cb) }
+  | NEW t=class_or_interface_type L_PAR al=argument_list R_PAR cb=class_body { ClassInstanceCreation(None, None, t, Some al, cb) }
+  | NEW a=type_arguments t=class_or_interface_type L_PAR al=argument_list R_PAR cb=class_body { ClassInstanceCreation(None, Some a, t, Some al, cb) }
+  | p=primary PERIOD NEW i=identifier L_PAR R_PAR { ClassInstanceCreation(Some [p], None, SimpleType(ExpressionName(SimpleName(i))), None, None) }
+  | p=primary PERIOD NEW a=type_arguments i=identifier L_PAR R_PAR { ClassInstanceCreation(Some [p], Some a, SimpleType(ExpressionName(SimpleName(i))), None, None) }
+  /* | p=primary PERIOD NEW i=identifier a2=type_arguments L_PAR R_PAR { ClassInstanceCreation(Some [p], Some a, SimpleType(ExpressionName(SimpleName(i))), None, None) } */
+  | p=primary PERIOD NEW i=identifier L_PAR al=argument_list R_PAR { ClassInstanceCreation(Some [p], None, SimpleType(ExpressionName(SimpleName(i))), Some al, None) }
+  | p=primary PERIOD NEW i=identifier L_PAR R_PAR cb=class_body { ClassInstanceCreation(Some [p], None, SimpleType(ExpressionName(SimpleName(i))), None, cb) }
+  /* | p=primary PERIOD NEW a=type_arguments i=identifier a2=type_arguments L_PAR R_PAR {} */
+  | p=primary PERIOD NEW a=type_arguments i=identifier L_PAR al=argument_list R_PAR { ClassInstanceCreation(Some [p], Some a, SimpleType(ExpressionName(SimpleName(i))), Some al, None) }
+  | p=primary PERIOD NEW a=type_arguments i=identifier L_PAR R_PAR cb=class_body { ClassInstanceCreation(Some [p], Some a, SimpleType(ExpressionName(SimpleName(i))), None, cb) }
+  /* | p=primary PERIOD NEW i=identifier a2=type_arguments L_PAR al=argument_list R_PAR { ClassInstanceCreation(Some [p], Some a, SimpleType(ExpressionName(SimpleName(i))), None, cb) } */
+  /* | p=primary PERIOD NEW i=identifier a2=type_arguments L_PAR R_PAR cb=class_body { ClassInstanceCreation(Some [p], Some a, SimpleType(ExpressionName(SimpleName(i))), None, cb) } */
+  | p=primary PERIOD NEW i=identifier L_PAR al=argument_list R_PAR cb=class_body { ClassInstanceCreation(Some [p], None, SimpleType(ExpressionName(SimpleName(i))), Some al, cb) }
+  /* | p=primary PERIOD NEW a=type_arguments i=identifier a2=type_arguments L_PAR al=argument_list R_PAR {} */
+  /* | p=primary PERIOD NEW a=type_arguments i=identifier a2=type_arguments L_PAR R_PAR cb=class_body {} */
+  | p=primary PERIOD NEW a=type_arguments i=identifier L_PAR al=argument_list R_PAR cb=class_body { ClassInstanceCreation(Some [p], Some a, SimpleType(ExpressionName(SimpleName(i))), Some al, cb) }
+  /* | p=primary PERIOD NEW i=identifier a2=type_arguments L_PAR al=argument_list R_PAR cb=class_body {} */
+  /* | p=primary PERIOD NEW a=type_arguments i=identifier a2=type_arguments L_PAR al=argument_list R_PAR cb=class_body {} */
 
 argument_list:
   | e=expression { [e] }

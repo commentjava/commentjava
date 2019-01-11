@@ -80,7 +80,7 @@ and expression =
   | BooleanLiteral of string
   (* | CastExpression *)
   | CharacterLiteral of string
-  (* | ClassInstanceCreation *)
+  | ClassInstanceCreation of expression list option * type_ list option * type_ * expression list option * bodyDeclaration list option
   | ConditionalExpression of expression * expression * expression
   (* | CreationReference *)
   (* | ExpressionMethodReference *)
@@ -105,6 +105,16 @@ and expression =
   | TypeLiteral of type_ option
   (* | TypeMethodReference *)
   (* | VariableDeclarationExpression *)
+and bodyDeclaration =
+  (* | AbstractTypeDeclaration_AnnotationTypeDeclaration *)
+  (* | AbstractTypeDeclaration_EnumDeclaration *)
+  | ClassDeclaration of expression list option * string * string option * string option * string option * bodyDeclaration list option (* ExtendedModifier list * Identifier * TypeParameter list * Type option * Type list * ClassBodyDeclaration list *)
+  | InterfaceDeclaration of expression list option (*interface_modifiers*) * string (*identifier*) * string (*type_parameters*) * type_ list option (*extends_interface*) * bodyDeclaration list option (*interface_body*)
+  (* | AnnotationTypeMemberDeclaration *)
+  (* | EnumConstantDeclaration *)
+  | FieldDeclaration of expression list option (*field modifiers*) * string (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
+  (* | Initializer *)
+  (* | MethodDeclaration *)
 
 type statement =
     AssertStatement of expression list
@@ -129,17 +139,6 @@ type statement =
   (* | TypeDeclarationStatement *)
   (* | VariableDeclarationStatement *)
   | WhileStatement of expression * statement
-
-type bodyDeclaration =
-  (* | AbstractTypeDeclaration_AnnotationTypeDeclaration *)
-  (* | AbstractTypeDeclaration_EnumDeclaration *)
-  | ClassDeclaration of expression list option * string * string option * string option * string option * bodyDeclaration list option (* ExtendedModifier list * Identifier * TypeParameter list * Type option * Type list * ClassBodyDeclaration list *)
-  | InterfaceDeclaration of expression list option (*interface_modifiers*) * string (*identifier*) * string (*type_parameters*) * type_ list option (*extends_interface*) * bodyDeclaration list option (*interface_body*)
-  (* | AnnotationTypeMemberDeclaration *)
-  (* | EnumConstantDeclaration *)
-  | FieldDeclaration of expression list option (*field modifiers*) * string (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
-  (* | Initializer *)
-  (* | MethodDeclaration *)
 
 type importDeclaration =
     ImportDeclaration_ of bool (* static *) * expression (* name *) * bool (* .* : import all *)
@@ -352,6 +351,19 @@ and print_expression e deep =
     let print_char_literal char_ deep =
         print_string_deep ("CharacterLiteral: " ^ char_) deep;
     in
+    let print_class_instance_creation e1 t1 t2 e2 cd deep =
+        print_string_deep "ClassInstanceCreation" deep;
+        print_string_deep ("Left Exps:") (deep +1);
+        apply_opt_list print_expression e2 (deep + 2);
+        print_string_deep ("Template Types:") (deep + 1);
+        apply_opt_list print_type t1 (deep + 2);
+        print_string_deep ("Type:") (deep + 1);
+        print_type t2 (deep + 2);
+        print_string_deep ("Right Exps:") (deep + 1);
+        apply_opt_list print_expression e2 (deep + 2);
+        print_string_deep ("Body Declaration: ") (deep + 1);
+        apply_opt (apply_list print_bodyDeclaration) cd (deep + 2);
+    in
     let print_conditional_expression e1 e2 e3 deep =
         print_string_deep "ConditionalExpression" deep;
         print_expression e1 (deep+1);
@@ -451,6 +463,7 @@ and print_expression e deep =
         | Assignment (lfs, op, e) -> print_assignment lfs op e deep
         | BooleanLiteral (bool_) -> print_bool_literal bool_ deep
         | CharacterLiteral (char_) -> print_char_literal char_ deep
+        | ClassInstanceCreation (e1, t1, t2, e2, cd) -> print_class_instance_creation e1 t1 t2 e2 cd deep
         | ConditionalExpression(e1, e2, e3) -> print_conditional_expression e1 e2 e3 deep
         | ExpressionName (name) -> print_expression_name name deep
         | FieldAccess (e1, e2) -> print_field_access e1 e2 deep
@@ -466,15 +479,11 @@ and print_expression e deep =
         | SuperMethodInvocation (c, tl, e, el) -> print_super_method_invocation c tl e el deep
         | ThisExpression (e) -> print_this_expression e deep
         | TypeLiteral (t) -> print_type_literal t deep
-;;
-
-let print_opt_expression e deep=
+and print_opt_expression e deep=
     match e with
         | None -> ()
         | Some ex -> print_expression ex deep
-;;
-
-let rec print_statement s deep =
+and print_statement s deep =
     let rec print_expression_list s deep =
         match s with
             | [] -> ()
@@ -598,7 +607,7 @@ let rec print_statement s deep =
         | SynchronizedStatement (e, s) -> print_synchronized_statement e s deep
         | ThrowStatement (e) -> print_throw_statement e deep
         | WhileStatement (e, s) -> print_while_statement e s deep
-;;
+
 (*
 let rec print_bodyDeclaration bd deep =
     let print_string_deep a deep =
@@ -629,7 +638,7 @@ let rec print_bodyDeclaration bd deep =
 ;;
 *)
 
-let print_packageDeclaration p deep =
+and print_packageDeclaration p deep =
     match p with
         | PackageDeclaration_(annotations, name) ->
             print_string_deep "PackageDeclaration" deep;
@@ -637,18 +646,14 @@ let print_packageDeclaration p deep =
             (*print_string_deep "annotations" deep;*)
             print_expression name (deep + 1)
             (*print_string_deep "name" deep*)
-;;
-
-let print_importDeclaration i deep =
+and print_importDeclaration i deep =
     match i with
         | ImportDeclaration_(static, name, import_all) ->
             print_string_deep "ImportDeclaration" deep;
             print_string_deep (string_of_bool static) (deep + 1);
             print_expression name (deep + 1);
             print_string_deep (string_of_bool import_all) (deep + 1)
-;;
-
-let rec print_bodyDeclaration bd deep =
+and print_bodyDeclaration bd deep =
     match bd with
         | ClassDeclaration(cm, i, tp, s, it, cbLO) ->
             print_string_deep "ClassDeclaration" deep;

@@ -66,7 +66,7 @@ additional_bound:
   | AND_BITWISE class_or_interface_type { Tree("additional_bound", [Type($2)])  }
 
 (* 4.5 *)
-type_arguments:
+%public type_arguments:
   | LOWER al=actual_type_argument_list GREATER { al }
 
 actual_type_argument_list:

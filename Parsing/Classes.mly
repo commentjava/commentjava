@@ -84,7 +84,7 @@ interface_type_list:
   | interface_type_list COMMA class_or_interface_type { Treeopt("interface_type_list", [(Some $1); (Some (Type($3)))])  }
 
 (* SECTION 8.1.6 *)
-class_body: (* bodyDeclaration list option *)
+%public class_body: (* bodyDeclaration list option *)
   | L_BRACE cbd=class_body_declarations? R_BRACE { cbd }
 
 class_body_declarations: (* bodyDeclaration list *)
