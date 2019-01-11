@@ -8,26 +8,26 @@
 
 %%
 
-(* section 7.3 *)
+(* SECTION 7.3 *)
 compilation_unit: (* compilationUnit *)
   | t=type_declarations? EOF { CompilationUnit_(None, None, t) }
   | i=import_declarations t=type_declarations? EOF { CompilationUnit_(None, (Some i), t) }
   | p=package_declaration i=import_declarations? t=type_declarations? EOF { CompilationUnit_((Some p), i, t) } 
 
-type_declarations: (* bodyDeclaration list *)
-  | t=type_declaration { [t] }
-  | ts=type_declarations t=type_declaration { ts @ [t] }
-
 import_declarations: (* importDeclaration list *)
   | is=import_declarations i=import_declaration { is @ [i] }
   | i=import_declaration { [i] }
 
-(* section 7.4 *)
+type_declarations: (* bodyDeclaration list *)
+  | t=type_declaration { [t] }
+  | ts=type_declarations t=type_declaration { ts @ [t] }
+
+(* SECTION 7.4 *)
 
 package_declaration: (* packageDeclaration *)
   | a=annotations? PACKAGE p=name SEMICOLON { PackageDeclaration_(a, p) }
 
-(* section 7.5 *)
+(* SECTION 7.5 *)
 
 import_declaration: (* importDeclaration *)
   | IMPORT STATIC n=name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(true, n, true) }
@@ -35,7 +35,7 @@ import_declaration: (* importDeclaration *)
   | IMPORT STATIC n=name SEMICOLON { ImportDeclaration_(true, n, false) }
   | IMPORT n=name SEMICOLON { ImportDeclaration_(false, n, false) }
 
-(* section 7.6 *)
+(* SECTION 7.6 *)
 
 type_declaration: (* bodyDeclaration *)
   | c=class_declaration { c }
@@ -43,11 +43,11 @@ type_declaration: (* bodyDeclaration *)
 (* TODO enum declaration *)
 (* TODO | SEMICOLON { }*)
 
-(* section 8.1 *)
-
+(* SECTION 8.1 *)
 class_declaration: (* bodyDeclaration *)
-  | cm=class_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body { ClassDeclaration(cm, i, Some "tp", Some "s", Some "it", "cb") (*Treeopt("normal_class_declaration", [$1; (Some (Leaf($3))); $4; $5; $6; (Some $7)])*) }
+  | cm=class_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body { ClassDeclaration(cm, i, Some "tp", Some "s", Some "it", cb) }
 
+(* SECTION 8.1.1 *)
 class_modifiers: (* expression list *)
   | cm=class_modifier { [cm] }
   | cm=class_modifier cms=class_modifiers { cm::cms }
@@ -62,7 +62,83 @@ class_modifier: (* expression *)
   | STRICTFP { Modifier("Strictfp") }
   | a=annotation { a } 
 
-(* section 9.7 Annotations *)
+(* SECTION 8.1.2 *)
+type_parameters: (* typeParameter list *) (* TODO *)
+  | LOWER tpl=type_parameter_list GREATER { tpl }
+
+type_parameter_list: (* typeParameter list *) (* TODO *)
+  | type_parameter PERIOD type_parameter_list { Tree("type_parameter_list", [$1; $3]) } (* TODO : isn't it COMMA ? *)
+  | type_parameter { Tree("type_parameter_list", [$1])  }
+
+(* SECTION 8.1.4 *)
+super:
+  | EXTENDS class_type { Tree("super", [Type($2)])  }
+
+(* SECTION 8.1.5 *)
+interfaces:
+  | IMPLEMENTS interface_type_list { Tree("interfaces", [$2])  }
+
+interface_type_list:
+  | interface_type { Treeopt("interface_type_list", [None; (Some (Type($1)))])  }
+  | interface_type_list COMMA interface_type { Treeopt("interface_type_list", [(Some $1); (Some (Type($3)))])  }
+
+(* SECTION 8.1.6 *)
+class_body: (* bodyDeclaration list option *)
+  | L_BRACE cbd=class_body_declarations? R_BRACE { cbd }
+
+class_body_declarations: (* bodyDeclaration list *)
+  | cbd=class_body_declaration { [cbd] }
+  | cbd=class_body_declaration cbds=class_body_declarations { cbd::cbds }
+
+class_body_declaration: (* bodyDeclaration *)
+  | cmd=class_member_declaration { cmd (*Tree("class_body_declaration", [$1])*)  }
+  (* | instance_initializer TODO *)
+  (* | static_initializer TODO *)
+  (* | constructor_declaration TODO *)
+
+class_member_declaration: (* bodyDeclaration *)
+  | fd=field_declaration { fd }
+  (* | method_declaration TODO *)
+  (* | class_declaration TODO *)
+  (* | interface_declaration TODO *)
+  (* | SEMICOLON !!! TODO *)
+
+(* SECTION 8.3 *)
+field_declaration: (* bodyDeclaration *)
+  | fm=field_modifiers? t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(fm, "t", vds) }
+
+%public variable_declarators: (* variableDeclaration list *)
+  | vd=variable_declarator { [vd] }
+  | vd=variable_declarator COMMA vds=variable_declarators { vd::vds }
+
+variable_declarator: (* variableDeclaration *)
+  | vdi=variable_declarator_id { match vdi with (i, d) -> VariableDeclarationFragment(i, d, None) }
+  | vdi=variable_declarator_id ASSIGN vi=variable_initializer { match vdi with (i, d) -> VariableDeclarationFragment(i, d, (Some vi)) }
+
+variable_declarator_id: (* sting * int *)
+  | i=identifier { (i, 0) }
+  | vdi=variable_declarator_id L_BRACKET R_BRACKET { match vdi with (i, d) -> (i, d + 1) }
+
+%public variable_initializer: (* expression *)
+  | e=expression { e }
+  | ai=array_initializer { ai }
+
+(* SECTION 8.3.1 *)
+field_modifiers: (*expression list *)
+  | fm=field_modifier { [fm] }
+  | fm=field_modifier fms=field_modifiers { fm::fms }
+
+field_modifier: (* expression *)
+  | PUBLIC { Modifier("Public") }
+  | PROTECTED { Modifier("Protected") }
+  | PRIVATE { Modifier("Private") }
+  | STATIC { Modifier("Static") }
+  | FINAL { Modifier("Final") }
+  | TRANSIENT { Modifier("Transient") }
+  | VOLATILE { Modifier("Volatile") }
+  | a=annotation { a }
+
+(* SECTION 9.7 Annotations *)
 annotations: (* expression list *)
   | an=annotation { [an] }
   | an=annotation ans=annotations { an::ans }
@@ -94,82 +170,8 @@ element_values: (* expression list *)
   | ev=element_value { [ev] }
   | ev=element_value COMMA evs=element_values { ev::evs }
 
-single_element_annotation: (* expression *)
-  | AT n=name L_PAR ev=element_value R_PAR { SingleMemberAnnotation(n, ev)  }
-
 marker_annotation: (* expression *)
   | AT n=name { MarkerAnnotation(n) }
 
-type_parameters: (* typeParameter list *) (* TODO *)
-  | LOWER tpl=type_parameter_list GREATER { tpl }
-
-type_parameter_list: (* typeParameter list *) (* TODO *)
-  | type_parameter PERIOD type_parameter_list { Tree("type_parameter_list", [$1; $3])  }
-  | type_parameter { Tree("type_parameter_list", [$1])  }
-
-(* SECTION 8.1.4 *)
-
-super:
-  | EXTENDS class_type { Tree("super", [Type($2)])  }
-
-(* SECTION 8.1.5 *)
-
-interfaces:
-  | IMPLEMENTS interface_type_list { Tree("interfaces", [$2])  }
-
-interface_type_list:
-  | interface_type { Treeopt("interface_type_list", [None; (Some (Type($1)))])  }
-  | interface_type_list COMMA interface_type { Treeopt("interface_type_list", [(Some $1); (Some (Type($3)))])  }
-
-(* SECTION 8.1.6 *)
-
-class_body:
-  | L_BRACE class_body_declarations? R_BRACE { Treeopt("class_body", [$2])  }
-
-class_body_declarations:
-  | class_body_declaration { Tree("class_body_declarations", [$1])  }
-  | class_body_declarations class_body_declaration { Tree("class_body_declarations", [$1; $2])  }
-
-class_body_declaration:
-  | class_member_declaration { Tree("class_body_declaration", [$1])  }
-(* TODO : section 8.1.6 *)
-
-class_member_declaration:
-  | field_declaration { Tree("class_member_declaration", [$1])  }
-(* TODO : section 8.1.6 *)
-
-(* SECTION 8.3*)
-field_declaration:
-  | field_modifiers? type_ variable_declarators SEMICOLON { Treeopt("field_declaration", [$1; (Some (Type($2))); (Some $3)])  }
-
-field_modifiers:
-  | field_modifier { Treeopt("field_modifiers", [None; (Some $1)])  } (* TODO : good optimization? *)
-  | field_modifiers field_modifier { Treeopt("field_modifiers", [(Some $1); (Some $2)])  }
-
-field_modifier:
-  | PUBLIC { Tree("field_modifier", [Leaf($1)])  }
-  | PROTECTED { Tree("field_modifier", [Leaf($1)])  }
-  | PRIVATE { Tree("field_modifier", [Leaf($1)])  }
-  | STATIC { Tree("field_modifier", [Leaf($1)])  }
-  | FINAL { Tree("field_modifier", [Leaf($1)])  }
-  | TRANSIENT { Tree("field_modifier", [Leaf($1)])  }
-  | VOLATILE { Tree("field_modifier", [Leaf($1)])  }
-(*TODO : section 8.3.1*)
-
-%public variable_declarators:
-  | variable_declarator { Tree("variable_declarators", [$1])  }
-  | variable_declarators COMMA variable_declarator { Tree("variable_declarators", [$1; $3])  }
-
-variable_declarator:
-  | variable_declarator_id { Tree("variable_declarator", [$1])  }
-  | variable_declarator_id ASSIGN variable_initializer { Tree("variable_declarator", [$1; Expression($3)])  }
-
-variable_declarator_id:
-  | identifier { Tree("variable_declarator_id", [Leaf($1)])  }
-(*TODO: section 8.3 *)
-
-%public variable_initializer:
-  | e=expression { e }
-  | ai=array_initializer { ai }
-
-(*TODO: section 8.3 *)
+single_element_annotation: (* expression *)
+  | AT n=name L_PAR ev=element_value R_PAR { SingleMemberAnnotation(n, ev)  }

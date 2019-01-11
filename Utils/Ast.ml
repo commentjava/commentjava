@@ -43,7 +43,10 @@ type operator =
   | AND_LOGICAL
   | OR_LOGICAL
 
-type typeParameter = (*needs types *)
+type variableDeclaration =
+  | SingleVariableDeclaration
+  | VariableDeclarationFragment of string (*identifier*) * int (*dimensions*) * expression option (*expression*)
+and typeParameter = (*needs types *)
   | TypeParameter of expression list option (*extendedModifier*) * string (*identifier*) * string list option (*extends: Type*)
 and memberValuePair =
   | MemberValuePair of string (* name *) * expression
@@ -130,11 +133,11 @@ type statement =
 type bodyDeclaration =
   (* | AbstractTypeDeclaration_AnnotationTypeDeclaration *)
   (* | AbstractTypeDeclaration_EnumDeclaration *)
-  | ClassDeclaration of expression list option * string * string option * string option * string option * string (* ExtendedModifier list * Identifier * TypeParameter list * Type option * Type list * ClassBodyDeclaration list *)
+  | ClassDeclaration of expression list option * string * string option * string option * string option * bodyDeclaration list option (* ExtendedModifier list * Identifier * TypeParameter list * Type option * Type list * ClassBodyDeclaration list *)
   (* | AbstractTypeDeclaration_TypeDeclaration_InterfaceDeclaration *)
   (* | AnnotationTypeMemberDeclaration *)
   (* | EnumConstantDeclaration *)
-  (* | FieldDeclaration *)
+  | FieldDeclaration of expression list option (*field modifiers*) * string (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
   (* | Initializer *)
   (* | MethodDeclaration *)
 
@@ -250,7 +253,17 @@ let print_opt_string s deep =
         | Some str -> print_newline (); print_d deep; print_string str
 ;;
 
-let rec print_typeParameter tp deep =
+let rec print_variableDeclaration vd deep =
+    match vd with
+        | SingleVariableDeclaration ->
+            print_string_deep "SingleVariableDeclaration" deep
+        | VariableDeclarationFragment (i, d, e) ->
+            print_string_deep "VariableDeclarationFragment" deep;
+            print_string_deep i (deep + 1);
+            print_string_deep (string_of_int d) (deep + 1);
+            apply_opt print_expression e (deep + 1)
+
+and print_typeParameter tp deep =
     match tp with
         | TypeParameter (em, i, tL) ->
             print_string_deep "TypeParameter" deep;
@@ -652,16 +665,21 @@ let print_importDeclaration i deep =
             print_string_deep (string_of_bool import_all) (deep + 1)
 ;;
 
-let print_bodyDeclaration bd deep =
+let rec print_bodyDeclaration bd deep =
     match bd with
-        | ClassDeclaration(cm, i, tp, s, it, cb) ->
+        | ClassDeclaration(cm, i, tp, s, it, cbLO) ->
             print_string_deep "ClassDeclaration" deep;
             apply_opt_list print_expression cm (deep + 1);
             print_string_deep i (deep + 1);
             print_string_deep "TypeParameter" (deep + 1);
             print_string_deep "super" (deep + 1);
             print_string_deep "Interfaces" (deep + 1);
-            print_string_deep "ClassBody" (deep + 1)
+            apply_opt_list print_bodyDeclaration cbLO (deep + 1)
+        | FieldDeclaration(fm, t, vdL) ->
+            print_string_deep "FieldDeclaration" deep;
+            apply_opt_list print_expression fm (deep + 1);
+            print_string_deep t (deep + 1);
+            apply_list print_variableDeclaration vdL (deep + 1)
 ;;
             
 
