@@ -86,8 +86,8 @@ statement_expression:
   | e=pre_decrement_expression { e }
   | e=post_increment_expression { e }
   | e=post_decrement_expression { e }
-  /* | method_invocation
-  | class_instance_creation_expression {} */
+  | e=method_invocation { e }
+  /* | class_instance_creation_expression {} */
 
 
 (* 14.9 *)

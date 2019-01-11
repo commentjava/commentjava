@@ -33,7 +33,7 @@ floating_point_type:
   | DOUBLE { Double }
 
 (* 4.3 *)
-reference_type:
+%public reference_type:
   | t=class_or_interface_type { t }
   /* | t=type_variable { t } */
   | t=array_type { t }
@@ -43,7 +43,7 @@ reference_type:
   | n=name a=type_arguments { ParameterizedType(SimpleType(n), Some a) }
   /* | t=class_or_interface_type PERIOD i=identifier a=type_arguments { ParameterizedType(QualifiedType(t, ExpressionName(SimpleName(i))), Some a) } */
   /* | t=class_or_interface_type PERIOD i=identifier { QualifiedType(t, ExpressionName(SimpleName(i))) } */
-  
+
 
 type_variable:
   | i=identifier { SimpleType(ExpressionName(SimpleName(i))) }

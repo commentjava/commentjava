@@ -23,7 +23,7 @@ primary_no_new_array:
   | L_PAR e=expression R_PAR { ParenthesizedExpression(e) }
   (*| class_instance_creation_expression { "" } *)
   | a=field_access { a }
-  /* | method_invocation {}*) */
+  | mi=method_invocation { mi }
   | a=array_access { a }
 
 literal:
@@ -61,11 +61,9 @@ literal:
   | primary PERIOD NEW identifier type_arguments L_PAR argument_list R_PAR class_body {}
   | primary PERIOD NEW type_arguments identifier type_arguments L_PAR argument_list R_PAR class_body {}*)
 
-(*
 argument_list:
-  | e=expression { e }
-  | es=argument_list COMMA e=expression { es ^ e }
-*)
+  | e=expression { [e] }
+  | al=argument_list COMMA e=expression { al @ [e] }
 
 (* 15.10 *)
 (*
@@ -96,25 +94,23 @@ field_access:
   | n=name PERIOD SUPER PERIOD i=identifier { SuperFieldAccess(Some n, ExpressionName(SimpleName(i))) }
 
 (* 15.12 *)
-(*
-method_invocation:
-  | name L_PAR R_PAR {}
-  | name L_PAR argument_list R_PAR {}
-  | primary PERIOD identifier L_PAR R_PAR {}
-  | primary PERIOD non_wild_type_arguments identifier L_PAR R_PAR {}
-  | primary PERIOD identifier L_PAR argument_list R_PAR {}
-  | primary PERIOD non_wild_type_arguments identifier L_PAR argument_list R_PAR {}
-  | SUPER PERIOD identifier L_PAR R_PAR {}
-  | SUPER PERIOD non_wild_type_arguments identifier L_PAR R_PAR {}
-  | SUPER PERIOD identifier L_PAR argument_list R_PAR {}
-  | SUPER PERIOD non_wild_type_arguments identifier L_PAR argument_list R_PAR {}
-  | class_name PERIOD SUPER PERIOD identifier L_PAR R_PAR {}
-  | class_name PERIOD SUPER PERIOD non_wild_type_arguments identifier L_PAR R_PAR {}
-  | class_name PERIOD SUPER PERIOD identifier L_PAR argument_list R_PAR {}
-  | class_name PERIOD SUPER PERIOD non_wild_type_arguments identifier L_PAR argument_list R_PAR {}
-  | name PERIOD non_wild_type_arguments identifier L_PAR R_PAR {}
-  | name PERIOD non_wild_type_arguments identifier L_PAR argument_list R_PAR {}
-*)
+%public method_invocation:
+  | n=name L_PAR R_PAR { MethodInvocation(None, None, n, None) }
+  | n=name L_PAR al=argument_list R_PAR { MethodInvocation(None, None, n, Some al) }
+  | p=primary PERIOD i=identifier L_PAR R_PAR { MethodInvocation(Some [p], None, ExpressionName(SimpleName(i)), None) }
+  | p=primary PERIOD ta=non_wild_type_arguments i=identifier L_PAR R_PAR { MethodInvocation(Some [p], Some ta, ExpressionName(SimpleName(i)), None) }
+  | p=primary PERIOD i=identifier L_PAR al=argument_list R_PAR { MethodInvocation(Some [p], None, ExpressionName(SimpleName(i)), Some al) }
+  | p=primary PERIOD ta=non_wild_type_arguments i=identifier L_PAR al=argument_list R_PAR { MethodInvocation(Some [p], Some ta, ExpressionName(SimpleName(i)), Some al) }
+  | SUPER PERIOD i=identifier L_PAR R_PAR { SuperMethodInvocation(None, None, ExpressionName(SimpleName(i)), None) }
+  | SUPER PERIOD ta=non_wild_type_arguments i=identifier L_PAR R_PAR { SuperMethodInvocation(None, Some ta, ExpressionName(SimpleName(i)), None) }
+  | SUPER PERIOD i=identifier L_PAR al=argument_list R_PAR { SuperMethodInvocation(None, None, ExpressionName(SimpleName(i)), Some al) }
+  | SUPER PERIOD ta=non_wild_type_arguments i=identifier L_PAR al=argument_list R_PAR { SuperMethodInvocation(None, Some ta, ExpressionName(SimpleName(i)), Some al) }
+  | n=name PERIOD SUPER PERIOD i=identifier L_PAR R_PAR { SuperMethodInvocation(Some [n], None, ExpressionName(SimpleName(i)), None) }
+  | n=name PERIOD SUPER PERIOD ta=non_wild_type_arguments i=identifier L_PAR R_PAR { SuperMethodInvocation(Some [n], Some ta, ExpressionName(SimpleName(i)), None) }
+  | n=name PERIOD SUPER PERIOD i=identifier L_PAR al=argument_list R_PAR { SuperMethodInvocation(Some [n], None, ExpressionName(SimpleName(i)), Some al) }
+  | n=name PERIOD SUPER PERIOD ta=non_wild_type_arguments i=identifier L_PAR al=argument_list R_PAR { SuperMethodInvocation(Some [n], Some ta, ExpressionName(SimpleName(i)), Some al) }
+  | n=name PERIOD ta=non_wild_type_arguments i=identifier L_PAR R_PAR { MethodInvocation(Some [n], Some ta, ExpressionName(SimpleName(i)), None) }
+  | n=name PERIOD ta=non_wild_type_arguments i=identifier L_PAR al=argument_list R_PAR { MethodInvocation(Some [n], Some ta, ExpressionName(SimpleName(i)), Some al) }
 
 (* 15.13 *)
 array_access:

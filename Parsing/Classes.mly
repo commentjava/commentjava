@@ -175,3 +175,17 @@ marker_annotation: (* expression *)
 
 single_element_annotation: (* expression *)
   | AT n=name L_PAR ev=element_value R_PAR { SingleMemberAnnotation(n, ev)  }
+
+(* SECTION 8.7 *)
+
+/* ExplicitConstructorInvocation:
+  NonWildTypeArgumentsopt this ( ArgumentListopt ) ;
+  NonWildTypeArgumentsopt super ( ArgumentListopt ) ;
+  Primary. NonWildTypeArgumentsopt super ( ArgumentListopt ) ; */
+
+%public non_wild_type_arguments:
+  | LOWER tl=reference_type_list GREATER { tl }
+
+reference_type_list:
+  | t=reference_type { [t] }
+  | tl=reference_type_list COMMA t=reference_type { tl @ [t] }
