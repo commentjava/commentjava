@@ -134,7 +134,7 @@ type bodyDeclaration =
   (* | AbstractTypeDeclaration_AnnotationTypeDeclaration *)
   (* | AbstractTypeDeclaration_EnumDeclaration *)
   | ClassDeclaration of expression list option * string * string option * string option * string option * bodyDeclaration list option (* ExtendedModifier list * Identifier * TypeParameter list * Type option * Type list * ClassBodyDeclaration list *)
-  (* | AbstractTypeDeclaration_TypeDeclaration_InterfaceDeclaration *)
+  | InterfaceDeclaration of expression list option (*interface_modifiers*) * string (*identifier*) * string (*type_parameters*) * type_ list option (*extends_interface*) * bodyDeclaration list option (*interface_body*)
   (* | AnnotationTypeMemberDeclaration *)
   (* | EnumConstantDeclaration *)
   | FieldDeclaration of expression list option (*field modifiers*) * string (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
@@ -647,6 +647,13 @@ let rec print_bodyDeclaration bd deep =
             print_string_deep "super" (deep + 1);
             print_string_deep "Interfaces" (deep + 1);
             apply_opt_list print_bodyDeclaration cbLO (deep + 1)
+        | InterfaceDeclaration (im, i, tp, ei, ib) ->
+            print_string_deep "InterfaceDeclaration" deep;
+            apply_opt_list print_expression im (deep + 1);
+            print_string_deep i (deep + 1);
+            print_string_deep "tp" (deep + 1);
+            (*apply_opt_list (**);*)
+            apply_opt_list print_bodyDeclaration ib (deep + 1);
         | FieldDeclaration(fm, t, vdL) ->
             print_string_deep "FieldDeclaration" deep;
             apply_opt_list print_expression fm (deep + 1);

@@ -39,20 +39,21 @@ import_declaration: (* importDeclaration *)
 
 type_declaration: (* bodyDeclaration *)
   | c=class_declaration { c }
-(* TODO interface *)
+  | id=interface_declaration { id }
 (* TODO enum declaration *)
 (* TODO | SEMICOLON { }*)
 
 (* SECTION 8.1 *)
-class_declaration: (* bodyDeclaration *)
-  | cm=class_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body { ClassDeclaration(cm, i, Some "tp", Some "s", Some "it", cb) }
+%inline class_declaration: (* bodyDeclaration *)
+  | em=extended_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body { ClassDeclaration(em, i, Some "tp", Some "s", Some "it", cb) }
 
 (* SECTION 8.1.1 *)
-class_modifiers: (* expression list *)
-  | cm=class_modifier { [cm] }
-  | cm=class_modifier cms=class_modifiers { cm::cms }
+(* WARNING : Eclipse spec used -> class_modifiers replaced by extended_modifiers *)
+extended_modifiers: (* expression list *)
+  | em=extended_modifier { [em] }
+  | em=extended_modifier ems=extended_modifiers { em::ems }
 
-class_modifier: (* expression *)
+extended_modifier: (* expression *)
   | PUBLIC { Modifier("Public") }
   | PROTECTED { Modifier("Protected") }
   | PRIVATE { Modifier("Private") }
@@ -99,8 +100,8 @@ class_body_declaration: (* bodyDeclaration *)
 class_member_declaration: (* bodyDeclaration *)
   | fd=field_declaration { fd }
   (* | method_declaration TODO *)
-  (* | class_declaration TODO *)
-  (* | interface_declaration TODO *)
+  | cd=class_declaration { cd }
+  | id=interface_declaration { id }
   (* | SEMICOLON !!! TODO *)
 
 (* SECTION 8.3 *)
@@ -137,6 +138,33 @@ field_modifier: (* expression *)
   | TRANSIENT { Modifier("Transient") }
   | VOLATILE { Modifier("Volatile") }
   | a=annotation { a }
+
+(* SECTION 9.1 *)
+%inline interface_declaration: (* bodyDeclaration *)
+  | em=extended_modifiers? INTERFACE i=identifier tp=type_parameters? ei=extends_interfaces? ib=interface_body { InterfaceDeclaration(em, i, "tp", ei, ib) }
+
+(* SECTION 9.1.1 *)
+(* WARNING : Eclipse spec used -> interface_modifiers replaced by extended_modifiers *)
+
+(* SECTION 9.1.3 *)
+extends_interfaces: (* type_ list *)
+  | EXTENDS it=interface_type  { [it] }
+  | eis=extends_interfaces it=interface_type { eis @ [it] }
+
+(* SECTION 9.1.4 *)
+interface_body: (* bodyDeclaration list option *)
+  | L_BRACE imds=interface_member_declarations? R_BRACE { imds }
+
+interface_member_declarations: (* bodyDeclaration list *)
+  | imd=interface_member_declaration { [imd] }
+  | imd=interface_member_declaration imds=interface_member_declarations { imd::imds }
+
+interface_member_declaration: (* bodyDeclaration *)
+  (* | constant_declaration {  } *)
+  (* | abstract_method_declaration {  } *)
+  | cd=class_declaration { cd }
+  | id=interface_declaration { id }
+  (* | SEMICOLON {  } *)
 
 (* SECTION 9.7 Annotations *)
 annotations: (* expression list *)
