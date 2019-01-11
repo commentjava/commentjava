@@ -16,10 +16,16 @@ let get_file str =
 let read_java str reader =
   let (file, filename) = get_file str in
   try 
-    let input_file = open_in file in
-    let lexbuf = Lexing.from_channel input_file in
-    Location.init lexbuf file;
-    reader lexbuf;
-    close_in (input_file)
+    let input_file = print_endline ("Open"); open_in file in
+    try
+      let lexbuf = Lexing.from_channel input_file in
+      Location.init lexbuf file;
+      reader lexbuf;
+      close_in (input_file);
+      print_endline ("Close")
+    with s ->
+      close_in (input_file);
+      print_endline ("Close");
+      raise s
   with Sys_error s ->
     print_endline ("Can't find file '" ^ file ^ "'")
