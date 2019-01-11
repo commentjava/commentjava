@@ -10,18 +10,16 @@ module I =
 module S = 
   MenhirLib.General
 
-let stack checkpoint =
+let stack checkpoint : I.element option =
   match checkpoint with
   | I.HandlingError env ->
-      I.stack env
+      I.top env
   | _ ->
     assert false
 
 let state checkpoint : int =
-  match Lazy.force (stack checkpoint) with
-  | S.Nil -> (* Parser in initial state *)
-      0
-  | S.Cons (Element (s, _, _, _), _) ->
+  match stack checkpoint with
+  | Some (I.Element (s, _, _, _)) ->
       I.number s
 
 let report lexbuf checkpoint =

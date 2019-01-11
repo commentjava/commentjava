@@ -3,7 +3,7 @@
 module I =
   Parser.MenhirInterpreter
 
-let fail lexbuf (checkpoint : Ast.compilationUnit I.checkpoint) =
+let fail lexbuf checkpoint =
   ErrorHandling.report lexbuf checkpoint
 
 let succeed_verbose (v : Ast.compilationUnit) =
