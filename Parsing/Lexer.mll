@@ -12,6 +12,8 @@ let java_letter = ['a'-'z' 'A'-'Z' '_' '$']
 
 let non_zero_digit = [ '1' - '9' ]
 let digit = '0' | non_zero_digit
+let octal_digit = ['0'-'7']
+let hex_digit = ['0'-'9' 'a'-'z' 'A'-'Z']
 
 (* TODO change identifier *)
 let identifier = java_letter (java_letter | digit )*
@@ -23,8 +25,10 @@ let boolean_literal = "true" | "false"
 let null_literal = "null"
 
 (* Integer Literals *)
+let hex_numeral = '0' ('x' | 'X') hex_digit+
+let octal_numeral = '0' octal_digit+
 let decimal_numeral = '0' | non_zero_digit digit*
-let integer_literal = decimal_numeral ('l' | 'L')?
+let integer_literal = (decimal_numeral | hex_numeral | octal_numeral) ('l' | 'L')?
 
 (* String Literals *)
 let char = [^'"']
