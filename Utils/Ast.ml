@@ -74,7 +74,7 @@ and expression =
   | SingleMemberAnnotation of expression (*type name*) * expression
   | Modifier (* because of ExtendedModifier *) of string
   | ArrayAccess of expression * expression
-  (* | ArrayCreation *)
+  | ArrayCreation of type_ * expression list option * int * expression option
   | ArrayInitializer of expression list option
   | Assignment of expression * operator * expression
   | BooleanLiteral of string
@@ -87,7 +87,7 @@ and expression =
   (* Different from doc where InfixExpression is: Expression InfixOperator Expression { InfixOperator Expression } *)
   | InfixExpression of expression * operator * expression
   | FieldAccess of expression * expression
-  (* | InstanceofExpression of expression * string TODOreplace string by type *)
+  (* | InstanceofExpression of expression * string TODO replace string by type *)
   (* | LambdaExpression *)
   | MethodInvocation of expression list option * type_ list option * expression *  expression list option
   (* | MethodReference *)
@@ -321,6 +321,16 @@ and print_expression e deep =
         print_expression e1 (deep + 1);
         print_expression e2 (deep + 1);
     in
+    let print_array_creation t el d ai deep =
+        print_string_deep "ArrayCreation" deep;
+        print_string_deep "Type: " (deep+1);
+        print_type t (deep + 2);
+        print_string_deep "DimExps: " (deep+1);
+        apply_opt_list print_expression el (deep+2);
+        print_string_deep ("AdditionnalDims: " ^ (string_of_int d))  (deep+1);
+        print_string_deep "ArrayInit" (deep+1);
+        apply_opt print_expression ai (deep+2);
+    in
     let print_array_initializer e deep =
         let print_opt_exp_list e deep =
             match e with
@@ -436,6 +446,7 @@ and print_expression e deep =
         | Modifier (s) ->
             print_string_deep ("Modifier : " ^ s) deep
         | ArrayAccess(e1, e2) -> print_array_access e1 e2 deep
+        | ArrayCreation(t, el, d, ai) -> print_array_creation t el d ai deep
         | ArrayInitializer(e) -> print_array_initializer e deep
         | Assignment (lfs, op, e) -> print_assignment lfs op e deep
         | BooleanLiteral (bool_) -> print_bool_literal bool_ deep

@@ -12,7 +12,7 @@
 (* 15.8 *)
 primary:
   | p=primary_no_new_array { p }
-  (*| e=array_creation_expression { e }*)
+  | e=array_creation_expression { e }
 
 primary_no_new_array:
   | l=literal { l }
@@ -66,26 +66,24 @@ argument_list:
   | al=argument_list COMMA e=expression { al @ [e] }
 
 (* 15.10 *)
-(*
 array_creation_expression:
-  | NEW primitive_type dim_exprs {}
-  | NEW primitive_type dim_exprs dims {}
-  | NEW class_or_interface_type dim_exprs {}
-  | NEW class_or_interface_type dim_exprs dims {}
-  | NEW primitive_type dims array_initializer {}
-  | NEW class_or_interface_type dims array_initializer {}
+  | NEW t=primitive_type de=dim_exprs { ArrayCreation(t, Some de, 0, None) }
+  | NEW t=primitive_type de=dim_exprs d=dims { ArrayCreation(t, Some de, d, None) }
+  | NEW t=class_or_interface_type de=dim_exprs { ArrayCreation(t, Some de, 0, None) }
+  | NEW t=class_or_interface_type de=dim_exprs d=dims { ArrayCreation(t, Some de, d, None) }
+  | NEW t=primitive_type d=dims ai=array_initializer { ArrayCreation(t, None, d, Some ai) }
+  | NEW t=class_or_interface_type d=dims ai=array_initializer { ArrayCreation(t, None, d, Some ai) }
 
 dim_exprs:
-  | e=dim_expr { e }
-  | es=dim_expr e=dim_expr { es ^ e }
+  | e=dim_expr { [e] }
+  | es=dim_expr e=dim_expr { [es; e] }
 
 dim_expr:
   | L_BRACKET e=expression R_BRACKET { e }
 
 dims:
-  | L_BRACKET R_BRACKET { "[]" }
-  | d=dims L_BRACKET R_BRACKET { d ^ "[]" }
-*)
+  | L_BRACKET R_BRACKET { 1 }
+  | d=dims L_BRACKET R_BRACKET { d+1 }
 
 (* 15.11 *)
 field_access:
