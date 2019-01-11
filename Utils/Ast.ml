@@ -87,7 +87,7 @@ and expression =
   (* Different from doc where InfixExpression is: Expression InfixOperator Expression { InfixOperator Expression } *)
   | InfixExpression of expression * operator * expression
   | FieldAccess of expression * expression
-  (* | InstanceofExpression of expression * string TODO replace string by type *)
+  | InstanceofExpression of expression * type_
   (* | LambdaExpression *)
   | MethodInvocation of expression list option * type_ list option * expression *  expression list option
   (* | MethodReference *)
@@ -381,6 +381,11 @@ and print_expression e deep =
         print_string_deep ("Operator: " ^ string_of_operator op) (deep+1);
         print_expression e2 (deep+1);
     in
+    let print_instance_expression e t deep =
+        print_string_deep "InstanceofExpression" deep;
+        print_expression e (deep+1);
+        print_type t (deep+1);
+    in
     let print_expression_name name deep =
         print_string_deep "Name: " deep;
         print_name name;
@@ -468,6 +473,7 @@ and print_expression e deep =
         | ExpressionName (name) -> print_expression_name name deep
         | FieldAccess (e1, e2) -> print_field_access e1 e2 deep
         | InfixExpression (e1, op, e2) -> print_infix_expression e1 op e2 deep
+        | InstanceofExpression(e, t) -> print_instance_expression e t deep
         | MethodInvocation (el1, tl, e, el2) -> print_method_invocation el1 tl e el2 deep
         | NullLiteral -> print_null_literal deep
         | NumberLiteral (number) -> print_number_literal number deep
