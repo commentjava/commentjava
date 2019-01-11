@@ -2,6 +2,20 @@ type name =
     SimpleName of string
   | QualifiedName of name * name
 
+type modifier = 
+  | PUBLIC
+  | PROTECTED
+  | PRIVATE
+  | STATIC
+  | ABSTRACT
+  | FINAL
+  | NATIVE
+  | SYNCHRONIZED
+  | TRANSIENT
+  | VOLATILE
+  | STRICTFP
+  | DEFAULT
+
 type operator =
     ASSIGN
   | PLUS_ASSIGN
@@ -105,6 +119,7 @@ and expression =
   | TypeLiteral of type_ option
   (* | TypeMethodReference *)
   (* | VariableDeclarationExpression *)
+
 and bodyDeclaration =
   (* | AbstractTypeDeclaration_AnnotationTypeDeclaration *)
   (* | AbstractTypeDeclaration_EnumDeclaration *)
@@ -149,19 +164,19 @@ type statement =
   | ThrowStatement of expression
   (* | TryStatement *)
   (* | TypeDeclarationStatement *)
-  (* | VariableDeclarationStatement *)
+  | VariableDeclarationStatement of ast list * type_ * variableDeclaration list
   | WhileStatement of expression * statement
 
-type importDeclaration =
+and importDeclaration =
     ImportDeclaration_ of bool (* static *) * expression (* name *) * bool (* .* : import all *)
 
-type packageDeclaration =
+and packageDeclaration =
     PackageDeclaration_ of expression list option (* annotations *) * expression (* name *)
 
-type compilationUnit =
+and compilationUnit =
     CompilationUnit_ of packageDeclaration option (* PackageDeclaration *) * importDeclaration list option (* ImportDeclaration *) * bodyDeclaration list option
 
-type ast =
+and ast =
     | Tree of string * (ast list)
     | Treeopt of string * (ast option list)
     | Expression of expression
@@ -169,7 +184,7 @@ type ast =
     | Type of type_
     | CompilationUnit of compilationUnit
     | Leaf of string
-
+    | Modifier of modifier
 
 (*                    *)
 (* PRINTING FUNCTIONS *)
@@ -258,10 +273,31 @@ let string_of_operator op =
         | OR_LOGICAL -> "||"
 ;;
 
+let string_of_modifier m =
+    match m with
+        | PUBLIC -> "public"
+        | PROTECTED -> "protected"
+        | PRIVATE -> "private"
+        | STATIC -> "static"
+        | ABSTRACT -> "abstract"
+        | FINAL -> "final"
+        | NATIVE -> "native"
+        | SYNCHRONIZED -> "synchronized"
+        | TRANSIENT -> "transient"
+        | VOLATILE -> "volatile"
+        | STRICTFP -> "strictfp"
+        | DEFAULT -> "default"
+;;
+
 let print_opt_string s deep =
     match s with
         | None -> ()
         | Some str -> print_newline (); print_d deep; print_string str
+;;
+
+let print_modifier m deep =
+    print_d deep;
+    print_string (string_of_modifier m)
 ;;
 
 let rec print_variableDeclaration vd deep =
@@ -609,6 +645,13 @@ and print_statement s deep =
         print_string_deep "ThrowStatement" deep;
         print_expression e (deep+1);
     in
+    (* VariableDeclarationStatement of ast list * type_ * variableDeclaration list *)
+    let print_variable_declaration_statement a t d deep =
+        print_string_deep "VariableDeclarationStatement" deep;
+        apply_list print_ast_ a (deep + 1);
+        print_type t (deep + 1);
+        apply_list print_variableDeclaration d (deep + 1);
+    in
     let print_while_statement e s deep =
         print_string_deep "WhileStatement" deep;
         print_expression e (deep+1);
@@ -630,6 +673,7 @@ and print_statement s deep =
         | SwitchStatement  (e, s) -> print_switch_statement e s deep
         | SynchronizedStatement (e, s) -> print_synchronized_statement e s deep
         | ThrowStatement (e) -> print_throw_statement e deep
+        | VariableDeclarationStatement (a, t, d) -> print_variable_declaration_statement a t d deep
         | WhileStatement (e, s) -> print_while_statement e s deep
 
 (*
@@ -699,6 +743,12 @@ and print_bodyDeclaration bd deep =
             apply_opt_list print_expression      fm   (deep + 1);
             print_string_deep                    t    (deep + 1);
             apply_list print_variableDeclaration vdL  (deep + 1)
+
+and print_ast_ a deep =
+    print_newline();
+    match a with
+        | Expression (e) -> print_expression e (deep)
+        | Modifier (m) -> print_modifier m (deep)
 ;;
 
 

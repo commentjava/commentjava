@@ -21,17 +21,16 @@ block_statements:
   | bs=block_statements b=block_statement { bs @ [b] }
 
 block_statement:
-  (*| local_variable_declaration_statement { "" }*)
-  (* | class_declaration { "" } *)
+  | s=local_variable_declaration_statement { s }
+  /* | c=class_declaration { c } */
   | s=statement { s }
 
 (* 14.4 *)
-(*local_variable_declaration_statement:
-  | local_variable_declaration SEMICOLON { $1 ^ ";" }
-*)
-(*
+local_variable_declaration_statement:
+  | d=local_variable_declaration SEMICOLON { d }
+
 local_variable_declaration:
-  | variable_modifiers type_ variable_declarators { "" } *)
+  | m=variable_modifiers t=type_ d=variable_declarators { VariableDeclarationStatement(m, t, d) }
 
 (* 14.5 *)
 statement:

@@ -217,3 +217,12 @@ single_element_annotation: (* expression *)
 reference_type_list:
   | t=reference_type { [t] }
   | tl=reference_type_list COMMA t=reference_type { tl @ [t] }
+
+(* section 8.4.1 *)
+%public variable_modifiers:
+  | m=variable_modifier { [m] }
+  | ms=variable_modifiers m=variable_modifier  { ms @ [m] }
+
+variable_modifier: (* expression *)
+  | FINAL { Modifier(FINAL) }
+  | a=annotation { Expression(a) }
