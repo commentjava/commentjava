@@ -106,7 +106,7 @@ class_member_declaration: (* bodyDeclaration *)
 
 (* SECTION 8.3 *)
 field_declaration: (* bodyDeclaration *)
-  | fm=field_modifiers? t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(fm, "t", vds) }
+  | fm=field_modifiers? t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(fm, t, vds) }
 
 %public variable_declarators: (* variableDeclaration list *)
   | vd=variable_declarator { [vd] }
@@ -187,11 +187,25 @@ interface_member_declarations: (* bodyDeclaration list *)
   | imd=interface_member_declaration imds=interface_member_declarations { imd::imds }
 
 interface_member_declaration: (* bodyDeclaration *)
-  (* | constant_declaration {  } *)
-  (* | abstract_method_declaration {  } *)
+  | cd=constant_declaration { cd }
+  (* | abstract_method_declaration {  } TODO *)
   | cd=class_declaration { cd }
   | id=interface_declaration { id }
-  (* | SEMICOLON {  } *)
+  (* | SEMICOLON {  } TODO *)
+
+(* SECTION 9.3 *)
+constant_declaration: (* bodyDeclaration *)
+  | cm=constant_modifiers? t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(cm, t, vds) }
+
+constant_modifiers: (* expression list *)
+  | cm=constant_modifier { [cm] }
+  | cm=constant_modifier cms=constant_modifiers { cm::cms }
+
+constant_modifier: (* expression *)
+  | PUBLIC  { Modifier("Public") }
+  | STATIC { Modifier("Static") }
+  | FINAL { Modifier("Final") }
+  | a=annotation { a }
 
 (* SECTION 9.7 Annotations *)
 annotations: (* expression list *)

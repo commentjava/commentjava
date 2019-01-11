@@ -128,7 +128,7 @@ and bodyDeclaration =
   (* | AnnotationTypeMemberDeclaration *)
   | EnumConstantDeclaration of expression list option (* annotations *) * string (* identifier *) * string option (* arguments *) * bodyDeclaration list option (* class_body *)
   | EnumBody of bodyDeclaration list option (* enum_constants *) * bodyDeclaration list option (* enum_body_declaration *)
-  | FieldDeclaration of expression list option (*field modifiers*) * string (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
+  | FieldDeclaration of expression list option (*field modifiers*) * type_ (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
   | InstanceInitializer of statement
   (* | MethodDeclaration *)
 
@@ -730,7 +730,7 @@ and print_bodyDeclaration bd deep =
         | FieldDeclaration(fm, t, vdL) ->
             print_string_deep "FieldDeclaration" deep;
             apply_opt_list print_expression      fm   (deep + 1);
-            print_string_deep                    t    (deep + 1);
+            print_type                           t    (deep + 1);
             apply_list print_variableDeclaration vdL  (deep + 1)
         | EnumDeclaration (em, i, it, ec, eb) ->
             print_string_deep "EnumDeclaration" deep;
