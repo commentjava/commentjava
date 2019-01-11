@@ -30,6 +30,7 @@ local_variable_declaration_statement:
   | d=local_variable_declaration SEMICOLON { d }
 
 local_variable_declaration:
+  | t=type_ d=variable_declarators { VariableDeclarationStatement([], t, d) }
   | m=variable_modifiers t=type_ d=variable_declarators { VariableDeclarationStatement(m, t, d) }
 
 (* 14.5 *)
