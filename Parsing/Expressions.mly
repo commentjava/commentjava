@@ -145,15 +145,13 @@ unary_expression_not_plus_minus:
   | e=postfix_expression { e }
   | COMPLEMENT_BITWISE e=unary_expression { PrefixExpression(e, COMPLEMENT) }
   | NOT_LOGICAL e=unary_expression { PrefixExpression(e, NOT) }
-  /* | e=cast_expresion { e } */
+  | e=cast_expresion { e }
 
 (* 15.16 *)
-(*
 cast_expresion:
-  | L_PAR t=primitive_type R_PAR e=unary_expression { "(" ^ t ^ ")" ^ e}
-  | L_PAR t=primitive_type d=dims R_PAR e=unary_expression { "(" ^ t ^ d ^ ")" ^ e}
-  | L_PAR t=reference_type R_PAR e=unary_expression_not_plus_minus { "(" ^ t ^ ")" ^ e}
-*)
+  | L_PAR t=primitive_type R_PAR e=unary_expression { CastExpression(t, e) }
+  | L_PAR t=primitive_type d=dims R_PAR e=unary_expression { CastExpression(ArrayType(t, d), e) }
+  | L_PAR t=reference_type R_PAR e=unary_expression_not_plus_minus { CastExpression(t, e) }
 
 (* 15.17 *)
 multiplicative_expression:

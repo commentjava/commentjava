@@ -64,7 +64,7 @@ and type_ =
   | QualifiedType of type_ * expression
   | SimpleType of expression
   | WildcardType of type_ option
-  | ArrayType of type_
+  | ArrayType of type_ * int
   | ParameterizedType of type_ * type_ list option
   (* | UnionType *)
   (* | IntersectionType *)
@@ -78,7 +78,7 @@ and expression =
   | ArrayInitializer of expression list option
   | Assignment of expression * operator * expression
   | BooleanLiteral of string
-  (* | CastExpression *)
+  | CastExpression of type_ * expression
   | CharacterLiteral of string
   | ClassInstanceCreation of expression list option * type_ list option * type_ * expression list option * bodyDeclaration list option
   | ConditionalExpression of expression * expression * expression
@@ -308,9 +308,10 @@ and print_type t deep=
         | WildcardType (t) ->
             print_string_deep "WildcardType" deep;
             apply_opt print_type t (deep+1)
-        | ArrayType (t) ->
+        | ArrayType (t, d) ->
             print_string_deep "ArrayType" deep;
-            print_type t (deep+1)
+            print_type t (deep+1);
+            print_string_deep ("Dims: " ^ string_of_int d) (deep+1)
         | ParameterizedType (t, tl) ->
             print_string_deep "ParameterizedType" deep;
             print_type t (deep+1);
@@ -358,6 +359,11 @@ and print_expression e deep =
     in
     let print_bool_literal bool_ deep =
         print_string_deep ("BooleanLiteral: " ^ bool_) deep;
+    in
+    let print_cast_expression t e deep =
+        print_string_deep "CastExpression" deep;
+        print_type t (deep+1);
+        print_expression e (deep+1);
     in
     let print_char_literal char_ deep =
         print_string_deep ("CharacterLiteral: " ^ char_) deep;
@@ -431,7 +437,7 @@ and print_expression e deep =
         print_string_deep "PrefixExpression" deep;
         print_expression e (deep+1);
         print_string_deep (string_of_operator op) (deep+1);
-        in
+    in
     let print_string_literal string_ deep =
         print_string_deep ("StringLiteral: " ^ string_) deep;
     in
@@ -478,6 +484,7 @@ and print_expression e deep =
         | ArrayInitializer(e) -> print_array_initializer e deep
         | Assignment (lfs, op, e) -> print_assignment lfs op e deep
         | BooleanLiteral (bool_) -> print_bool_literal bool_ deep
+        | CastExpression (t, e) -> print_cast_expression t e deep
         | CharacterLiteral (char_) -> print_char_literal char_ deep
         | ClassInstanceCreation (e1, t1, t2, e2, cd) -> print_class_instance_creation e1 t1 t2 e2 cd deep
         | ConditionalExpression(e1, e2, e3) -> print_conditional_expression e1 e2 e3 deep
