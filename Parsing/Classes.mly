@@ -94,7 +94,7 @@ class_body_declarations: (* bodyDeclaration list *)
 class_body_declaration: (* bodyDeclaration *)
   | cmd=class_member_declaration { cmd (*Tree("class_body_declaration", [$1])*)  }
   | ii=instance_initializer { ii }
-  (* | static_initializer TODO *)
+  | STATIC ii=instance_initializer { ii }
   (* | constructor_declaration TODO *)
 
 class_member_declaration: (* bodyDeclaration *)
