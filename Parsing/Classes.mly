@@ -40,7 +40,7 @@ import_declaration: (* importDeclaration *)
 type_declaration: (* bodyDeclaration *)
   | c=class_declaration { c }
   | id=interface_declaration { id }
-(* TODO enum declaration *)
+  | e=enum_declaration { e } (* section 8.1 *)
 (* TODO | SEMICOLON { }*)
 
 (* SECTION 8.1 *)
@@ -138,6 +138,29 @@ field_modifier: (* expression *)
   | TRANSIENT { Modifier("Transient") }
   | VOLATILE { Modifier("Volatile") }
   | a=annotation { a }
+
+(* SECTION 8.9 *)
+%inline enum_declaration: (* bodyDeclaration *)
+  | em=extended_modifiers? ENUM i=identifier it=interfaces? eb=enum_body { match eb with
+  | EnumBody(ec, cb) -> EnumDeclaration(em, i, it, ec, cb) }
+
+enum_body:
+  | L_BRACE ec=enum_constants? R_BRACE { EnumBody(ec, None) }
+  | L_BRACE ec=enum_constants? SEMICOLON cb=class_body_declarations? R_BRACE { EnumBody(ec, cb) }
+
+enum_constants:
+  | c=enum_constant { [c] }
+  | c=enum_constant COMMA cs=enum_constants { c::cs }
+  | c=enum_constant COMMA { [c] }
+
+enum_constant:
+  | a=annotations? i=identifier args=arguments? cb=class_body? {
+                 match cb with
+                 | Some c -> EnumConstantDeclaration(a, i, args, c)
+                 | None -> EnumConstantDeclaration(a, i, args, None) }
+
+arguments:
+  | L_PAR arg=argument_list R_PAR { "arg" }
 
 (* SECTION 9.1 *)
 %inline interface_declaration: (* bodyDeclaration *)

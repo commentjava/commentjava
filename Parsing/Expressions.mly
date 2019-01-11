@@ -60,7 +60,7 @@ class_instance_creation_expression:
   /* | p=primary PERIOD NEW i=identifier a2=type_arguments L_PAR al=argument_list R_PAR cb=class_body {} */
   /* | p=primary PERIOD NEW a=type_arguments i=identifier a2=type_arguments L_PAR al=argument_list R_PAR cb=class_body {} */
 
-argument_list:
+%public argument_list:
   | e=expression { [e] }
   | al=argument_list COMMA e=expression { al @ [e] }
 

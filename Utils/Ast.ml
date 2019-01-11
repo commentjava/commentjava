@@ -122,26 +122,15 @@ and expression =
 
 and bodyDeclaration =
   (* | AbstractTypeDeclaration_AnnotationTypeDeclaration *)
-  (* | AbstractTypeDeclaration_EnumDeclaration *)
+  | EnumDeclaration of expression list option (* modifiers *) * string (* identifier *) * type_ list option (* interfaces *) * bodyDeclaration list option (* enum_constants *) * bodyDeclaration list option (* enum_body *)
   | ClassDeclaration of expression list option (* Extended modifier list *) * string (* Identifier *) * typeParameter list option (* TypeParameter list *) * type_ option (* Type option *) * type_ list option (* Type list *) * bodyDeclaration list option (* ClassBodyDeclaration list *)
   | InterfaceDeclaration of expression list option (*interface_modifiers*) * string (*identifier*) * typeParameter list option (*type_parameters*) * type_ list option (*extends_interface*) * bodyDeclaration list option (*interface_body*)
   (* | AnnotationTypeMemberDeclaration *)
-  (* | EnumConstantDeclaration *)
+  | EnumConstantDeclaration of expression list option (* annotations *) * string (* identifier *) * string option (* arguments *) * bodyDeclaration list option (* class_body *)
+  | EnumBody of bodyDeclaration list option (* enum_constants *) * bodyDeclaration list option (* enum_body_declaration *)
   | FieldDeclaration of expression list option (*field modifiers*) * string (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
   (* | Initializer *)
   (* | MethodDeclaration *)
-(*
-type bodyDeclaration =
-  (* | AbstractTypeDeclaration_AnnotationTypeDeclaration *)
-  (* | AbstractTypeDeclaration_EnumDeclaration *)
-  | ClassDeclaration of expression list option (* Extended modifier list *) * string (* Identifier *) * typeParameter list option (* TypeParameter list *) * type_ option (* Type option *) * type_ list option (* Type list *) * bodyDeclaration list option (* ClassBodyDeclaration list *)
-  | InterfaceDeclaration of expression list option (*interface_modifiers*) * string (*identifier*) * typeParameter list option (*type_parameters*) * type_ list option (*extends_interface*) * bodyDeclaration list option (*interface_body*)
-  (* | AnnotationTypeMemberDeclaration *)
-  (* | EnumConstantDeclaration *)
-  | FieldDeclaration of expression list option (*field modifiers*) * string (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
-  (* | Initializer *)
-  (* | MethodDeclaration *)
-*)
 
 type statement =
     AssertStatement of expression list
@@ -743,6 +732,12 @@ and print_bodyDeclaration bd deep =
             apply_opt_list print_expression      fm   (deep + 1);
             print_string_deep                    t    (deep + 1);
             apply_list print_variableDeclaration vdL  (deep + 1)
+        | EnumDeclaration (em, i, it, ec, eb) ->
+            print_string_deep "EnumDeclaration" deep;
+            apply_opt_list print_expression em        (deep + 1);
+            print_string_deep i                       (deep + 1);
+            apply_opt_list print_type            it   (deep + 1);
+            apply_opt_list print_bodyDeclaration eb   (deep + 1)
 
 and print_ast_ a deep =
     print_newline();
