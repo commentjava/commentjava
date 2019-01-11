@@ -129,10 +129,10 @@ and bodyDeclaration =
   | EnumConstantDeclaration of expression list option (* annotations *) * string (* identifier *) * string option (* arguments *) * bodyDeclaration list option (* class_body *)
   | EnumBody of bodyDeclaration list option (* enum_constants *) * bodyDeclaration list option (* enum_body_declaration *)
   | FieldDeclaration of expression list option (*field modifiers*) * string (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
-  (* | Initializer *)
+  | InstanceInitializer of statement
   (* | MethodDeclaration *)
 
-type statement =
+and statement =
     AssertStatement of expression list
   | Block of statement list
   | BreakStatement of string option
@@ -738,6 +738,8 @@ and print_bodyDeclaration bd deep =
             print_string_deep i                       (deep + 1);
             apply_opt_list print_type            it   (deep + 1);
             apply_opt_list print_bodyDeclaration eb   (deep + 1)
+        | InstanceInitializer (b) ->
+            print_statement b (deep + 1)
 
 and print_ast_ a deep =
     print_newline();

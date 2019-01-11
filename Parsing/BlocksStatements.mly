@@ -12,7 +12,7 @@
 (* Section 14 Blocks and Statement *)
 
 (* 14.2 *)
-block:
+%public block:
   | L_BRACE R_BRACE { Block([]) }
   | L_BRACE bs=block_statements R_BRACE { Block(bs) }
 

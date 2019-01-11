@@ -93,7 +93,7 @@ class_body_declarations: (* bodyDeclaration list *)
 
 class_body_declaration: (* bodyDeclaration *)
   | cmd=class_member_declaration { cmd (*Tree("class_body_declaration", [$1])*)  }
-  (* | instance_initializer TODO *)
+  | ii=instance_initializer { ii }
   (* | static_initializer TODO *)
   (* | constructor_declaration TODO *)
 
@@ -138,6 +138,10 @@ field_modifier: (* expression *)
   | TRANSIENT { Modifier("Transient") }
   | VOLATILE { Modifier("Volatile") }
   | a=annotation { a }
+
+(* SECTION 8.6 *)
+%inline instance_initializer:
+ | b=block { InstanceInitializer(b) }
 
 (* SECTION 8.9 *)
 %inline enum_declaration: (* bodyDeclaration *)
