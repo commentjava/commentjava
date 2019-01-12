@@ -6,6 +6,10 @@
       ^ " column " ^ (string_of_int (position.pos_cnum - position.pos_bol))
     let error msg position =
       raise (Failure (create_error_message msg position))
+    let is_some o =
+      match o with
+      | Some(_) -> true
+      | None -> false
 %}
 
 
@@ -18,7 +22,7 @@
 compilation_unit: (* compilationUnit *)
   | t=type_declarations? EOF { CompilationUnit_(None, None, t) }
   | i=import_declarations t=type_declarations? EOF { CompilationUnit_(None, (Some i), t) }
-  | p=package_declaration i=import_declarations? t=type_declarations? EOF { CompilationUnit_((Some p), i, t) } 
+  | p=package_declaration i=import_declarations? t=type_declarations? EOF { CompilationUnit_((Some p), i, t) }
 
 import_declarations: (* importDeclaration list *)
   | is=import_declarations i=import_declaration { is @ [i] }
@@ -74,7 +78,7 @@ extended_modifier: (* expression *)
   | STRICTFP { Modifier(STRICTFP) }
   | TRANSIENT { Modifier(TRANSIENT) }
   | VOLATILE { Modifier(VOLATILE) }
-  | a=annotation { a } 
+  | a=annotation { a }
 
 (* SECTION 8.1.2 *)
 type_parameters: (* typeParameter list *)
@@ -149,12 +153,12 @@ field_modifier: (* expression *)
 
 (* SECTION 8.4 *)
 method_declaration:
-  | em=extended_modifiers? rt=result_type i=identifier L_PAR fpl=formal_parameter_list? R_PAR t=throws? mb=method_body {
+  | em=extended_modifiers? rt=result_type i=identifier L_PAR fpl=formal_parameters? R_PAR t=throws? mb=method_body {
           match check_modifiers check_method_modifier em with
           | true -> MethodDeclaration(em, None, rt, i, fpl, t, Some mb)
           | false -> error ("Invalid modifier for method " ^ i) $startpos
   }
-  | em=extended_modifiers? tp=type_parameters rt=result_type i=identifier L_PAR fpl=formal_parameter_list? R_PAR t=throws? mb=method_body {
+  | em=extended_modifiers? tp=type_parameters rt=result_type i=identifier L_PAR fpl=formal_parameters? R_PAR t=throws? mb=method_body {
           match check_modifiers check_method_modifier em with
           | true -> MethodDeclaration(em, Some tp, rt, i, fpl, t, Some mb)
           | false -> error ("Invalid modifier for method " ^ i) $startpos
@@ -164,29 +168,23 @@ method_body:
   | b=block { b }
 (* TODO: | SEMICOLON {} *)
 
-(* method_header: TODO *)
-
 %inline result_type: (* type_ *)
   | t=type_ { t }
   | VOID { Void }
 
 (* SECTION 8.4.1 *)
-(* TODO: do post processing on tree to remove last_parameter_list in the middle *)
-formal_parameter_list: (* variableDeclaration list *)
-  | fps=formal_parameters { fps }
-
 formal_parameters: (* variableDeclaration list *)
-  | fp=last_formal_parameter { [fp] }
-  | fp=formal_parameter { [fp] }
-  | fp=formal_parameter COMMA fps=formal_parameters { fp::fps }
-  | fp=last_formal_parameter COMMA fps=formal_parameters { fp::fps }
+  | fps=separated_list(COMMA, formal_parameter) {
+    match check_formal_parameters fps with
+    | true -> fps
+    | false -> error ("Invalid ... in parameter list") $startpos
+  }
 
-%inline %public formal_parameter: (* variableDeclaration *)
-  | vm=variable_modifiers? t=type_ vd=variable_declarator_id { match vd with | i, n -> SingleVariableDeclaration(vm, t, None, false, i, n, None) }
-
-%inline last_formal_parameter: (* variableDeclaration *)
-  | vm=variable_modifiers? t=type_ ELLIPSIS vd=variable_declarator_id { match vd with
-    | i, n -> SingleVariableDeclaration(vm, t, None, true, i, n, None) }
+%public %inline formal_parameter: (* variableDeclaration *)
+  | vm=variable_modifiers? t=type_ e=ELLIPSIS? vd=variable_declarator_id {
+    match vd with
+    | i, n -> SingleVariableDeclaration(vm, t, None, is_some e, i, n, None)
+  }
 
 (* SECTION 8.6 *)
 %inline instance_initializer: (* statement *)
@@ -206,7 +204,7 @@ constructor_declaration: (* bodyDeclaration *)
   }
 constructor_declarator: (* contructorDeclarator *)
   | L_PAR R_PAR { None }
-  | L_PAR fp=formal_parameter_list R_PAR { Some fp }
+  | L_PAR fp=formal_parameters R_PAR { Some fp }
 
 throws: (* type_ list *)
   | THROWS tl=exception_type_list { tl }
@@ -298,8 +296,8 @@ constant_modifier: (* expression *)
 
 (* SECTION 9.4 *)
 %inline abstract_method_declaration: (* bodyDeclaration *)
-  | imms=interface_member_modifiers? (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=formal_parameter_list? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, None, rt, i, lpl, t, None) }
-  | imms=interface_member_modifiers? tps=type_parameters rt=result_type i=identifier L_PAR lpl=formal_parameter_list? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, (Some tps), rt, i, lpl, t, None) }
+  | imms=interface_member_modifiers? (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=formal_parameters? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, None, rt, i, lpl, t, None) }
+  | imms=interface_member_modifiers? tps=type_parameters rt=result_type i=identifier L_PAR lpl=formal_parameters? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, (Some tps), rt, i, lpl, t, None) }
 
 
 (* SECTION 9.7 Annotations *)

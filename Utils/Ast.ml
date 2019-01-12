@@ -150,7 +150,7 @@ and statement =
   | VariableDeclarationStatement of expression list * type_ * variableDeclaration list
   | WhileStatement of expression * statement
   | LocalClassDeclarationStatement of bodyDeclaration
-and catch_clause = 
+and catch_clause =
   | CatchClause of variableDeclaration * statement
 and importDeclaration =
     ImportDeclaration_ of bool (* static *) * expression (* name *) * bool (* .* : import all *)
@@ -241,6 +241,11 @@ let check_modifiers checker cm =
   | None -> true
   | Some cm -> m_check cm
 ;;
+
+let rec check_formal_parameters fps =
+  match fps with
+  | [f] -> true
+  | SingleVariableDeclaration(_, _, _, ellips, id, _, _)::tail -> (not ellips) && (check_formal_parameters tail)
 
 (*                    *)
 (* PRINTING FUNCTIONS *)
@@ -705,7 +710,7 @@ and print_statement s deep =
         | TryStatement (b, cl, bf) -> print_try_statement b cl bf deep
         | VariableDeclarationStatement (a, t, d) -> print_variable_declaration_statement a t d deep
         | WhileStatement (e, s) -> print_while_statement e s deep
-        | LocalClassDeclarationStatement (d) -> print_local_class_declaration_statement d deep 
+        | LocalClassDeclarationStatement (d) -> print_local_class_declaration_statement d deep
 and print_opt_statement os depth =
   match os with
     | Some s -> print_statement s depth
@@ -739,7 +744,7 @@ let rec print_bodyDeclaration bd deep =
         | ClassDeclaration (jdOpt, emList, i, tpList, tOpt, tList, cbdList) -> print_classDeclaration jdOpt emList i tpList tOpt tList cbdList deep
 ;;
 *)
-and print_catch_clause c deep = 
+and print_catch_clause c deep =
     match c with
         | CatchClause (p, b) ->
             print_string_deep "CatchClause" deep;
