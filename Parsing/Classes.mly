@@ -142,10 +142,10 @@ field_declaration: (* bodyDeclaration *)
 field_modifiers: (*expression list *)
   | fm=field_modifier { [fm] }
   | fm=field_modifier fms=field_modifiers { fm::fms }
-*)
 
 field_modifier: (* expression *)
   | a=annotation { a }
+*)
 
 (* SECTION 8.4 *)
 method_declaration:
@@ -287,8 +287,8 @@ interface_member_modifiers: (* expression list *)
   | imm=interface_member_modifier imms=interface_member_modifiers { imm::imms }
 
 interface_member_modifier: (* expression *)
+  | ABSTRACT { Modifier(ABSTRACT) } (* abstract_method_modifier remplacement *)
   | cm=constant_modifier { cm }
-  | amm=abstract_method_modifier { amm }
 
 constant_modifier: (* expression *)
   | PUBLIC  { Modifier(PUBLIC) }
@@ -301,11 +301,6 @@ constant_modifier: (* expression *)
   | imms=interface_member_modifiers? (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=formal_parameter_list? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, None, rt, i, lpl, t, None) }
   | imms=interface_member_modifiers? tps=type_parameters rt=result_type i=identifier L_PAR lpl=formal_parameter_list? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, (Some tps), rt, i, lpl, t, None) }
 
-(* WARNING : abstract_method_modifiers replaced by interface_member_modifiers *)
-abstract_method_modifier: (* expression *)
-  | a=annotation { a }
-  | PUBLIC { Modifier(PUBLIC) }
-  | ABSTRACT { Modifier(ABSTRACT) }
 
 (* SECTION 9.7 Annotations *)
 annotations: (* expression list *)
