@@ -54,7 +54,7 @@ statement_without_trailing_substatement:
   | s=return_statement { s }
   | s=synchronized_statement { s }
   | s=throw_statement { s }
-  (*| try_statement { $1 } require formal_parameter *)
+  | s=try_statement { s }
 
 statement_no_short_if:
   | s=statement_without_trailing_substatement { s }
@@ -210,21 +210,18 @@ synchronized_statement:
   | SYNCHRONIZED L_PAR e=expression R_PAR b=block { SynchronizedStatement(e, b) }
 
 (* 14.20 *)
-(*
 try_statement:
-  | TRY block catches {}
-  | TRY block catches finally {}
-  | TRY block finally {}
-*)
+  | TRY b=block cl=catches { TryStatement(b, Some cl, None) }
+  | TRY b=block cl=catches bf=finally { TryStatement(b, Some cl, Some bf)}
+  | TRY b=block bf=finally { TryStatement(b, None, Some bf) }
 
-(*
 catches:
-  | catch_clause
-  | catches catch_clause {}
+  | c=catch_clause { [c] }
+  | cl=catches c=catch_clause { cl @ [c] }
 
 catch_clause:
-  | CATCH L_PAR formal_parameter R_PAR block {}
+  | CATCH L_PAR p=formal_parameter R_PAR b=block { CatchClause(p, b) }
 
 finally:
-  | FINALLY block {}
-*)
+  | FINALLY b=block { b }
+

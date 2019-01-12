@@ -166,7 +166,7 @@ formal_parameters: (* variableDeclaration list *)
   | fp=formal_parameter COMMA fps=formal_parameters { fp::fps }
   | fp=last_formal_parameter COMMA fps=formal_parameters { fp::fps }
 
-%inline formal_parameter: (* variableDeclaration *)
+%inline %public formal_parameter: (* variableDeclaration *)
   | vm=variable_modifiers? t=type_ vd=variable_declarator_id { match vd with | i, n -> SingleVariableDeclaration(vm, t, None, false, i, n, None) }
 
 %inline last_formal_parameter: (* variableDeclaration *)

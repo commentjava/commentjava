@@ -145,12 +145,13 @@ and statement =
   | SwitchStatement of expression * statement list
   | SynchronizedStatement of expression * statement  (*TODOMAYBE PROBLEM HERE *)
   | ThrowStatement of expression
-  (* | TryStatement *)
+  | TryStatement of statement * catch_clause list option * statement option
   (* | TypeDeclarationStatement *)
   | VariableDeclarationStatement of expression list * type_ * variableDeclaration list
   | WhileStatement of expression * statement
   | LocalClassDeclarationStatement of bodyDeclaration
-
+and catch_clause = 
+  | CatchClause of variableDeclaration * statement
 and importDeclaration =
     ImportDeclaration_ of bool (* static *) * expression (* name *) * bool (* .* : import all *)
 
@@ -591,6 +592,12 @@ and print_statement s deep =
         print_string_deep "ThrowStatement" deep;
         print_expression e (deep+1);
     in
+    let print_try_statement b cl bf deep =
+        print_string_deep "TryStatement" deep;
+        print_statement b (deep+1);
+        apply_opt_list print_catch_clause cl (deep+1);
+        apply_opt print_statement bf (deep+1);
+    in
     let print_variable_declaration_statement a t d deep =
         print_string_deep "VariableDeclarationStatement" deep;
         apply_list print_expression a (deep + 1);
@@ -623,6 +630,7 @@ and print_statement s deep =
         | SwitchStatement  (e, s) -> print_switch_statement e s deep
         | SynchronizedStatement (e, s) -> print_synchronized_statement e s deep
         | ThrowStatement (e) -> print_throw_statement e deep
+        | TryStatement (b, cl, bf) -> print_try_statement b cl bf deep
         | VariableDeclarationStatement (a, t, d) -> print_variable_declaration_statement a t d deep
         | WhileStatement (e, s) -> print_while_statement e s deep
         | LocalClassDeclarationStatement (d) -> print_local_class_declaration_statement d deep 
@@ -655,7 +663,12 @@ let rec print_bodyDeclaration bd deep =
         | ClassDeclaration (jdOpt, emList, i, tpList, tOpt, tList, cbdList) -> print_classDeclaration jdOpt emList i tpList tOpt tList cbdList deep
 ;;
 *)
-
+and print_catch_clause c deep = 
+    match c with
+        | CatchClause (p, b) ->
+            print_string_deep "CatchClause" deep;
+            print_variableDeclaration p (deep+1);
+            print_statement b (deep+1)
 and print_packageDeclaration p deep =
     match p with
         | PackageDeclaration_(annotations, name) ->
