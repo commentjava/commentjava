@@ -205,8 +205,23 @@ exception_type_list: (* type_ list *)
   | et=class_or_interface_type { [et] }
   | et=class_or_interface_type COMMA ets=exception_type_list { et::ets }
 
+(* SECTION 8.8.7 *)
 constructor_body: (* bodyDeclaration *)
-  | L_BRACE (* TODO ExplicitConstructorInvocation? *) bs=block_statements? R_BRACE { ConstructorBody(None, bs) }
+  | L_BRACE (* no explicit_constructor_invocation *) bs=block_statements? R_BRACE { ConstructorBody(None, bs) }
+  | L_BRACE eci=explicit_constructor_invocation (* TODO : verify *) bs=block_statements? R_BRACE { ConstructorBody(None, bs) }
+
+(* SECTION 8.8.7.1 *)
+%inline explicit_constructor_invocation: (* statement TODO : verify *)
+  | nwta=non_wild_type_arguments? THIS L_PAR arg=argument_list? R_PAR SEMICOLON { ConstructorInvocation(nwta, arg) }
+  | nwta=non_wild_type_arguments? SUPER L_PAR arg=argument_list? R_PAR SEMICOLON { SuperConstructorInvocation(None, nwta, arg) }
+  | p=primary PERIOD nwta=non_wild_type_arguments? SUPER L_PAR arg=argument_list? R_PAR SEMICOLON (* p : expression *) { SuperConstructorInvocation((Some p), nwta, arg) }
+
+%public %inline non_wild_type_arguments: (* type_ list *)
+  | LOWER tl=reference_type_list GREATER { tl }
+
+reference_type_list: (* type_ list *)
+  | t=reference_type { [t] }
+  | tl=reference_type_list COMMA t=reference_type { tl @ [t] }
 
 (* SECTION 8.9 *)
 enum_declaration: (* bodyDeclaration *)
@@ -273,7 +288,7 @@ interface_member_modifiers: (* expression list *)
   | imms=nonempty_list(interface_member_modifier) { imms }
 
 interface_member_modifier: (* expression *)
-  | ABSTRACT { Modifier(ABSTRACT) } (* abstract_method_modifier remplacement *)
+  | ABSTRACT { Modifier(ABSTRACT) } (* abstract_method_modifier remplacement *)(* TODO : post-process *)
   | cm=constant_modifier { cm }
 
 constant_modifier: (* expression *)
@@ -287,6 +302,7 @@ abstract_method_declaration: (* bodyDeclaration *)
   | imms=interface_member_modifiers? (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, None, rt, i, lpl, t, None) }
   | imms=interface_member_modifiers? tps=type_parameters rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, (Some tps), rt, i, lpl, t, None) }
 
+(* WARNING : abstract_method_modifiers replaced by interface_member_modifiers *)
 
 (* SECTION 9.7 Annotations *)
 annotations: (* expression list *)
@@ -331,13 +347,6 @@ single_element_annotation: (* expression *)
   NonWildTypeArgumentsopt this ( ArgumentListopt ) ;
   NonWildTypeArgumentsopt super ( ArgumentListopt ) ;
   Primary. NonWildTypeArgumentsopt super ( ArgumentListopt ) ; *)
-
-%public non_wild_type_arguments:
-  | LOWER tl=reference_type_list GREATER { tl }
-
-reference_type_list:
-  | t=reference_type { [t] }
-  | tl=reference_type_list COMMA t=reference_type { tl @ [t] }
 
 (* section 8.4.1 *)
 %public variable_modifiers:

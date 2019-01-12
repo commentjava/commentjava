@@ -131,7 +131,7 @@ and statement =
     AssertStatement of expression list
   | Block of statement list
   | BreakStatement of string option
-  (* | ConstructorInvocation *)
+  | ConstructorInvocation of type_ list option (* non wild type arguments *) * expression list option (* expressions *)
   | ContinueStatement of string option
   | DoStatement of statement * expression
   | EmptyStatement
@@ -141,7 +141,7 @@ and statement =
   | IfStatement of expression * statement * statement option
   | LabeledStatement of string * statement
   | ReturnStatement of expression option
-  (* | SuperConstructorInvocation *)
+  | SuperConstructorInvocation of expression option (* primary *) * type_ list option (* non wild type arguments *) * expression list option (* expressions *)
   | SwitchCase of expression option
   | SwitchStatement of expression * statement list
   | SynchronizedStatement of expression * statement  (*TODOMAYBE PROBLEM HERE *)
@@ -696,6 +696,10 @@ and print_statement s deep =
         | AssertStatement (exps) -> print_assert_statement exps deep
         | Block (s) -> print_block s deep
         | BreakStatement (s) -> print_break_statement s deep
+        | ConstructorInvocation (nwta, arg) ->
+            print_string_deep "ConstructorInvocation" deep;
+            apply_opt_list print_type nwta (deep + 1);
+            apply_opt_list print_expression arg (deep + 1)
         | ContinueStatement (s) -> print_continue_statement s deep
         | DoStatement (s, e) -> print_do_statement s e deep
         | EmptyStatement -> print_empty_statement deep
@@ -705,6 +709,11 @@ and print_statement s deep =
         | IfStatement (e, s1, s2) -> print_if_statement e s1 s2 deep
         | LabeledStatement (l, s) -> print_labeled_statement l s deep
         | ReturnStatement (e) -> print_return_statement e deep
+        | SuperConstructorInvocation (p, nwta, arg) ->
+            print_string_deep "SuperConstructorInvocation" deep;
+            apply_opt print_expression p (deep + 1);
+            apply_opt_list print_type nwta (deep + 1);
+            apply_opt_list print_expression arg (deep + 1)
         | SwitchCase  (e) -> print_switch_case e deep
         | SwitchStatement  (e, s) -> print_switch_statement e s deep
         | SynchronizedStatement (e, s) -> print_synchronized_statement e s deep

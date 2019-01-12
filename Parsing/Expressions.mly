@@ -9,7 +9,7 @@
 (* Section 15 Expressions *)
 
 (* 15.8 *)
-primary:
+%public primary:
   | p=primary_no_new_array { p }
   | e=array_creation_expression { e }
 
@@ -60,7 +60,7 @@ class_instance_creation_expression:
   /* | p=primary PERIOD NEW i=identifier a2=type_arguments L_PAR al=argument_list R_PAR cb=class_body {} */
   /* | p=primary PERIOD NEW a=type_arguments i=identifier a2=type_arguments L_PAR al=argument_list R_PAR cb=class_body {} */
 
-%public argument_list:
+%public argument_list: (* expression list *)
   | e=expression { [e] }
   | al=argument_list COMMA e=expression { al @ [e] }
 
@@ -214,12 +214,12 @@ conditional_or_expression:
   | ce=conditional_or_expression OR_LOGICAL e=conditional_and_expression { InfixExpression(ce, OR_LOGICAL, e) }
 
 (* 15.25 *)
-%public conditional_expression:
+%public conditional_expression: (* expression *)
   | e=conditional_or_expression { e }
   | coe=conditional_or_expression QUESTION_MARK e=expression COLON ce=conditional_expression { ConditionalExpression(coe, e, ce) }
 
 (* 15.26 *)
-assignment_expression:
+assignment_expression: (* expression *)
   | e=conditional_expression { e }
   | a=assignment { a }
 
@@ -246,7 +246,7 @@ assignment_operator:
   | RIGHT_SHIFT_UNSIGNED_ASSIGN { RIGHT_SHIFT_UNSIGNED_ASSIGN }
 
 (* 15.27 *)
-%public expression:
+%public expression: (* expression *)
   | e=assignment_expression { e }
 
 (* 15.28 *)

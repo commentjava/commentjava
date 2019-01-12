@@ -33,7 +33,7 @@ floating_point_type:
   | DOUBLE { Double }
 
 (* 4.3 *)
-%inline %public reference_type:
+%inline %public reference_type: (* type_ *)
   | t=class_or_interface_type { t }
   /* | t=type_variable { t } */
   | t=array_type { t }
@@ -48,7 +48,7 @@ floating_point_type:
 type_variable: (* type_ *)
   | i=identifier { SimpleType(ExpressionName(SimpleName(i))) }
 
-array_type:
+array_type: (* type_ *)
   | t=type_ L_BRACKET R_BRACKET { ArrayType(t, 0) }
 
 (* 4.4 *)
@@ -66,21 +66,21 @@ additional_bound: (* type_ *)
   | AND_BITWISE cit=class_or_interface_type { cit }
 
 (* 4.5 *)
-%public type_arguments:
+%public type_arguments: (* type_ list *)
   | LOWER al=actual_type_argument_list GREATER { al }
 
-actual_type_argument_list:
+actual_type_argument_list: (* type_ list *)
   | a=actual_type_argument { [a] }
   | al=actual_type_argument_list COMMA a=actual_type_argument { al @ [a] }
 
-actual_type_argument:
+actual_type_argument: (* type_ *)
   | t=reference_type { t }
   | w=wildcard { w }
 
-wildcard:
+wildcard: (* type_ *)
   | QUESTION_MARK { WildcardType(None) }
   | QUESTION_MARK b=wildcard_bounds { WildcardType(Some b) }
 
-wildcard_bounds:
+wildcard_bounds: (* type_ *)
   | EXTENDS t=reference_type { t }
   | SUPER t=reference_type { t }
