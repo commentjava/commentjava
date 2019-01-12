@@ -51,7 +51,7 @@ type_declaration: (* bodyDeclaration *)
   | c=class_declaration { c }
   | id=interface_declaration { id }
   | e=enum_declaration { e } (* section 8.1 *)
-(* TODO | SEMICOLON { }*)
+  | SEMICOLON { EmptyBodyDeclaration }
 
 (* SECTION 8.1 *)
 %inline %public class_declaration: (* bodyDeclaration *)
@@ -119,7 +119,7 @@ class_member_declaration: (* bodyDeclaration *)
   | md=method_declaration { md }
   | cd=class_declaration { cd }
   | id=interface_declaration { id }
-  (* | SEMICOLON !!! TODO *)
+  | SEMICOLON { EmptyBodyDeclaration }
 
 (* SECTION 8.3 *)
 field_declaration: (* bodyDeclaration *)
@@ -273,7 +273,7 @@ interface_member_declaration: (* bodyDeclaration *)
   | cd=constant_declaration { cd }
   | cd=class_declaration { cd }
   | id=interface_declaration { id }
-  (* | SEMICOLON {  } TODO *)
+  | SEMICOLON { EmptyBodyDeclaration }
 
 (* SECTION 9.3 *)
 %inline constant_declaration: (* bodyDeclaration *)

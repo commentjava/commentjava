@@ -125,6 +125,7 @@ and bodyDeclaration =
   | ConstructorBody of string option (* TODO ExplicitConstructorInvocation *) * statement list option (* block_statements *)
   | ConstructorDeclaration of expression list option (* contructor_modifiers *) * typeParameter list option (* type *) * string (* identifier *) * variableDeclaration list option (* parameters  *) * type_ list option (* throws *) * bodyDeclaration (* constructor_body *)
   | MethodDeclaration of expression list option (* extendedMofifiers *) * typeParameter list option (* type parameters *) * type_ (* resultType *) * string (* identifier *) * variableDeclaration list option (* formal parameters *) * type_ list option (* throws *) * statement option (* body *)
+  | EmptyBodyDeclaration
 
 and statement =
     AssertStatement of expression list
@@ -818,7 +819,8 @@ and print_bodyDeclaration bd deep =
         | ConstructorBody ( ei, bs ) -> (* TODO ei *)
             print_string_deep "ConstructorBody" deep;
             apply_opt_list print_statement bs (deep + 1)
-
+        | EmptyBodyDeclaration ->
+            print_string_deep "EmptyDeclaration" deep;
 ;;
 
 
