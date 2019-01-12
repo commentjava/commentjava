@@ -20,33 +20,28 @@
 
 (* SECTION 7.3 *)
 compilation_unit: (* compilationUnit *)
-  | t=type_declarations? EOF { CompilationUnit_(None, None, t) }
-  | i=import_declarations t=type_declarations? EOF { CompilationUnit_(None, (Some i), t) }
-  | p=package_declaration i=import_declarations? t=type_declarations? EOF { CompilationUnit_((Some p), i, t) }
+  | t=type_declarations? EOF { CompilationUnit(None, None, t) }
+  | i=import_declarations t=type_declarations? EOF { CompilationUnit(None, (Some i), t) }
+  | p=package_declaration i=import_declarations? t=type_declarations? EOF { CompilationUnit(Some p, i, t) }
 
 import_declarations: (* importDeclaration list *)
-  | is=import_declarations i=import_declaration { is @ [i] }
-  | i=import_declaration { [i] }
+  | is=nonempty_list(import_declaration) { is }
 
 type_declarations: (* bodyDeclaration list *)
-  | t=type_declaration { [t] }
-  | ts=type_declarations t=type_declaration { ts @ [t] }
+  | ts=nonempty_list(type_declaration) { ts }
 
 (* SECTION 7.4 *)
 
 package_declaration: (* packageDeclaration *)
-  | a=annotations? PACKAGE p=name SEMICOLON { PackageDeclaration_(a, p) }
+  | a=ioption(annotations) PACKAGE p=name SEMICOLON { PackageDeclaration(a, p) }
 
 (* SECTION 7.5 *)
 
 import_declaration: (* importDeclaration *)
-  | IMPORT STATIC n=name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(true, n, true) }
-  | IMPORT n=name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(false, n, true) }
-  | IMPORT STATIC n=name SEMICOLON { ImportDeclaration_(true, n, false) }
-  | IMPORT n=name SEMICOLON { ImportDeclaration_(false, n, false) }
+  | IMPORT s=boption(STATIC) n=name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(s, n, true) }
+  | IMPORT s=boption(STATIC) n=name SEMICOLON { ImportDeclaration_(s, n, false) }
 
 (* SECTION 7.6 *)
-
 type_declaration: (* bodyDeclaration *)
   | c=class_declaration { c }
   | id=interface_declaration { id }
@@ -54,7 +49,7 @@ type_declaration: (* bodyDeclaration *)
   | SEMICOLON { EmptyBodyDeclaration }
 
 (* SECTION 8.1 *)
-%inline %public class_declaration: (* bodyDeclaration *)
+%public class_declaration: (* bodyDeclaration *)
   | em=extended_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body {
           match check_modifiers check_class_modifier em with
           | true -> ClassDeclaration(em, i, tp, s, it, cb)
@@ -64,8 +59,7 @@ type_declaration: (* bodyDeclaration *)
 (* SECTION 8.1.1 *)
 (* WARNING : Eclipse spec used -> class_modifiers replaced by extended_modifiers *)
 extended_modifiers: (* expression list *)
-  | em=extended_modifier { [em] }
-  | em=extended_modifier ems=extended_modifiers { em::ems }
+  | ems=nonempty_list(extended_modifier) { ems }
 
 (* XXX: This matches also FieldModifiers *)
 extended_modifier: (* expression *)
@@ -105,8 +99,7 @@ interface_type_list: (* type_ list *)
   | L_BRACE cbd=class_body_declarations? R_BRACE { cbd }
 
 class_body_declarations: (* bodyDeclaration list *)
-  | cbd=class_body_declaration { [cbd] }
-  | cbd=class_body_declaration cbds=class_body_declarations { cbd::cbds }
+  | cbds=nonempty_list(class_body_declaration) { cbds }
 
 class_body_declaration: (* bodyDeclaration *)
   | cd=constructor_declaration { cd }
@@ -131,7 +124,7 @@ field_declaration: (* bodyDeclaration *)
 
 %inline variable_declarator: (* variableDeclaration *)
   | vdi=variable_declarator_id { match vdi with (i, d) -> VariableDeclarationFragment(i, d, None) }
-  | vdi=variable_declarator_id ASSIGN vi=variable_initializer { match vdi with (i, d) -> VariableDeclarationFragment(i, d, (Some vi)) }
+  | vdi=variable_declarator_id ASSIGN vi=variable_initializer { match vdi with (i, d) -> VariableDeclarationFragment(i, d, Some vi) }
 
 %inline variable_declarator_id: (* sting * int *)
   | i=identifier { (i, 0) }
@@ -181,9 +174,9 @@ formal_parameters: (* variableDeclaration list *)
   }
 
 %public %inline formal_parameter: (* variableDeclaration *)
-  | vm=variable_modifiers? t=type_ e=ELLIPSIS? vd=variable_declarator_id {
+  | vm=variable_modifiers? t=type_ e=boption(ELLIPSIS) vd=variable_declarator_id {
     match vd with
-    | i, n -> SingleVariableDeclaration(vm, t, None, is_some e, i, n, None)
+    | i, n -> SingleVariableDeclaration(vm, t, None, e, i, n, None)
   }
 
 (* SECTION 8.6 *)
@@ -203,8 +196,7 @@ constructor_declaration: (* bodyDeclaration *)
           | false -> error ("Invalid modifier for constructor " ^ id) $startpos
   }
 constructor_declarator: (* contructorDeclarator *)
-  | L_PAR R_PAR { None }
-  | L_PAR fp=formal_parameters R_PAR { Some fp }
+  | fp=delimited(L_PAR, formal_parameters, R_PAR) { fp }
 
 throws: (* type_ list *)
   | THROWS tl=exception_type_list { tl }
@@ -217,7 +209,7 @@ constructor_body: (* bodyDeclaration *)
   | L_BRACE (* TODO ExplicitConstructorInvocation? *) bs=block_statements? R_BRACE { ConstructorBody(None, bs) }
 
 (* SECTION 8.9 *)
-%inline enum_declaration: (* bodyDeclaration *)
+enum_declaration: (* bodyDeclaration *)
   | em=extended_modifiers? ENUM i=identifier it=interfaces? eb=enum_body {
           match eb with
           | EnumBody(ec, cb) ->
@@ -235,17 +227,15 @@ enum_constants:
   | c=enum_constant COMMA cs=enum_constants { c::cs }
   | c=enum_constant COMMA { [c] }
 
+  (* TODO: use argumentList instead which is different to formal PARAMETERS see 15.9 *)
 enum_constant:
-  | a=annotations? i=identifier args=arguments? cb=class_body? {
+  | a=ioption(annotations) i=identifier (* args=constructor_declarator *) cb=class_body? {
                  match cb with
-                 | Some c -> EnumConstantDeclaration(a, i, args, c)
-                 | None -> EnumConstantDeclaration(a, i, args, None) }
-
-arguments:
-  | L_PAR arg=argument_list R_PAR { "arg" }
+                 | Some c -> EnumConstantDeclaration(a, i, [] (*TODO*), c)
+                 | None -> EnumConstantDeclaration(a, i, [] (*TODO*), None) }
 
 (* SECTION 9.1 *)
-%inline interface_declaration: (* bodyDeclaration *)
+interface_declaration: (* bodyDeclaration *)
   | em=extended_modifiers? INTERFACE i=identifier tp=type_parameters? ei=extends_interfaces? ib=interface_body {
           match check_modifiers check_interface_modifier em with
           | true -> InterfaceDeclaration(em, i, tp, ei, ib)
@@ -265,8 +255,7 @@ interface_body: (* bodyDeclaration list option *)
   | L_BRACE imds=interface_member_declarations? R_BRACE { imds }
 
 interface_member_declarations: (* bodyDeclaration list *)
-  | imd=interface_member_declaration { [imd] }
-  | imd=interface_member_declaration imds=interface_member_declarations { imd::imds }
+  | imds=nonempty_list(interface_member_declaration) { imds }
 
 interface_member_declaration: (* bodyDeclaration *)
   | amd=abstract_method_declaration { amd }
@@ -276,13 +265,12 @@ interface_member_declaration: (* bodyDeclaration *)
   | SEMICOLON { EmptyBodyDeclaration }
 
 (* SECTION 9.3 *)
-%inline constant_declaration: (* bodyDeclaration *)
+constant_declaration: (* bodyDeclaration *)
   | imms=interface_member_modifiers? t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(imms, t, vds) }
 
 (* WARNING : constant_modifiers replaced by interface_member_modifiers *)
 interface_member_modifiers: (* expression list *)
-  | imm=interface_member_modifier { [imm] }
-  | imm=interface_member_modifier imms=interface_member_modifiers { imm::imms }
+  | imms=nonempty_list(interface_member_modifier) { imms }
 
 interface_member_modifier: (* expression *)
   | ABSTRACT { Modifier(ABSTRACT) } (* abstract_method_modifier remplacement *)
@@ -295,15 +283,14 @@ constant_modifier: (* expression *)
   | a=annotation { a }
 
 (* SECTION 9.4 *)
-%inline abstract_method_declaration: (* bodyDeclaration *)
-  | imms=interface_member_modifiers? (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=formal_parameters? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, None, rt, i, lpl, t, None) }
-  | imms=interface_member_modifiers? tps=type_parameters rt=result_type i=identifier L_PAR lpl=formal_parameters? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, (Some tps), rt, i, lpl, t, None) }
+abstract_method_declaration: (* bodyDeclaration *)
+  | imms=interface_member_modifiers? (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, None, rt, i, lpl, t, None) }
+  | imms=interface_member_modifiers? tps=type_parameters rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, (Some tps), rt, i, lpl, t, None) }
 
 
 (* SECTION 9.7 Annotations *)
 annotations: (* expression list *)
-  | an=annotation { [an] }
-  | an=annotation ans=annotations { an::ans }
+  | ans=list(annotation) { ans }
 
 annotation: (* expression *)
   | na=normal_annotation { na }

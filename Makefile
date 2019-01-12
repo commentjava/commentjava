@@ -1,6 +1,6 @@
 MENHIR := menhir
 OCAMLBUILD := ocamlbuild
-MENHIRFLAGS := --table --dump
+MENHIRFLAGS := --table --dump --explain
 OCAMLFLAGS := -use-ocamlfind -use-menhir -menhir "$(MENHIR) $(MENHIRFLAGS)" -package menhirLib
 
 EXT := native
