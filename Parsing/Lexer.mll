@@ -138,6 +138,7 @@ and nexttoken = parse
   | "]"   { R_BRACKET "r_bracket" }
   | ";"   { SEMICOLON "semicolon" }
   | ","   { COMMA "comma" }
+  | "..." { ELLIPSIS "ellipsis" } (* Note: not in 3.11 *)
   | "."   { PERIOD "period" }
 
 (* Operators - 3.12 *)

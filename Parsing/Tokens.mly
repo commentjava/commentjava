@@ -56,5 +56,6 @@
 
 (* Other *)
 %token <string> AT
+%token <string> ELLIPSIS
 
 %%

@@ -53,7 +53,9 @@ extended_modifiers: (* expression list *)
   | em=extended_modifier { [em] }
   | em=extended_modifier ems=extended_modifiers { em::ems }
 
+(* XXX: This matches also FieldModifiers *)
 extended_modifier: (* expression *)
+  | fm=field_modifier { fm }
   | PUBLIC { Modifier(PUBLIC) }
   | PROTECTED { Modifier(PROTECTED) }
   | PRIVATE { Modifier(PRIVATE) }
@@ -92,10 +94,10 @@ class_body_declarations: (* bodyDeclaration list *)
   | cbd=class_body_declaration cbds=class_body_declarations { cbd::cbds }
 
 class_body_declaration: (* bodyDeclaration *)
+  | cd=constructor_declaration { cd }
   | cmd=class_member_declaration { cmd (*Tree("class_body_declaration", [$1])*)  }
   | ii=instance_initializer { InstanceInitializer(ii) }
   | STATIC ii=instance_initializer { StaticInstanceInitializer(ii) }
-  (* | constructor_declaration TODO *)
 
 class_member_declaration: (* bodyDeclaration *)
   | fd=field_declaration { fd }
@@ -106,7 +108,7 @@ class_member_declaration: (* bodyDeclaration *)
 
 (* SECTION 8.3 *)
 field_declaration: (* bodyDeclaration *)
-  | fm=field_modifiers? t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(fm, t, vds) }
+  | fm=extended_modifiers? t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(fm, t, vds) }
 
 %public variable_declarators: (* variableDeclaration list *)
   | vd=variable_declarator { [vd] }
@@ -125,9 +127,11 @@ variable_declarator_id: (* sting * int *)
   | ai=array_initializer { ai }
 
 (* SECTION 8.3.1 *)
+(* XXX: please use extended_modifiers, then check the tree afterwise 
 field_modifiers: (*expression list *)
   | fm=field_modifier { [fm] }
   | fm=field_modifier fms=field_modifiers { fm::fms }
+*)
 
 field_modifier: (* expression *)
   | PUBLIC { Modifier(PUBLIC) }
@@ -139,9 +143,46 @@ field_modifier: (* expression *)
   | VOLATILE { Modifier(VOLATILE) }
   | a=annotation { a }
 
+
+(* SECTION 8.4 *)
+formal_parameter_list:
+  | fp=last_formal_parameter { [fp] }
+  | fps=formal_parameters COMMA fp=last_formal_parameter { fps @ [fp] }
+
+formal_parameters:
+  | fp=formal_parameter { [fp] }
+  | fps=formal_parameters COMMA fp=formal_parameter { fps @ [fp] }
+
+formal_parameter:
+  | vm=variable_modifiers? t=class_or_interface_type vd=variable_declarator_id { match vd with | i, n -> SingleVariableDeclaration(vm, t, None, false, i, n, None) }
+
+last_formal_parameter:
+  | fp=formal_parameter { fp }
+  | vm=variable_modifiers? t=class_or_interface_type ELLIPSIS vd=variable_declarator_id { match vd with 
+    | i, n -> SingleVariableDeclaration(vm, t, None, true, i, n, None) }
+
+
 (* SECTION 8.6 *)
 %inline instance_initializer: (* statement *)
- | b=block { b }
+  | b=block { b }
+
+(* SECTION 8.8 *)
+constructor_declaration: (* bodyDeclaration *)
+  | cm=extended_modifiers? id=identifier cd=constructor_declarator th=throws? cb=constructor_body { ConstructorDeclaration(cm, None, "id", cd, th, cb) }
+  | cm=extended_modifiers? tp=type_parameters id=identifier cd=constructor_declarator th=throws? cb=constructor_body { ConstructorDeclaration(cm, Some tp, "id", cd, th, cb) }
+
+constructor_declarator: (* contructorDeclarator *)
+  | L_PAR fp=formal_parameter_list? R_PAR { fp }
+
+throws: (* type_ list *)
+  | THROWS tl=exception_type_list { tl }
+
+exception_type_list: (* type_ list *)
+  | et=class_or_interface_type { [et] }
+  | et=class_or_interface_type COMMA ets=exception_type_list { et::ets }
+
+constructor_body: (* bodyDeclaration *)
+  | L_BRACE (* TODO ExplicitConstructorInvocation? *) bs=block_statements? R_BRACE { ConstructorBody(None, bs) }
 
 (* SECTION 8.9 *)
 %inline enum_declaration: (* bodyDeclaration *)

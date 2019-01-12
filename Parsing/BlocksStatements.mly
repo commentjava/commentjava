@@ -16,7 +16,7 @@
   | L_BRACE R_BRACE { Block([]) }
   | L_BRACE bs=block_statements R_BRACE { Block(bs) }
 
-block_statements:
+%public block_statements:
   | b=block_statement { [b] }
   | bs=block_statements b=block_statement { bs @ [b] }
 

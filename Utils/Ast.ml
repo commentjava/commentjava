@@ -122,6 +122,8 @@ and bodyDeclaration =
   | FieldDeclaration of expression list option (*field modifiers*) * type_ (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
   | InstanceInitializer of statement
   | StaticInstanceInitializer of statement
+  | ConstructorBody of string option (* TODO ExplicitConstructorInvocation *) * statement list option (* block_statements *)
+  | ConstructorDeclaration of expression list option (* contructor_modifiers *) * typeParameter list option (* type *) * string (* identifier *) * variableDeclaration list option (* parameters  *) * type_ list option (* throws *) * bodyDeclaration (* constructor_body *)
   (* | MethodDeclaration *)
 
 and statement =
@@ -703,6 +705,9 @@ and print_bodyDeclaration bd deep =
         | StaticInstanceInitializer b ->
             print_string_deep "StaticInstanceInitializer" deep;
             print_statement b (deep + 1)
+        | ConstructorDeclaration (cm,  tp, id, params, throws, bd) ->
+            print_string_deep "ConstructorDeclaration" deep;
+            (* apply_opt_list print_bodyDeclaration bd (deep + 1) *)
 ;;
 
 
