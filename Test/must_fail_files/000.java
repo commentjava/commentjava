@@ -1,0 +1,3 @@
+class firstClass {}
+class otherClass {}
+{}
