@@ -54,13 +54,13 @@ extended_modifiers: (* expression list *)
   | em=extended_modifier ems=extended_modifiers { em::ems }
 
 extended_modifier: (* expression *)
-  | PUBLIC { Modifier("Public") }
-  | PROTECTED { Modifier("Protected") }
-  | PRIVATE { Modifier("Private") }
-  | ABSTRACT { Modifier("Abstract") }
-  | STATIC { Modifier("Static") }
-  | FINAL { Modifier("Final") }
-  | STRICTFP { Modifier("Strictfp") }
+  | PUBLIC { Modifier(PUBLIC) }
+  | PROTECTED { Modifier(PROTECTED) }
+  | PRIVATE { Modifier(PRIVATE) }
+  | ABSTRACT { Modifier(ABSTRACT) }
+  | STATIC { Modifier(STATIC) }
+  | FINAL { Modifier(FINAL) }
+  | STRICTFP { Modifier(STRICTFP) }
   | a=annotation { a } 
 
 (* SECTION 8.1.2 *)
@@ -130,13 +130,13 @@ field_modifiers: (*expression list *)
   | fm=field_modifier fms=field_modifiers { fm::fms }
 
 field_modifier: (* expression *)
-  | PUBLIC { Modifier("Public") }
-  | PROTECTED { Modifier("Protected") }
-  | PRIVATE { Modifier("Private") }
-  | STATIC { Modifier("Static") }
-  | FINAL { Modifier("Final") }
-  | TRANSIENT { Modifier("Transient") }
-  | VOLATILE { Modifier("Volatile") }
+  | PUBLIC { Modifier(PUBLIC) }
+  | PROTECTED { Modifier(PROTECTED) }
+  | PRIVATE { Modifier(PRIVATE) }
+  | STATIC { Modifier(STATIC) }
+  | FINAL { Modifier(FINAL) }
+  | TRANSIENT { Modifier(TRANSIENT) }
+  | VOLATILE { Modifier(VOLATILE) }
   | a=annotation { a }
 
 (* SECTION 8.6 *)
@@ -202,9 +202,9 @@ constant_modifiers: (* expression list *)
   | cm=constant_modifier cms=constant_modifiers { cm::cms }
 
 constant_modifier: (* expression *)
-  | PUBLIC  { Modifier("Public") }
-  | STATIC { Modifier("Static") }
-  | FINAL { Modifier("Final") }
+  | PUBLIC  { Modifier(PUBLIC) }
+  | STATIC { Modifier(STATIC) }
+  | FINAL { Modifier(FINAL) }
   | a=annotation { a }
 
 (* SECTION 9.7 Annotations *)
@@ -266,4 +266,4 @@ reference_type_list:
 
 variable_modifier: (* expression *)
   | FINAL { Modifier(FINAL) }
-  | a=annotation { Expression(a) }
+  | a=annotation { a }

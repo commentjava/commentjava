@@ -58,7 +58,7 @@ type operator =
   | OR_LOGICAL
 
 type variableDeclaration =
-  | SingleVariableDeclaration of ast list option (* ExtendedModifier *) * type_ (*Type*) * expression list option (* Annotation *) * bool (* ... or not *) * string (* identifer *) * int (* Dimension *) * expression option (* = Expression *)
+  | SingleVariableDeclaration of expression list option (* ExtendedModifier *) * type_ (*Type*) * expression list option (* Annotation *) * bool (* ... or not *) * string (* identifer *) * int (* Dimension *) * expression option (* = Expression *)
   | VariableDeclarationFragment of string (*identifier*) * int (*dimensions*) * expression option (*expression*)
 and typeParameter = (*needs types *)
   | TypeParameter of type_ (*identifier*) * type_ list option (*extends: Type*)
@@ -86,7 +86,7 @@ and expression =
     NormalAnnotation of expression (* type name *) * memberValuePair list option (* element value pairs *)
   | MarkerAnnotation of expression (*type name*)
   | SingleMemberAnnotation of expression (*type name*) * expression
-  | Modifier (* because of ExtendedModifier *) of string
+  | Modifier (* because of ExtendedModifier *) of modifier
   | ArrayAccess of expression * expression
   | ArrayCreation of type_ * expression list option * int * expression option
   | ArrayInitializer of expression list option
@@ -154,7 +154,7 @@ and statement =
   | ThrowStatement of expression
   (* | TryStatement *)
   (* | TypeDeclarationStatement *)
-  | VariableDeclarationStatement of ast list * type_ * variableDeclaration list
+  | VariableDeclarationStatement of expression list * type_ * variableDeclaration list
   | WhileStatement of expression * statement
 
 and importDeclaration =
@@ -174,7 +174,6 @@ and ast =
     | Type of type_
     | CompilationUnit of compilationUnit
     | Leaf of string
-    | Modifier of modifier
 
 (*                    *)
 (* PRINTING FUNCTIONS *)
@@ -288,7 +287,7 @@ let rec print_variableDeclaration vd deep =
         | SingleVariableDeclaration (ml, t, el, b, i, d, e) ->
             print_string_deep "SingleVariableDeclaration" deep;
             print_string_deep "Modifiers: " (deep+1);
-            apply_opt_list print_ast_ ml (deep+2);
+            apply_opt_list print_expression ml (deep+2);
             print_string_deep "Type: " (deep+1);
             print_type t (deep+2);
             print_string_deep "Annotations: " (deep+1);
@@ -493,7 +492,8 @@ and print_expression e deep =
             print_expression tn (deep + 1);
             print_expression e (deep + 1)
         | Modifier (s) ->
-            print_string_deep ("Modifier : " ^ s) deep
+            print_string_deep "Modifier";
+            print_modifier s deep
         | ArrayAccess(e1, e2) -> print_array_access e1 e2 deep
         | ArrayCreation(t, el, d, ai) -> print_array_creation t el d ai deep
         | ArrayInitializer(e) -> print_array_initializer e deep
@@ -602,7 +602,7 @@ and print_statement s deep =
     (* VariableDeclarationStatement of ast list * type_ * variableDeclaration list *)
     let print_variable_declaration_statement a t d deep =
         print_string_deep "VariableDeclarationStatement" deep;
-        apply_list print_ast_ a (deep + 1);
+        apply_list print_expression a (deep + 1);
         print_type t (deep + 1);
         apply_list print_variableDeclaration d (deep + 1);
     in
@@ -710,11 +710,6 @@ and print_bodyDeclaration bd deep =
         | StaticInstanceInitializer b ->
             print_string_deep "StaticInstanceInitializer" deep;
             print_statement b (deep + 1)
-
-and print_ast_ a deep =
-    match a with
-        | Expression (e) -> print_expression e (deep)
-        | Modifier (m) -> print_modifier m (deep)
 ;;
 
 
