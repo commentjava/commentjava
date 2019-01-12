@@ -65,7 +65,6 @@ and typeParameter = (*needs types *)
 and memberValuePair =
   | MemberValuePair of string (* name *) * expression
 and type_ =
-  (*| NameQualifiedType of ExpressionName (* * Annotation *) * SimpleName *)
   | Byte
   | Short
   | Char
@@ -80,8 +79,6 @@ and type_ =
   | WildcardType of type_ option
   | ArrayType of type_ * int
   | ParameterizedType of type_ * type_ list option
-  (* | UnionType *)
-  (* | IntersectionType *)
 and expression =
     NormalAnnotation of expression (* type name *) * memberValuePair list option (* element value pairs *)
   | MarkerAnnotation of expression (*type name*)
@@ -96,15 +93,11 @@ and expression =
   | CharacterLiteral of string
   | ClassInstanceCreation of expression list option * type_ list option * type_ * expression list option * bodyDeclaration list option
   | ConditionalExpression of expression * expression * expression
-  (* | CreationReference *)
-  (* | ExpressionMethodReference *)
   (* Different from doc where InfixExpression is: Expression InfixOperator Expression { InfixOperator Expression } *)
   | InfixExpression of expression * operator * expression
   | FieldAccess of expression * expression
   | InstanceofExpression of expression * type_
-  (* | LambdaExpression *)
   | MethodInvocation of expression list option * type_ list option * expression *  expression list option
-  (* | MethodReference *)
   | ExpressionName of name
   | NullLiteral
   | NumberLiteral of string
@@ -114,10 +107,8 @@ and expression =
   | StringLiteral of string
   | SuperFieldAccess of expression option * expression
   | SuperMethodInvocation of expression list option * type_ list option * expression *  expression list option
-  (* | SuperMethodReference *)
   | ThisExpression of expression option
   | TypeLiteral of type_ option
-  (* | TypeMethodReference *)
   (* | VariableDeclarationExpression *)
 
 and bodyDeclaration =
@@ -212,8 +203,6 @@ let rec apply_opt_list f aOptList deep =
     apply_opt (apply_list f) aOptList deep
 ;;
 (**)
-
-
 
 
 let rec print_name name =
