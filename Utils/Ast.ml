@@ -171,6 +171,78 @@ and ast =
     | Leaf of string
 
 (*                    *)
+(*    AST checking    *)
+(*                    *)
+
+let check_contructor_modifer m =
+  match m with
+  | Modifier(PRIVATE) -> true
+  | Modifier(PROTECTED) -> true
+  | Modifier(PUBLIC) -> true
+  | NormalAnnotation(_, _) -> true
+  | MarkerAnnotation(_) -> true
+  | SingleMemberAnnotation(_, _) -> true
+  | _ -> false
+;;
+
+let check_class_modifier m =
+  match m with
+  | Modifier(PUBLIC) -> true
+  | Modifier(PROTECTED) -> true
+  | Modifier(PRIVATE) -> true
+  | Modifier(ABSTRACT) -> true
+  | Modifier(STATIC) -> true
+  | Modifier(FINAL) -> true
+  | Modifier(STRICTFP) -> true
+  | NormalAnnotation(_, _) -> true
+  | MarkerAnnotation(_) -> true
+  | SingleMemberAnnotation(_, _) -> true
+  | _ -> false
+;;
+
+let check_interface_modifier m =
+  match m with
+  | Modifier(PUBLIC) -> true
+  | Modifier(PROTECTED) -> true
+  | Modifier(PRIVATE) -> true
+  | Modifier(ABSTRACT) -> true
+  | Modifier(STATIC) -> true
+  | Modifier(STRICTFP) -> true
+  | NormalAnnotation(_, _) -> true
+  | MarkerAnnotation(_) -> true
+  | SingleMemberAnnotation(_, _) -> true
+  | _ -> false
+;;
+
+let check_method_modifier m =
+  match m with
+  | Modifier(PUBLIC) -> true
+  | Modifier(PROTECTED) -> true
+  | Modifier(PRIVATE) -> true
+  | Modifier(ABSTRACT) -> true
+  | Modifier(STATIC) -> true
+  | Modifier(FINAL) -> true
+  | Modifier(SYNCHRONIZED) -> true
+  | Modifier(NATIVE) -> true
+  | Modifier(STRICTFP) -> true
+  | NormalAnnotation(_, _) -> true
+  | MarkerAnnotation(_) -> true
+  | SingleMemberAnnotation(_, _) -> true
+  | _ -> false
+;;
+
+let check_modifiers checker cm =
+  let rec m_check mods =
+    match mods with
+    | [] -> true
+    | m :: ms -> (m_check ms) && (checker m)
+  in
+  match cm with
+  | None -> true
+  | Some cm -> m_check cm
+;;
+
+(*                    *)
 (* PRINTING FUNCTIONS *)
 (*                    *)
 

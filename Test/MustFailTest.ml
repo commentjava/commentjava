@@ -12,7 +12,10 @@ let succeed ast =
   assert false
 
 let print_lexbuf lexbuf =
-    TestHelper.loop lexbuf (Parser.Incremental.compilation_unit lexbuf.lex_curr_p) succeed fail
+    try
+      TestHelper.loop lexbuf (Parser.Incremental.compilation_unit lexbuf.lex_curr_p) succeed fail
+    with
+    | Failure(_) -> ()
 
 let check_file file =
   (* Raise an execption if the file can't be interpreted by the lexer *)

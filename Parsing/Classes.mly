@@ -1,5 +1,11 @@
 %{
     open Ast
+    let create_error_message msg (position : Lexing.position) =
+      position.pos_fname ^ ": " ^ msg ^ "\n"
+      ^ "line " ^ (string_of_int position.pos_lnum)
+      ^ " column " ^ (string_of_int (position.pos_cnum - position.pos_bol))
+    let error msg position =
+      raise (Failure (create_error_message msg position))
 %}
 
 
@@ -45,7 +51,11 @@ type_declaration: (* bodyDeclaration *)
 
 (* SECTION 8.1 *)
 %inline %public class_declaration: (* bodyDeclaration *)
-  | em=extended_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body { ClassDeclaration(em, i, tp, s, it, cb) }
+  | em=extended_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body {
+          match check_modifiers check_class_modifier em with
+          | true -> ClassDeclaration(em, i, tp, s, it, cb)
+          | false -> error ("Invalid modifier for class " ^ i) $startpos
+}
 
 (* SECTION 8.1.1 *)
 (* WARNING : Eclipse spec used -> class_modifiers replaced by extended_modifiers *)
@@ -55,7 +65,6 @@ extended_modifiers: (* expression list *)
 
 (* XXX: This matches also FieldModifiers *)
 extended_modifier: (* expression *)
-  | fm=field_modifier { fm }
   | PUBLIC { Modifier(PUBLIC) }
   | PROTECTED { Modifier(PROTECTED) }
   | PRIVATE { Modifier(PRIVATE) }
@@ -63,6 +72,8 @@ extended_modifier: (* expression *)
   | STATIC { Modifier(STATIC) }
   | FINAL { Modifier(FINAL) }
   | STRICTFP { Modifier(STRICTFP) }
+  | TRANSIENT { Modifier(TRANSIENT) }
+  | VOLATILE { Modifier(VOLATILE) }
   | a=annotation { a } 
 
 (* SECTION 8.1.2 *)
@@ -127,26 +138,27 @@ field_declaration: (* bodyDeclaration *)
   | ai=array_initializer { ai }
 
 (* SECTION 8.3.1 *)
-(* XXX: please use extended_modifiers, then check the tree afterwise 
+(* XXX: please use extended_modifiers, and check the tree with check_*_modifier
 field_modifiers: (*expression list *)
   | fm=field_modifier { [fm] }
   | fm=field_modifier fms=field_modifiers { fm::fms }
 *)
 
 field_modifier: (* expression *)
-  | PUBLIC { Modifier(PUBLIC) }
-  | PROTECTED { Modifier(PROTECTED) }
-  | PRIVATE { Modifier(PRIVATE) }
-  | STATIC { Modifier(STATIC) }
-  | FINAL { Modifier(FINAL) }
-  | TRANSIENT { Modifier(TRANSIENT) }
-  | VOLATILE { Modifier(VOLATILE) }
   | a=annotation { a }
 
 (* SECTION 8.4 *)
 method_declaration:
-  | em=extended_modifiers? rt=result_type i=identifier L_PAR fpl=formal_parameter_list? R_PAR t=throws? mb=method_body { MethodDeclaration(em, None, rt, i, fpl, t, Some mb) }
-  | em=extended_modifiers? tp=type_parameters rt=result_type i=identifier L_PAR fpl=formal_parameter_list? R_PAR t=throws? mb=method_body { MethodDeclaration(em, Some tp, rt, i, fpl, t, Some mb) }
+  | em=extended_modifiers? rt=result_type i=identifier L_PAR fpl=formal_parameter_list? R_PAR t=throws? mb=method_body {
+          match check_modifiers check_method_modifier em with
+          | true -> MethodDeclaration(em, None, rt, i, fpl, t, Some mb)
+          | false -> error ("Invalid modifier for method " ^ i) $startpos
+  }
+  | em=extended_modifiers? tp=type_parameters rt=result_type i=identifier L_PAR fpl=formal_parameter_list? R_PAR t=throws? mb=method_body {
+          match check_modifiers check_method_modifier em with
+          | true -> MethodDeclaration(em, Some tp, rt, i, fpl, t, Some mb)
+          | false -> error ("Invalid modifier for method " ^ i) $startpos
+  }
 
 method_body:
   | b=block { b }
@@ -182,9 +194,16 @@ formal_parameters: (* variableDeclaration list *)
 
 (* SECTION 8.8 *)
 constructor_declaration: (* bodyDeclaration *)
-  | cm=extended_modifiers? id=identifier cd=constructor_declarator th=throws? cb=constructor_body { ConstructorDeclaration(cm, None, id, cd, th, cb) }
-  | cm=extended_modifiers? tp=type_parameters id=identifier cd=constructor_declarator th=throws? cb=constructor_body { ConstructorDeclaration(cm, Some tp, "id", cd, th, cb) }
-
+  | cm=extended_modifiers? id=identifier cd=constructor_declarator th=throws? cb=constructor_body {
+          match check_modifiers check_contructor_modifer cm with
+          | true -> ConstructorDeclaration(cm, None, id, cd, th, cb)
+          | false -> error ("Invalid modifier for constructor " ^ id) $startpos
+  }
+  | cm=extended_modifiers? tp=type_parameters id=identifier cd=constructor_declarator th=throws? cb=constructor_body {
+          match check_modifiers check_contructor_modifer cm with
+          | true -> ConstructorDeclaration(cm, Some tp, id, cd, th, cb)
+          | false -> error ("Invalid modifier for constructor " ^ id) $startpos
+  }
 constructor_declarator: (* contructorDeclarator *)
   | L_PAR R_PAR { None }
   | L_PAR fp=formal_parameter_list R_PAR { Some fp }
@@ -201,8 +220,13 @@ constructor_body: (* bodyDeclaration *)
 
 (* SECTION 8.9 *)
 %inline enum_declaration: (* bodyDeclaration *)
-  | em=extended_modifiers? ENUM i=identifier it=interfaces? eb=enum_body { match eb with
-  | EnumBody(ec, cb) -> EnumDeclaration(em, i, it, ec, cb) }
+  | em=extended_modifiers? ENUM i=identifier it=interfaces? eb=enum_body {
+          match eb with
+          | EnumBody(ec, cb) ->
+                match check_modifiers check_class_modifier em with
+                | true -> EnumDeclaration(em, i, it, ec, cb)
+          | false -> error ("Invalid modifier for enum " ^ i) $startpos
+  }
 
 enum_body:
   | L_BRACE ec=enum_constants? R_BRACE { EnumBody(ec, None) }
@@ -224,7 +248,11 @@ arguments:
 
 (* SECTION 9.1 *)
 %inline interface_declaration: (* bodyDeclaration *)
-  | em=extended_modifiers? INTERFACE i=identifier tp=type_parameters? ei=extends_interfaces? ib=interface_body { InterfaceDeclaration(em, i, tp, ei, ib) }
+  | em=extended_modifiers? INTERFACE i=identifier tp=type_parameters? ei=extends_interfaces? ib=interface_body {
+          match check_modifiers check_interface_modifier em with
+          | true -> InterfaceDeclaration(em, i, tp, ei, ib)
+          | false -> error ("Invalid modifier for interface " ^ i) $startpos
+  }
 
 (* SECTION 9.1.1 *)
 (* WARNING : Eclipse spec used -> interface_modifiers replaced by extended_modifiers *)

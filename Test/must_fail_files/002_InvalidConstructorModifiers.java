@@ -1,0 +1,5 @@
+class testClass {
+        transient testClass() {
+        
+        }
+}
