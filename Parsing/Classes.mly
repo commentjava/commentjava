@@ -101,7 +101,7 @@ class_body_declaration: (* bodyDeclaration *)
 
 class_member_declaration: (* bodyDeclaration *)
   | fd=field_declaration { fd }
-  (* | method_declaration TODO *)
+  | md=method_declaration { md }
   | cd=class_declaration { cd }
   | id=interface_declaration { id }
   (* | SEMICOLON !!! TODO *)
@@ -144,7 +144,13 @@ field_modifier: (* expression *)
   | a=annotation { a }
 
 (* SECTION 8.4 *)
-(* method_declaration: TODO *)
+method_declaration:
+  | em=extended_modifiers? rt=result_type i=identifier L_PAR fpl=formal_parameter_list? R_PAR t=throws? mb=method_body { MethodDeclaration(em, None, rt, i, fpl, t, Some mb) }
+  | em=extended_modifiers? tp=type_parameters rt=result_type i=identifier L_PAR fpl=formal_parameter_list? R_PAR t=throws? mb=method_body { MethodDeclaration(em, Some tp, rt, i, fpl, t, Some mb) }
+
+method_body:
+  | b=block { b }
+(* TODO: | SEMICOLON {} *)
 
 (* method_header: TODO *)
 
@@ -264,8 +270,8 @@ constant_modifier: (* expression *)
 
 (* SECTION 9.4 *)
 %inline abstract_method_declaration: (* bodyDeclaration *)
-  | imms=interface_member_modifiers? (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=formal_parameter_list? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, None, rt, i, lpl, t, "" (* TODO : change *)) }
-  | imms=interface_member_modifiers? tps=type_parameters rt=result_type i=identifier L_PAR lpl=formal_parameter_list? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, (Some tps), rt, i, lpl, t, "" (* TODO : change *)) }
+  | imms=interface_member_modifiers? (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=formal_parameter_list? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, None, rt, i, lpl, t, None) }
+  | imms=interface_member_modifiers? tps=type_parameters rt=result_type i=identifier L_PAR lpl=formal_parameter_list? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, (Some tps), rt, i, lpl, t, None) }
 
 (* WARNING : abstract_method_modifiers replaced by interface_member_modifiers *)
 abstract_method_modifier: (* expression *)

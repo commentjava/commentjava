@@ -124,7 +124,7 @@ and bodyDeclaration =
   | StaticInstanceInitializer of statement
   | ConstructorBody of string option (* TODO ExplicitConstructorInvocation *) * statement list option (* block_statements *)
   | ConstructorDeclaration of expression list option (* contructor_modifiers *) * typeParameter list option (* type *) * string (* identifier *) * variableDeclaration list option (* parameters  *) * type_ list option (* throws *) * bodyDeclaration (* constructor_body *)
-  | MethodDeclaration of expression list option (* extendedMofifiers *) * typeParameter list option (* type parameters *) * type_ (* resultType *) * string (* identifier *) * variableDeclaration list option (* formal parameters *) * type_ list option (* throws *) * string (* body TODO : change *)
+  | MethodDeclaration of expression list option (* extendedMofifiers *) * typeParameter list option (* type parameters *) * type_ (* resultType *) * string (* identifier *) * variableDeclaration list option (* formal parameters *) * type_ list option (* throws *) * statement option (* body *)
 
 and statement =
     AssertStatement of expression list
@@ -634,6 +634,10 @@ and print_statement s deep =
         | VariableDeclarationStatement (a, t, d) -> print_variable_declaration_statement a t d deep
         | WhileStatement (e, s) -> print_while_statement e s deep
         | LocalClassDeclarationStatement (d) -> print_local_class_declaration_statement d deep 
+and print_opt_statement os depth =
+  match os with
+    | Some s -> print_statement s depth
+    | None -> ()
 (*
 let rec print_bodyDeclaration bd deep =
     let print_string_deep a deep =
@@ -733,7 +737,7 @@ and print_bodyDeclaration bd deep =
             print_string_deep i (deep + 1);
             apply_opt_list print_variableDeclaration lpl (deep + 1);
             apply_opt_list print_type t (deep + 1);
-            print_string_deep mb (deep + 1) (* TODO : change *)
+            print_opt_statement mb (deep + 1)
         | ConstructorBody ( ei, bs ) -> (* TODO ei *)
             print_string_deep "ConstructorBody" deep;
             apply_opt_list print_statement bs (deep + 1)
