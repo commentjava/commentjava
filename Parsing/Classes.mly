@@ -156,20 +156,21 @@ field_modifier: (* expression *)
   | i=identifier L_PAR (* lpl=formal_parameter_list? TODO : add *) R_PAR {  }
 
 (* SECTION 8.4.1 *)
-formal_parameter_list:
+(* TODO: do post processing on tree to remove last_parameter_list in the middle *)
+formal_parameter_list: (* variableDeclaration list *)
+  | fps=formal_parameters { fps }
+
+formal_parameters: (* variableDeclaration list *)
   | fp=last_formal_parameter { [fp] }
-  | fps=formal_parameters COMMA fp=last_formal_parameter { fps @ [fp] }
-
-formal_parameters:
   | fp=formal_parameter { [fp] }
-  | fps=formal_parameters COMMA fp=formal_parameter { fps @ [fp] }
+  | fp=formal_parameter COMMA fps=formal_parameters { fp::fps }
+  | fp=last_formal_parameter COMMA fps=formal_parameters { fp::fps }
 
-formal_parameter:
-  | vm=variable_modifiers? t=class_or_interface_type vd=variable_declarator_id { match vd with | i, n -> SingleVariableDeclaration(vm, t, None, false, i, n, None) }
+%inline formal_parameter: (* variableDeclaration *)
+  | vm=variable_modifiers? t=type_ vd=variable_declarator_id { match vd with | i, n -> SingleVariableDeclaration(vm, t, None, false, i, n, None) }
 
-last_formal_parameter:
-  | fp=formal_parameter { fp }
-  | vm=variable_modifiers? t=class_or_interface_type ELLIPSIS vd=variable_declarator_id { match vd with 
+%inline last_formal_parameter: (* variableDeclaration *)
+  | vm=variable_modifiers? t=type_ ELLIPSIS vd=variable_declarator_id { match vd with
     | i, n -> SingleVariableDeclaration(vm, t, None, true, i, n, None) }
 
 (* SECTION 8.6 *)
@@ -178,11 +179,12 @@ last_formal_parameter:
 
 (* SECTION 8.8 *)
 constructor_declaration: (* bodyDeclaration *)
-  | cm=extended_modifiers? id=identifier cd=constructor_declarator th=throws? cb=constructor_body { ConstructorDeclaration(cm, None, "id", cd, th, cb) }
+  | cm=extended_modifiers? id=identifier cd=constructor_declarator th=throws? cb=constructor_body { ConstructorDeclaration(cm, None, id, cd, th, cb) }
   | cm=extended_modifiers? tp=type_parameters id=identifier cd=constructor_declarator th=throws? cb=constructor_body { ConstructorDeclaration(cm, Some tp, "id", cd, th, cb) }
 
 constructor_declarator: (* contructorDeclarator *)
-  | L_PAR fp=formal_parameter_list? R_PAR { fp }
+  | L_PAR R_PAR { None }
+  | L_PAR fp=formal_parameter_list R_PAR { Some fp }
 
 throws: (* type_ list *)
   | THROWS tl=exception_type_list { tl }

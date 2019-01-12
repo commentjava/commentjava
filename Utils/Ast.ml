@@ -706,8 +706,13 @@ and print_bodyDeclaration bd deep =
             print_string_deep "StaticInstanceInitializer" deep;
             print_statement b (deep + 1)
         | ConstructorDeclaration (cm,  tp, id, params, throws, bd) ->
-            print_string_deep "ConstructorDeclaration" deep
-            (* apply_opt_list print_bodyDeclaration bd (deep + 1) *)
+            print_string_deep "ConstructorDeclaration" deep;
+            print_string_deep id    (deep + 1);
+            apply_opt_list print_expression cm (deep + 1);
+            apply_opt_list print_typeParameter tp (deep + 1);
+            apply_opt_list print_variableDeclaration params (deep + 1);
+            apply_opt_list print_type throws (deep + 1);
+            print_bodyDeclaration bd (deep + 1)
         | MethodDeclaration (em, tp, rt, md, t, mb) ->
             print_string_deep "MethodDeclaration" deep;
             apply_opt_list print_typeParameter tp (deep + 1);
@@ -715,6 +720,9 @@ and print_bodyDeclaration bd deep =
             print_string_deep "md" (deep + 1); (* TODO : change *)
             apply_opt_list print_type t (deep + 1);
             print_string_deep mb (deep + 1) (* TODO : change *)
+        | ConstructorBody ( ei, bs ) -> (* TODO ei *)
+            print_string_deep "ConstructorBody" deep;
+            apply_opt_list print_statement bs (deep + 1)
 
 ;;
 
