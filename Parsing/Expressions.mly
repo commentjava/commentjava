@@ -15,7 +15,7 @@ primary:
 
 primary_no_new_array:
   | l=literal { l }
-  | t=type_ PERIOD CLASS { TypeLiteral(Some t) }
+  /* | t=type_ PERIOD CLASS { TypeLiteral(Some t) } */
   | VOID PERIOD CLASS { TypeLiteral(None) }
   | THIS { ThisExpression(None) }
   | n=name PERIOD THIS { ThisExpression(Some n) }
@@ -142,6 +142,7 @@ unary_expression:
   | DECREMENT e=unary_expression { PrefixExpression(e, DECREMENT) }
 
 unary_expression_not_plus_minus:
+  | L_PAR re=name LOWER e=shift_expression R_PAR { ParenthesizedExpression(InfixExpression(re, LOWER, e)) } (* Force to match (a < b) before (s<T>) *)
   | e=postfix_expression { e }
   | COMPLEMENT_BITWISE e=unary_expression { PrefixExpression(e, COMPLEMENT) }
   | NOT_LOGICAL e=unary_expression { PrefixExpression(e, NOT) }
@@ -180,7 +181,6 @@ relational_expression:
   | re=relational_expression GREATER e=shift_expression { InfixExpression(re, GREATER, e) }
   | re=relational_expression LOWER_OR_EQUAL e=shift_expression { InfixExpression(re, LOWER_OR_EQUAL, e) }
   | re=relational_expression GREATER_OR_EQUAL e=shift_expression { InfixExpression(re, GREATER_OR_EQUAL, e) }
-  | re=relational_expression LOWER e=shift_expression INSTANCEOF t=reference_type { InstanceofExpression(InfixExpression(re, LOWER, e), t) }
   (* TODO: check this again because it may be broken but it is maybe not important ¯\_(ツ)_/¯*)
   | re=relational_expression INSTANCEOF t=reference_type { InstanceofExpression(re, t) }
 

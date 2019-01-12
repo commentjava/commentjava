@@ -8,8 +8,8 @@
     myVar = a<<b;
     myVar = a>>b;
     myVar = a>>>b;
-    // myVar = a<b;
-    // myVar = a>b;
+    myVar = a<b;
+    myVar = a>b;
     myVar = a<=b;
     myVar = a>=b;
     myVar = a==b;
