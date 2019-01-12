@@ -148,12 +148,9 @@ field_modifier: (* expression *)
 
 (* method_header: TODO *)
 
-%inline result_type: (* type_ TODO : verify*)
+%inline result_type: (* type_ *)
   | t=type_ { t }
   | VOID { Void }
-
-%inline method_declarator: (* ??? TODO *)
-  | i=identifier L_PAR (* lpl=formal_parameter_list? TODO : add *) R_PAR {  }
 
 (* SECTION 8.4.1 *)
 (* TODO: do post processing on tree to remove last_parameter_list in the middle *)
@@ -248,8 +245,6 @@ interface_member_declaration: (* bodyDeclaration *)
 
 (* SECTION 9.3 *)
 %inline constant_declaration: (* bodyDeclaration *)
-  (*| imms=interface_member_modifiers? t=type_ vd=variable_declarator SEMICOLON { FieldDeclaration(imms, t, [vd]) }
-  | imms=interface_member_modifiers? t=type_ vd=variable_declarator COMMA vds=variable_declarators SEMICOLON { FieldDeclaration(imms, t, vd::vds) }*)
   | imms=interface_member_modifiers? t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(imms, t, vds) }
 
 (* WARNING : constant_modifiers replaced by interface_member_modifiers *)
@@ -258,41 +253,26 @@ interface_member_modifiers: (* expression list *)
   | imm=interface_member_modifier imms=interface_member_modifiers { imm::imms }
 
 interface_member_modifier: (* expression *)
-  | PUBLIC  { Modifier(PUBLIC) }
-  | STATIC { Modifier(STATIC) }
-  | FINAL { Modifier(FINAL) }
-  | ABSTRACT { Modifier(ABSTRACT) }
-  | a=annotation { a }
-(*
-constant_modifiers: (* expression list *)
-  | cm=constant_modifier { [cm] }
-  | cm=constant_modifier cms=constant_modifiers { cm::cms }
+  | cm=constant_modifier { cm }
+  | amm=abstract_method_modifier { amm }
 
 constant_modifier: (* expression *)
   | PUBLIC  { Modifier(PUBLIC) }
   | STATIC { Modifier(STATIC) }
   | FINAL { Modifier(FINAL) }
   | a=annotation { a }
-*)
 
 (* SECTION 9.4 *)
-%inline abstract_method_declaration: (* bodyDeclaration (MethodDeclaration) TODO : verify *)
-  | imms=interface_member_modifiers? (* no type_parameters *) rt=result_type md=method_declarator (*t=throws? TODO : add *) SEMICOLON { MethodDeclaration(imms, None, rt, "md" (* TODO : change *), None (* TODO : change *), "" (* TODO : change *)) }
-  | imms=interface_member_modifiers? tps=type_parameters rt=result_type md=method_declarator (*t=throws? TODO : add *) SEMICOLON { MethodDeclaration(imms, (Some tps), rt, "md" (* TODO : change *), None (* TODO : change *), "" (* TODO : change *)) }
-  (*| imms=interface_member_modifiers? tps=type_parameters? rt=result_type md=method_declarator (*t=throws? TODO : add *) SEMICOLON { MethodDeclaration(imms, tps, rt, "md" (* TODO : change *), None (* TODO : change *), "" (* TODO : change *)) }
-*)
+%inline abstract_method_declaration: (* bodyDeclaration *)
+  | imms=interface_member_modifiers? (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=formal_parameter_list? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, None, rt, i, lpl, t, "" (* TODO : change *)) }
+  | imms=interface_member_modifiers? tps=type_parameters rt=result_type i=identifier L_PAR lpl=formal_parameter_list? R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, (Some tps), rt, i, lpl, t, "" (* TODO : change *)) }
 
 (* WARNING : abstract_method_modifiers replaced by interface_member_modifiers *)
-(*
-abstract_method_modifiers: (* expression list TODO : verify *)
-  | amm=abstract_method_modifier { [amm] }
-  | amm=abstract_method_modifier amms=abstract_method_modifiers { amm::amms }
-
-abstract_method_modifier: (* expression TODO : verify *)
+abstract_method_modifier: (* expression *)
   | a=annotation { a }
-  | PUBLIC { Modifier("Public") }
-  | ABSTRACT { Modifier("Abstract") }
-*)
+  | PUBLIC { Modifier(PUBLIC) }
+  | ABSTRACT { Modifier(ABSTRACT) }
+
 (* SECTION 9.7 Annotations *)
 annotations: (* expression list *)
   | an=annotation { [an] }
