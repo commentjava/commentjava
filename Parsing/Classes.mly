@@ -44,7 +44,7 @@ type_declaration: (* bodyDeclaration *)
 (* TODO | SEMICOLON { }*)
 
 (* SECTION 8.1 *)
-%inline class_declaration: (* bodyDeclaration *)
+%inline %public class_declaration: (* bodyDeclaration *)
   | em=extended_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body { ClassDeclaration(em, i, tp, s, it, cb) }
 
 (* SECTION 8.1.1 *)

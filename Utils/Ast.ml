@@ -147,6 +147,7 @@ and statement =
   (* | TypeDeclarationStatement *)
   | VariableDeclarationStatement of expression list * type_ * variableDeclaration list
   | WhileStatement of expression * statement
+  | LocalClassDeclarationStatement of bodyDeclaration
 
 and importDeclaration =
     ImportDeclaration_ of bool (* static *) * expression (* name *) * bool (* .* : import all *)
@@ -588,7 +589,6 @@ and print_statement s deep =
         print_string_deep "ThrowStatement" deep;
         print_expression e (deep+1);
     in
-    (* VariableDeclarationStatement of ast list * type_ * variableDeclaration list *)
     let print_variable_declaration_statement a t d deep =
         print_string_deep "VariableDeclarationStatement" deep;
         apply_list print_expression a (deep + 1);
@@ -599,6 +599,10 @@ and print_statement s deep =
         print_string_deep "WhileStatement" deep;
         print_expression e (deep+1);
         print_statement s (deep+1);
+    in
+    let print_local_class_declaration_statement d deep =
+        print_string_deep "LocalClassDecalarationStatement" deep;
+        print_bodyDeclaration d (deep+1);
     in
     match s with
         | AssertStatement (exps) -> print_assert_statement exps deep
@@ -619,7 +623,7 @@ and print_statement s deep =
         | ThrowStatement (e) -> print_throw_statement e deep
         | VariableDeclarationStatement (a, t, d) -> print_variable_declaration_statement a t d deep
         | WhileStatement (e, s) -> print_while_statement e s deep
-
+        | LocalClassDeclarationStatement (d) -> print_local_class_declaration_statement d deep 
 (*
 let rec print_bodyDeclaration bd deep =
     let print_string_deep a deep =

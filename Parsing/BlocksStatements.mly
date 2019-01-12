@@ -22,7 +22,7 @@ block_statements:
 
 block_statement:
   | s=local_variable_declaration_statement { s }
-  /* | c=class_declaration { c } */
+  | c=class_declaration { LocalClassDeclarationStatement(c) }
   | s=statement { s }
 
 (* 14.4 *)

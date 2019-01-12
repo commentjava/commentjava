@@ -1,0 +1,5 @@
+{
+    class Local {
+        int i;
+    }    
+}
