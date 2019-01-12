@@ -124,7 +124,7 @@ and bodyDeclaration =
   | StaticInstanceInitializer of statement
   | ConstructorBody of string option (* TODO ExplicitConstructorInvocation *) * statement list option (* block_statements *)
   | ConstructorDeclaration of expression list option (* contructor_modifiers *) * typeParameter list option (* type *) * string (* identifier *) * variableDeclaration list option (* parameters  *) * type_ list option (* throws *) * bodyDeclaration (* constructor_body *)
-  (* | MethodDeclaration *)
+  | MethodDeclaration of expression list option (* extendedMofifiers *) * typeParameter list option (* type parameters *) * type_ (* resultType *) * string (* methodDeclarator TODO : change *) * type_ list option (* throws *) * string (* body TODO : change *)
 
 and statement =
     AssertStatement of expression list
@@ -706,8 +706,16 @@ and print_bodyDeclaration bd deep =
             print_string_deep "StaticInstanceInitializer" deep;
             print_statement b (deep + 1)
         | ConstructorDeclaration (cm,  tp, id, params, throws, bd) ->
-            print_string_deep "ConstructorDeclaration" deep;
+            print_string_deep "ConstructorDeclaration" deep
             (* apply_opt_list print_bodyDeclaration bd (deep + 1) *)
+        | MethodDeclaration (em, tp, rt, md, t, mb) ->
+            print_string_deep "MethodDeclaration" deep;
+            apply_opt_list print_typeParameter tp (deep + 1);
+            print_type rt (deep + 1);
+            print_string_deep "md" (deep + 1); (* TODO : change *)
+            apply_opt_list print_type t (deep + 1);
+            print_string_deep mb (deep + 1) (* TODO : change *)
+
 ;;
 
 

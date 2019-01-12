@@ -114,13 +114,13 @@ field_declaration: (* bodyDeclaration *)
   | vd=variable_declarator { [vd] }
   | vd=variable_declarator COMMA vds=variable_declarators { vd::vds }
 
-variable_declarator: (* variableDeclaration *)
+%inline variable_declarator: (* variableDeclaration *)
   | vdi=variable_declarator_id { match vdi with (i, d) -> VariableDeclarationFragment(i, d, None) }
   | vdi=variable_declarator_id ASSIGN vi=variable_initializer { match vdi with (i, d) -> VariableDeclarationFragment(i, d, (Some vi)) }
 
-variable_declarator_id: (* sting * int *)
+%inline variable_declarator_id: (* sting * int *)
   | i=identifier { (i, 0) }
-  | vdi=variable_declarator_id L_BRACKET R_BRACKET { match vdi with (i, d) -> (i, d + 1) }
+  | i=identifier d=dims { (i, d) }
 
 %public variable_initializer: (* expression *)
   | e=expression { e }
@@ -143,8 +143,19 @@ field_modifier: (* expression *)
   | VOLATILE { Modifier(VOLATILE) }
   | a=annotation { a }
 
-
 (* SECTION 8.4 *)
+(* method_declaration: TODO *)
+
+(* method_header: TODO *)
+
+%inline result_type: (* type_ TODO : verify*)
+  | t=type_ { t }
+  | VOID { Void }
+
+%inline method_declarator: (* ??? TODO *)
+  | i=identifier L_PAR (* lpl=formal_parameter_list? TODO : add *) R_PAR {  }
+
+(* SECTION 8.4.1 *)
 formal_parameter_list:
   | fp=last_formal_parameter { [fp] }
   | fps=formal_parameters COMMA fp=last_formal_parameter { fps @ [fp] }
@@ -160,7 +171,6 @@ last_formal_parameter:
   | fp=formal_parameter { fp }
   | vm=variable_modifiers? t=class_or_interface_type ELLIPSIS vd=variable_declarator_id { match vd with 
     | i, n -> SingleVariableDeclaration(vm, t, None, true, i, n, None) }
-
 
 (* SECTION 8.6 *)
 %inline instance_initializer: (* statement *)
@@ -228,16 +238,30 @@ interface_member_declarations: (* bodyDeclaration list *)
   | imd=interface_member_declaration imds=interface_member_declarations { imd::imds }
 
 interface_member_declaration: (* bodyDeclaration *)
+  | amd=abstract_method_declaration { amd }
   | cd=constant_declaration { cd }
-  (* | abstract_method_declaration {  } TODO *)
   | cd=class_declaration { cd }
   | id=interface_declaration { id }
   (* | SEMICOLON {  } TODO *)
 
 (* SECTION 9.3 *)
-constant_declaration: (* bodyDeclaration *)
-  | cm=constant_modifiers? t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(cm, t, vds) }
+%inline constant_declaration: (* bodyDeclaration *)
+  (*| imms=interface_member_modifiers? t=type_ vd=variable_declarator SEMICOLON { FieldDeclaration(imms, t, [vd]) }
+  | imms=interface_member_modifiers? t=type_ vd=variable_declarator COMMA vds=variable_declarators SEMICOLON { FieldDeclaration(imms, t, vd::vds) }*)
+  | imms=interface_member_modifiers? t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(imms, t, vds) }
 
+(* WARNING : constant_modifiers replaced by interface_member_modifiers *)
+interface_member_modifiers: (* expression list *)
+  | imm=interface_member_modifier { [imm] }
+  | imm=interface_member_modifier imms=interface_member_modifiers { imm::imms }
+
+interface_member_modifier: (* expression *)
+  | PUBLIC  { Modifier(PUBLIC) }
+  | STATIC { Modifier(STATIC) }
+  | FINAL { Modifier(FINAL) }
+  | ABSTRACT { Modifier(ABSTRACT) }
+  | a=annotation { a }
+(*
 constant_modifiers: (* expression list *)
   | cm=constant_modifier { [cm] }
   | cm=constant_modifier cms=constant_modifiers { cm::cms }
@@ -247,7 +271,26 @@ constant_modifier: (* expression *)
   | STATIC { Modifier(STATIC) }
   | FINAL { Modifier(FINAL) }
   | a=annotation { a }
+*)
 
+(* SECTION 9.4 *)
+%inline abstract_method_declaration: (* bodyDeclaration (MethodDeclaration) TODO : verify *)
+  | imms=interface_member_modifiers? (* no type_parameters *) rt=result_type md=method_declarator (*t=throws? TODO : add *) SEMICOLON { MethodDeclaration(imms, None, rt, "md" (* TODO : change *), None (* TODO : change *), "" (* TODO : change *)) }
+  | imms=interface_member_modifiers? tps=type_parameters rt=result_type md=method_declarator (*t=throws? TODO : add *) SEMICOLON { MethodDeclaration(imms, (Some tps), rt, "md" (* TODO : change *), None (* TODO : change *), "" (* TODO : change *)) }
+  (*| imms=interface_member_modifiers? tps=type_parameters? rt=result_type md=method_declarator (*t=throws? TODO : add *) SEMICOLON { MethodDeclaration(imms, tps, rt, "md" (* TODO : change *), None (* TODO : change *), "" (* TODO : change *)) }
+*)
+
+(* WARNING : abstract_method_modifiers replaced by interface_member_modifiers *)
+(*
+abstract_method_modifiers: (* expression list TODO : verify *)
+  | amm=abstract_method_modifier { [amm] }
+  | amm=abstract_method_modifier amms=abstract_method_modifiers { amm::amms }
+
+abstract_method_modifier: (* expression TODO : verify *)
+  | a=annotation { a }
+  | PUBLIC { Modifier("Public") }
+  | ABSTRACT { Modifier("Abstract") }
+*)
 (* SECTION 9.7 Annotations *)
 annotations: (* expression list *)
   | an=annotation { [an] }

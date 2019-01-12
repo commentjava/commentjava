@@ -80,7 +80,7 @@ dim_exprs:
 dim_expr:
   | L_BRACKET e=expression R_BRACKET { e }
 
-dims:
+%public dims:
   | L_BRACKET R_BRACKET { 1 }
   | d=dims L_BRACKET R_BRACKET { d+1 }
 
