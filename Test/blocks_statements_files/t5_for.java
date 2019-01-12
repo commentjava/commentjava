@@ -30,4 +30,8 @@
     for (i = 0; true ;i=3) {
         ;
     }
+
+    for (int i = 0; true ;i=3) {
+        ;
+    }
 }

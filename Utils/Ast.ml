@@ -143,7 +143,7 @@ and statement =
   | EmptyStatement
   | EnhancedForStatement of variableDeclaration * expression * statement
   | ExpressionStatement of expression
-  | ForStatement of expression list option * expression option * expression list option * statement
+  | ForStatement of statement list option * expression option * statement list option * statement
   | IfStatement of expression * statement * statement option
   | LabeledStatement of string * statement
   | ReturnStatement of expression option
@@ -609,11 +609,11 @@ and print_statement s deep =
         in
         print_string_deep "ForStatement" deep;
         print_string_deep "ForInit: " (deep+1);
-        print_opt_expression_list for_init (deep+2);
+        apply_opt_list print_statement for_init (deep+2);
         print_string_deep "Exp: " (deep+1);
         print_opt_expression e (deep+2);
         print_string_deep "ForUpdate: " (deep+1);
-        print_opt_expression_list for_update (deep+2);
+        apply_opt_list print_statement for_update (deep+2);
         print_statement s (deep+1);
     in
     let print_if_statement e s s_else deep =

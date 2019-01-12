@@ -61,7 +61,7 @@ statement_no_short_if:
   | s=labeled_statement_no_short_if { s }
   | s=if_then_else_statement_no_short_if { s }
   | s=while_statement_no_short_if { s }
-  (*| for_statement_no_short_if { $1 }*)
+  | s=for_statement_no_short_if { s }
 
 (* 14.6 *)
 empty_statement:
@@ -78,15 +78,15 @@ labeled_statement_no_short_if:
 (* 14.8 *)
 
 expression_statement:
-  | e=statement_expression SEMICOLON { ExpressionStatement(e) }
+  | e=statement_expression SEMICOLON { e }
 
 statement_expression:
-  | a=assignment { a }
-  | e=pre_increment_expression { e }
-  | e=pre_decrement_expression { e }
-  | e=post_increment_expression { e }
-  | e=post_decrement_expression { e }
-  | e=method_invocation { e }
+  | a=assignment { ExpressionStatement(a) }
+  | e=pre_increment_expression { ExpressionStatement(e) }
+  | e=pre_decrement_expression { ExpressionStatement(e) }
+  | e=post_increment_expression { ExpressionStatement(e) }
+  | e=post_decrement_expression { ExpressionStatement(e) }
+  | e=method_invocation { ExpressionStatement(e) }
   /* | class_instance_creation_expression {} */
 
 
@@ -173,7 +173,7 @@ for_statement_no_short_if:
 
 for_init:
   | s=statement_expression_list { s }
-  (*| local_variable_declaration {}*)
+  | s=local_variable_declaration { [s] }
 
 for_update:
   | s=statement_expression_list { s }
