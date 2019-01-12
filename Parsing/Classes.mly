@@ -93,8 +93,8 @@ class_body_declarations: (* bodyDeclaration list *)
 
 class_body_declaration: (* bodyDeclaration *)
   | cmd=class_member_declaration { cmd (*Tree("class_body_declaration", [$1])*)  }
-  | ii=instance_initializer { ii }
-  | STATIC ii=instance_initializer { ii }
+  | ii=instance_initializer { InstanceInitializer(ii) }
+  | STATIC ii=instance_initializer { StaticInstanceInitializer(ii) }
   (* | constructor_declaration TODO *)
 
 class_member_declaration: (* bodyDeclaration *)
@@ -140,8 +140,8 @@ field_modifier: (* expression *)
   | a=annotation { a }
 
 (* SECTION 8.6 *)
-%inline instance_initializer:
- | b=block { InstanceInitializer(b) }
+%inline instance_initializer: (* statement *)
+ | b=block { b }
 
 (* SECTION 8.9 *)
 %inline enum_declaration: (* bodyDeclaration *)

@@ -130,6 +130,7 @@ and bodyDeclaration =
   | EnumBody of bodyDeclaration list option (* enum_constants *) * bodyDeclaration list option (* enum_body_declaration *)
   | FieldDeclaration of expression list option (*field modifiers*) * type_ (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
   | InstanceInitializer of statement
+  | StaticInstanceInitializer of statement
   (* | MethodDeclaration *)
 
 and statement =
@@ -738,7 +739,11 @@ and print_bodyDeclaration bd deep =
             print_string_deep i                       (deep + 1);
             apply_opt_list print_type            it   (deep + 1);
             apply_opt_list print_bodyDeclaration eb   (deep + 1)
-        | InstanceInitializer (b) ->
+        | InstanceInitializer b ->
+            print_string_deep "InstanceInitializer" deep;
+            print_statement b (deep + 1)
+        | StaticInstanceInitializer b ->
+            print_string_deep "StaticInstanceInitializer" deep;
             print_statement b (deep + 1)
 
 and print_ast_ a deep =
