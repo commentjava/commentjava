@@ -279,12 +279,6 @@ let string_of_modifier m =
         | DEFAULT -> "default"
 ;;
 
-let print_opt_string s deep =
-    match s with
-        | None -> ()
-        | Some str -> print_newline (); print_d deep; print_string str
-;;
-
 let print_modifier m deep =
     print_string_deep (string_of_modifier m) deep
 ;;
@@ -323,7 +317,7 @@ and print_memberValuePair mvp deep =
             print_string_deep "MemberValuePair" deep;
             print_string_deep n (deep + 1);
             print_expression e (deep + 1)
-and print_type t deep=
+and print_type t deep =
     match t with
         | Byte -> print_newline(); print_d deep; print_string "Byte"
         | Short -> print_newline(); print_d deep; print_string "Short"
@@ -353,16 +347,6 @@ and print_type t deep=
             print_type t (deep+1);
             apply_opt_list print_type tl (deep+1)
 and print_expression e deep =
-    let rec print_expression_list s deep =
-        match s with
-            | [] -> ()
-            | e::l -> print_expression e deep; print_expression_list l deep;
-    in
-    let print_opt_expression e deep=
-        match e with
-            | None -> ()
-            | Some ex -> print_expression ex deep
-    in
     let print_array_access e1 e2 deep =
         print_string_deep "ArrayAccess" deep;
         print_expression e1 (deep + 1);
@@ -379,13 +363,8 @@ and print_expression e deep =
         apply_opt print_expression ai (deep+2);
     in
     let print_array_initializer e deep =
-        let print_opt_exp_list e deep =
-            match e with
-                | None -> ()
-                | Some e -> print_expression_list e deep
-        in
         print_string_deep "ArrayInitializer" deep;
-        print_opt_exp_list e (deep+1)
+        apply_opt_list print_expression e (deep+1)
     in
     let print_assignment lfs op e deep =
         print_string_deep "Assignment" deep;
@@ -479,7 +458,7 @@ and print_expression e deep =
     in
     let print_super_field_access e1 e2 deep =
         print_string_deep "SuperFieldAccess" deep;
-        print_opt_expression e1 (deep+1);
+        apply_opt print_expression e1 (deep+1);
         print_expression e2 (deep+1);
     in
     let print_super_method_invocation c tl e el deep =
@@ -495,7 +474,7 @@ and print_expression e deep =
     in
     let print_this_expression e deep =
         print_string_deep "ThisExpression" deep;
-        print_opt_expression e (deep+1);
+        apply_opt print_expression e (deep+1);
     in
     let print_type_literal t deep =
         print_string_deep "TypeLiteral" deep;
@@ -539,41 +518,22 @@ and print_expression e deep =
         | SuperMethodInvocation (c, tl, e, el) -> print_super_method_invocation c tl e el deep
         | ThisExpression (e) -> print_this_expression e deep
         | TypeLiteral (t) -> print_type_literal t deep
-and print_opt_expression e deep=
-    match e with
-        | None -> ()
-        | Some ex -> print_expression ex deep
 and print_statement s deep =
-    let rec print_expression_list s deep =
-        match s with
-            | [] -> ()
-            | e::l -> print_expression e deep; print_expression_list l deep;
-    in
-    let rec print_statement_list s deep =
-        match s with
-            | [] -> ()
-            | e::l -> print_statement e deep; print_statement_list l deep
-    in
-    let print_opt_statement s deep =
-        match s with
-            | None -> ()
-            | Some st -> print_statement st deep
-    in
     let print_assert_statement exps deep =
         print_string_deep "AssertStatement" deep;
-        print_expression_list exps (deep+1);
+        apply_list print_expression exps (deep+1);
     in
     let print_block s deep =
         print_string_deep "Block" deep;
-        print_statement_list s (deep+1);
+        apply_list print_statement s (deep+1);
     in
     let print_break_statement s deep =
         print_string_deep "BreakStatement" deep;
-        print_opt_string s (deep+1);
+        apply_opt print_string_deep s (deep+1);
     in
     let print_continue_statement s deep =
         print_string_deep "ContinueStatement" deep;
-        print_opt_string s (deep+1);
+        apply_opt print_string_deep s (deep+1);
     in
     let print_do_statement s e deep =
         print_string_deep "DoStatement" deep;
@@ -597,35 +557,20 @@ and print_statement s deep =
         print_expression e (deep+1);
     in
     let print_for_statement for_init e for_update s deep =
-        let print_opt_expression e deep =
-            match e with
-                | None -> print_string "None"
-                | Some exp -> print_expression exp deep
-        in
-        let print_opt_expression_list e deep =
-            match e with
-                | None -> print_string "None"
-                | Some exp -> print_expression_list exp deep
-        in
         print_string_deep "ForStatement" deep;
         print_string_deep "ForInit: " (deep+1);
         apply_opt_list print_statement for_init (deep+2);
         print_string_deep "Exp: " (deep+1);
-        print_opt_expression e (deep+2);
+        apply_opt print_expression e (deep+2);
         print_string_deep "ForUpdate: " (deep+1);
         apply_opt_list print_statement for_update (deep+2);
         print_statement s (deep+1);
     in
     let print_if_statement e s s_else deep =
-        let print_opt_statement s deep =
-            match s with
-                | None -> ()
-                | Some st -> print_statement st deep
-        in
         print_string_deep "IfStatement" deep;
         print_expression e (deep+1);
         print_statement s (deep+1);
-        print_opt_statement s_else (deep+1);
+        apply_opt print_statement s_else (deep+1);
     in
     let print_labeled_statement l s deep =
         print_string_deep "LabeledStatement" deep;
@@ -634,16 +579,16 @@ and print_statement s deep =
     in
     let print_return_statement e deep =
         print_string_deep "ReturnStatement" deep;
-        print_opt_expression e (deep+1)
+        apply_opt print_expression e (deep+1)
     in
     let print_switch_case e deep =
         print_string_deep "SwitchCase" deep;
-        print_opt_expression e (deep+1)
+        apply_opt print_expression e (deep+1)
     in
     let print_switch_statement e s deep =
         print_string_deep "SwitchStatement" deep;
         print_expression e (deep+1);
-        print_statement_list s (deep+1);
+        apply_list print_statement s (deep+1);
     in
     let print_synchronized_statement e s deep =
         print_string_deep "SynchronizedStatement" deep;
