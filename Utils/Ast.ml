@@ -2,7 +2,7 @@ type name =
     SimpleName of string
   | QualifiedName of name * name
 
-type modifier = 
+type modifier =
   | PUBLIC
   | PROTECTED
   | PRIVATE
@@ -58,7 +58,7 @@ type operator =
   | OR_LOGICAL
 
 type variableDeclaration =
-  | SingleVariableDeclaration
+  | SingleVariableDeclaration of ast list option (* ExtendedModifier *) * type_ (*Type*) * expression list option (* Annotation *) * bool (* ... or not *) * string (* identifer *) * int (* Dimension *) * expression option (* = Expression *)
   | VariableDeclarationFragment of string (*identifier*) * int (*dimensions*) * expression option (*expression*)
 and typeParameter = (*needs types *)
   | TypeParameter of type_ (*identifier*) * type_ list option (*extends: Type*)
@@ -83,7 +83,7 @@ and type_ =
   (* | UnionType *)
   (* | IntersectionType *)
 and expression =
-    NormalAnnotation of expression (* type name *) * memberValuePair list option (* element valie pairs *)
+    NormalAnnotation of expression (* type name *) * memberValuePair list option (* element value pairs *)
   | MarkerAnnotation of expression (*type name*)
   | SingleMemberAnnotation of expression (*type name*) * expression
   | Modifier (* because of ExtendedModifier *) of string
@@ -141,7 +141,7 @@ and statement =
   | ContinueStatement of string option
   | DoStatement of statement * expression
   | EmptyStatement
-  (* | EnhancedForStatement *)
+  | EnhancedForStatement of variableDeclaration * expression * statement
   | ExpressionStatement of expression
   | ForStatement of expression list option * expression option * expression list option * statement
   | IfStatement of expression * statement * statement option
@@ -286,14 +286,24 @@ let print_opt_string s deep =
 ;;
 
 let print_modifier m deep =
-    print_d deep;
-    print_string (string_of_modifier m)
+    print_string_deep (string_of_modifier m) deep
 ;;
 
 let rec print_variableDeclaration vd deep =
     match vd with
-        | SingleVariableDeclaration ->
-            print_string_deep "SingleVariableDeclaration" deep
+        | SingleVariableDeclaration (ml, t, el, b, i, d, e) ->
+            print_string_deep "SingleVariableDeclaration" deep;
+            print_string_deep "Modifiers: " (deep+1);
+            apply_opt_list print_ast_ ml (deep+2);
+            print_string_deep "Type: " (deep+1);
+            print_type t (deep+2);
+            print_string_deep "Annotations: " (deep+1);
+            apply_opt_list print_expression el (deep+2);
+            print_string_deep ("...: " ^ string_of_bool b) (deep+1);
+            print_string_deep ("Identifier: " ^ i) (deep + 1);
+            print_string_deep ("Dims: " ^ string_of_int d) (deep+1);
+            print_string_deep "Exp: " (deep+1);
+            apply_opt print_expression e (deep+2)
         | VariableDeclarationFragment (i, d, e) ->
             print_string_deep "VariableDeclarationFragment" deep;
             print_string_deep i (deep + 1);
@@ -573,6 +583,15 @@ and print_statement s deep =
     let print_empty_statement deep =
         print_string_deep "EmptyStatement" deep;
     in
+    let print_enhanced_for_statement fp e s deep =
+        print_string_deep "EnhancedForStatement" deep;
+        print_string_deep "FormalParams:" (deep+1);
+        print_variableDeclaration fp (deep+2);
+        print_string_deep "Exp:" (deep+1);
+        print_expression e (deep+2);
+        print_string_deep "Statement:" (deep+1);
+        print_statement s (deep+2);
+    in
     let print_exp_statement e deep =
         print_string_deep "ExpressionStatement" deep;
         print_expression e (deep+1);
@@ -589,11 +608,11 @@ and print_statement s deep =
                 | Some exp -> print_expression_list exp deep
         in
         print_string_deep "ForStatement" deep;
-        print_string_deep "ForInit: deep ";
+        print_string_deep "ForInit: " (deep+1);
         print_opt_expression_list for_init (deep+2);
-        print_string_deep "Exp: deep ";
+        print_string_deep "Exp: " (deep+1);
         print_opt_expression e (deep+2);
-        print_string_deep "ForUpdate: deep ";
+        print_string_deep "ForUpdate: " (deep+1);
         print_opt_expression_list for_update (deep+2);
         print_statement s (deep+1);
     in
@@ -654,6 +673,7 @@ and print_statement s deep =
         | ContinueStatement (s) -> print_continue_statement s deep
         | DoStatement (s, e) -> print_do_statement s e deep
         | EmptyStatement -> print_empty_statement deep
+        | EnhancedForStatement (fp, e, s) -> print_enhanced_for_statement fp e s deep
         | ExpressionStatement (e) -> print_exp_statement e deep
         | ForStatement (for_init, e, for_update, s) -> print_for_statement for_init e for_update s deep
         | IfStatement (e, s1, s2) -> print_if_statement e s1 s2 deep
@@ -747,7 +767,6 @@ and print_bodyDeclaration bd deep =
             print_statement b (deep + 1)
 
 and print_ast_ a deep =
-    print_newline();
     match a with
         | Expression (e) -> print_expression e (deep)
         | Modifier (m) -> print_modifier m (deep)

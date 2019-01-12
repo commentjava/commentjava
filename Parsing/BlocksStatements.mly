@@ -149,7 +149,7 @@ do_statement:
 (* 14.14 *)
 for_statement:
   | s=basic_for_statement { s }
-  (*| enhanced_for_statement { $1 } *)
+  | s=enhanced_for_statement { s }
 
 basic_for_statement:
   | FOR L_PAR SEMICOLON SEMICOLON R_PAR s=statement { ForStatement(None, None, None, s) }
@@ -182,10 +182,9 @@ statement_expression_list:
   | s=statement_expression { [s] }
   | sl=statement_expression_list COMMA s=statement_expression { sl @ [s] }
 
-(*enhanced_for_statement:
-  | FOR L_PAR type_ identifier COLON expression R_PAR statement { "for(typeast " ^ $4 ^ " : " ^ $6 ^ ")" ^ $8 }*)
-    (* reduce/reduce conflict ambiguous_name -> IDENTIFIER / type_name -> IDENTIFIER *)
-  (*| FOR L_PAR variable_modifiers type_ identifier COLON expression R_PAR statement {}*)
+enhanced_for_statement:
+  | FOR L_PAR t=type_ i=identifier COLON e=expression R_PAR s=statement { EnhancedForStatement(SingleVariableDeclaration(None, t, None, false, i, 0, None), e, s) }
+  | FOR L_PAR vm=variable_modifiers t=type_ i=identifier COLON e=expression R_PAR s=statement { EnhancedForStatement(SingleVariableDeclaration(Some vm, t, None, false, i, 0, None), e, s)}
 
 (* 14.15 *)
 break_statement:
