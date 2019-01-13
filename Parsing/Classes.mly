@@ -72,6 +72,7 @@ extended_modifier: (* expression *)
   | TRANSIENT { Modifier(TRANSIENT) }
   | VOLATILE { Modifier(VOLATILE) }
   | SYNCHRONIZED  { Modifier(SYNCHRONIZED) }
+  | NATIVE  { Modifier(NATIVE) }
   | a=annotation { a }
 
 (* SECTION 8.1.2 *)

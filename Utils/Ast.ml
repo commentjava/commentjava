@@ -236,6 +236,7 @@ let check_abstract_method_modifier m =
   | Modifier(FINAL) -> true
   | Modifier(STRICTFP) -> true
   | Modifier(ABSTRACT) -> true
+  | Modifier(NATIVE) -> true
   | _ -> false
 ;;
 
