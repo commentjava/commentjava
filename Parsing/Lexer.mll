@@ -31,14 +31,17 @@ let decimal_numeral = '0' | non_zero_digit digit*
 let integer_literal = (decimal_numeral | hex_numeral | octal_numeral) ('l' | 'L')?
 
 (* String Literals *)
-let char = [^'"']
-let string_literal = '"' char* '"'
+let octal_escape = octal_digit | octal_digit octal_digit | ['0'-'3'] octal_digit
+let escaped_char =  'b' | 't' | 'n' | 'f' | 'r' | '"' | '\'' | '\\' | octal_escape | 'u' hex_digit hex_digit hex_digit hex_digit
+let string_char = [^ '"' '\\'] | '\\' escaped_char
+let string_literal = '"' string_char* '"'
 
 (* Float Literals *)
 let float_literal = (digit+ '.'? digit* | '.' digit+) ('f' | 'F')?
 
 (* Char Literals *)
-let char_literal = '\'' char* '\''
+let single_char = [^ '\'' '\\']
+let char_literal = '\'' (single_char | '\\' escaped_char) '\''
 
 (* space / horizontal tab / form feed *)
 let space = [' ' '\t' '\x0C']

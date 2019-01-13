@@ -5,6 +5,6 @@
     myVar = myOtherVar.Values.value++;
     myVar = "My String";
     myObject.myVar += 3;
-    myVar = 'myChar';
+    myVar = 'm';
     myVar = null;
 }
