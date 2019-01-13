@@ -305,7 +305,7 @@ interface_member_declaration: (* bodyDeclaration *)
   | cd=constant_declaration { cd }
   | cd=class_declaration { cd }
   | id=interface_declaration { id }
-(*  | atd = annotation_type_declaration { atd } TODO *)
+  | atd = annotation_type_declaration { atd } (* TODO : verify *)
   | SEMICOLON { EmptyBodyDeclaration }
 
 (* SECTION 9.3 *)
@@ -321,19 +321,7 @@ constant_declaration: (* bodyDeclaration *)
     | false -> error ("Invalid modifier for constant ") $startpos
   }
 
-(* WARNING : constant_modifiers replaced by interface_member_modifiers *)
-interface_member_modifiers: (* expression list *)
-  | imms=nonempty_list(interface_member_modifier) { imms }
-
-interface_member_modifier: (* expression *)
-  | ABSTRACT { Modifier(ABSTRACT) } (* abstract_method_modifier remplacement *)(* TODO : post-process *)
-  | cm=constant_modifier { cm }
-
-constant_modifier: (* expression *)
-  | PUBLIC  { Modifier(PUBLIC) }
-  | STATIC { Modifier(STATIC) }
-  | FINAL { Modifier(FINAL) }
-  | a=annotation { a }
+(* WARNING : constant_modifiers replaced by extended_modifiers *)
 
 (* SECTION 9.4 *)
 abstract_method_declaration: (* bodyDeclaration *) (* todo verification *)
@@ -348,25 +336,26 @@ abstract_method_declaration: (* bodyDeclaration *) (* todo verification *)
           | false -> error ("Invalid modifier for abstract method " ^ i) $startpos
   }
 
-(* WARNING : abstract_method_modifiers replaced by interface_member_modifiers *)
+(* WARNING : abstract_method_modifiers replaced by extended_modifiers *)
 
 (* SECTION 9.6 *)
-(* TODO : not sure if it does work yet *)
 annotation_type_declaration: (* bodyDeclaration TODO : verify *)
-  | em=list(extended_modifier) (* TODO : post-process *) AT INTERFACE i=identifier atb=annotation_type_body { AnnotationTypeDeclaration(em, i, atb) }
+  | (* no extended_modifiers *) AT INTERFACE i=identifier atb=annotation_type_body { AnnotationTypeDeclaration([], i, atb) }
+  (*| ems=extended_modifiers (* TODO : post-process *) AT INTERFACE i=identifier atb=annotation_type_body { AnnotationTypeDeclaration(ems, i, atb) } TODO : set back *)
 
 annotation_type_body: (* bodyDeclaration list TODO : verify *)
-  | L_BRACE ated=list(annotation_type_element_declaration) R_BRACE { ated }
+  | L_BRACE (* no annotation_type_element_declarations *) R_BRACE { [] }
+  | L_BRACE ateds=annotation_type_element_declarations R_BRACE { ateds }
 
-(* TODO : useless?
 annotation_type_element_declarations: (* bodyDeclaration list TODO : verify *)
   | ated=annotation_type_element_declaration { [ated] }
   | ated=annotation_type_element_declaration ateds=annotation_type_element_declarations { ated::ateds }
-*)
 
 annotation_type_element_declaration: (* bodyDeclaration TODO : verify *)
-  | imm=list(interface_member_modifier) t=type_ i=identifier L_PAR R_PAR dv=default_value? { AnnotationTypeMemberDeclaration(imm, t, i, dv) }
-  | imm=list(interface_member_modifier) t=array_type i=identifier L_PAR R_PAR dv=default_value? { AnnotationTypeMemberDeclaration(imm, t, i, dv) }
+  | (* no extended_modifiers *) t=type_ i=identifier L_PAR R_PAR dv=default_value? { AnnotationTypeMemberDeclaration([], t, i, dv) }
+  | ems=extended_modifiers t=type_ i=identifier L_PAR R_PAR dv=default_value? { AnnotationTypeMemberDeclaration(ems, t, i, dv) }
+  | (* no extended_modifiers *) t=array_type i=identifier L_PAR R_PAR dv=default_value? { AnnotationTypeMemberDeclaration([], t, i, dv) }
+  | ems=extended_modifiers t=array_type i=identifier L_PAR R_PAR dv=default_value? { AnnotationTypeMemberDeclaration(ems, t, i, dv) }
   | cd=constant_declaration { cd }
   | cd=class_declaration { cd }
   | id=interface_declaration { id }
