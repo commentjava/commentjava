@@ -72,6 +72,7 @@ extended_modifier: (* expression *)
   | STRICTFP { Modifier(STRICTFP) }
   | TRANSIENT { Modifier(TRANSIENT) }
   | VOLATILE { Modifier(VOLATILE) }
+  | SYNCHRONIZED  { Modifier(SYNCHRONIZED) }
   | a=annotation { a }
 
 (* SECTION 8.1.2 *)

@@ -7,7 +7,7 @@ let reset_color = "\x1b[0m"
 module I =
   Parser.MenhirInterpreter
 
-module S = 
+module S =
   MenhirLib.General
 
 let stack checkpoint : I.element option =
@@ -26,8 +26,9 @@ let report lexbuf checkpoint =
     let startp = Lexing.lexeme_start_p lexbuf
     and endp = Lexing.lexeme_end_p lexbuf in
   Printf.fprintf stderr
-      "%sLine %d: Col: %d-%d syntax error\n\n%!"
+      "%s \"%s\" Line: %d Col: %d-%d syntax error\n%!"
       red
+      (startp.pos_fname)
       (startp.pos_lnum)
       (startp.pos_cnum - startp.pos_bol + 1)
       (endp.pos_cnum - endp.pos_bol + 1)
@@ -39,4 +40,4 @@ let report lexbuf checkpoint =
       "Parser state: %d%s\n\n%!"
       (state checkpoint)
       reset_color
-  
+
