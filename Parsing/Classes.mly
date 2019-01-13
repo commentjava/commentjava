@@ -114,6 +114,7 @@ class_member_declaration: (* bodyDeclaration *)
 (* SECTION 8.3 *)
 field_declaration: (* bodyDeclaration *)
   | fm=extended_modifiers? t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(fm, t, vds) }
+  | fm=extended_modifiers? t=array_type vds=variable_declarators SEMICOLON { FieldDeclaration(fm, t, vds) }
 
 %public variable_declarators: (* variableDeclaration list *)
   | vd=variable_declarator { [vd] }
@@ -162,6 +163,7 @@ method_declaration: (* bodyDeclaration *)
 
 %inline result_type: (* type_ *)
   | t=type_ { t }
+  | t=array_type { t }
   | VOID { Void }
 
 (* SECTION 8.4.1 *)
@@ -174,6 +176,9 @@ formal_parameters: (* variableDeclaration list *)
 
 %public %inline formal_parameter: (* variableDeclaration *)
   | vm=variable_modifiers? t=type_ e=boption(ELLIPSIS) vd=variable_declarator_id {
+    match vd with
+    | i, n -> SingleVariableDeclaration(vm, t, None, e, i, n, None) }
+  | vm=variable_modifiers? t=array_type e=boption(ELLIPSIS) vd=variable_declarator_id {
     match vd with
     | i, n -> SingleVariableDeclaration(vm, t, None, e, i, n, None)
   }
@@ -243,7 +248,9 @@ explicit_constructor_invocation: (* statement *)
 
 reference_type_list: (* type_ list *)
   | t=reference_type { [t] }
+  | t=array_type { [t] }
   | tl=reference_type_list COMMA t=reference_type { tl @ [t] }
+  | tl=reference_type_list COMMA t=array_type { tl @ [t] }
 
 (* SECTION 8.9 *)
 enum_declaration: (* bodyDeclaration *)
@@ -308,6 +315,11 @@ constant_declaration: (* bodyDeclaration *)
     | true -> FieldDeclaration(imms, t, vds)
     | false -> error ("Invalid modifier for constant ") $startpos
   }
+  | imms=extended_modifiers? t=array_type vds=variable_declarators SEMICOLON {
+    match check_modifiers check_constant_modifier imms with
+    | true -> FieldDeclaration(imms, t, vds)
+    | false -> error ("Invalid modifier for constant ") $startpos
+  }
 
 (* WARNING : constant_modifiers replaced by interface_member_modifiers *)
 interface_member_modifiers: (* expression list *)
@@ -354,6 +366,7 @@ annotation_type_element_declarations: (* bodyDeclaration list TODO : verify *)
 
 annotation_type_element_declaration: (* bodyDeclaration TODO : verify *)
   | imm=list(interface_member_modifier) t=type_ i=identifier L_PAR R_PAR dv=default_value? { AnnotationTypeMemberDeclaration(imm, t, i, dv) }
+  | imm=list(interface_member_modifier) t=array_type i=identifier L_PAR R_PAR dv=default_value? { AnnotationTypeMemberDeclaration(imm, t, i, dv) }
   | cd=constant_declaration { cd }
   | cd=class_declaration { cd }
   | id=interface_declaration { id }

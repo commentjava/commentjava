@@ -12,6 +12,11 @@
   | t=primitive_type { t }
   | t=reference_type { t }
 
+
+%public array_type:
+  | t=primitive_type d=dims { ArrayType(t, d) }
+  | t=reference_type d=dims { ArrayType(t, d) }
+
 (* 4.2 *)
 %public primitive_type:
   | t=numeric_type { t }
@@ -36,7 +41,7 @@ floating_point_type:
 %inline %public reference_type: (* type_ *)
   | t=class_or_interface_type { t }
   /* | t=type_variable { t } */
-  | t=array_type { t }
+  /* | t=array_type { t } */
 
 %inline %public class_or_interface_type: (* type_ *)
   | n=name { SimpleType(n) }
@@ -48,8 +53,8 @@ floating_point_type:
 type_variable: (* type_ *)
   | i=identifier { SimpleType(ExpressionName(SimpleName(i))) }
 
-array_type: (* type_ *)
-  | t=type_ L_BRACKET R_BRACKET { ArrayType(t, 0) }
+/* array_type: (* type_ *)
+  | t=type_ L_BRACKET R_BRACKET { ArrayType(t, 0) } */
 
 (* 4.4 *)
 %public type_parameter: (* type_parameter *)
@@ -75,6 +80,7 @@ actual_type_argument_list: (* type_ list *)
 
 actual_type_argument: (* type_ *)
   | t=reference_type { t }
+  | t=array_type { t }
   | w=wildcard { w }
 
 wildcard: (* type_ *)
@@ -83,4 +89,6 @@ wildcard: (* type_ *)
 
 wildcard_bounds: (* type_ *)
   | EXTENDS t=reference_type { t }
+  | EXTENDS t=array_type { t }
   | SUPER t=reference_type { t }
+  | SUPER t=array_type { t }

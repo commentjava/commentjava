@@ -154,6 +154,7 @@ cast_expresion:
   | L_PAR t=primitive_type R_PAR e=unary_expression { CastExpression(t, e) }
   | L_PAR t=primitive_type d=dims R_PAR e=unary_expression { CastExpression(ArrayType(t, d), e) }
   | L_PAR t=reference_type R_PAR e=unary_expression_not_plus_minus { CastExpression(t, e) }
+  | L_PAR t=array_type R_PAR e=unary_expression_not_plus_minus { CastExpression(t, e) }
 
 (* 15.17 *)
 multiplicative_expression:
@@ -184,6 +185,7 @@ relational_expression:
   | re=relational_expression GREATER_OR_EQUAL e=shift_expression { InfixExpression(re, GREATER_OR_EQUAL, e) }
   (* TODO: check this again because it may be broken but it is maybe not important ¯\_(ツ)_/¯*)
   | re=relational_expression INSTANCEOF t=reference_type { InstanceofExpression(re, t) }
+  | re=relational_expression INSTANCEOF t=array_type { InstanceofExpression(re, t) }
 
 (* 15.21 *)
 equality_expression:

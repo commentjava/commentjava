@@ -31,7 +31,9 @@ local_variable_declaration_statement:
 
 local_variable_declaration:
   | t=type_ d=variable_declarators { VariableDeclarationStatement([], t, d) }
+  | t=array_type d=variable_declarators { VariableDeclarationStatement([], t, d) }
   | m=variable_modifiers t=type_ d=variable_declarators { VariableDeclarationStatement(m, t, d) }
+  | m=variable_modifiers t=array_type d=variable_declarators { VariableDeclarationStatement(m, t, d) }
 
 (* 14.5 *)
 statement: (* statement *)
@@ -184,7 +186,9 @@ statement_expression_list:
 
 enhanced_for_statement:
   | FOR L_PAR t=type_ i=identifier COLON e=expression R_PAR s=statement { EnhancedForStatement(SingleVariableDeclaration(None, t, None, false, i, 0, None), e, s) }
+  | FOR L_PAR t=array_type i=identifier COLON e=expression R_PAR s=statement { EnhancedForStatement(SingleVariableDeclaration(None, t, None, false, i, 0, None), e, s) }
   | FOR L_PAR vm=variable_modifiers t=type_ i=identifier COLON e=expression R_PAR s=statement { EnhancedForStatement(SingleVariableDeclaration(Some vm, t, None, false, i, 0, None), e, s)}
+  | FOR L_PAR vm=variable_modifiers t=array_type i=identifier COLON e=expression R_PAR s=statement { EnhancedForStatement(SingleVariableDeclaration(Some vm, t, None, false, i, 0, None), e, s)}
 
 (* 14.15 *)
 break_statement:
