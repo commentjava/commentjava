@@ -215,6 +215,30 @@ let check_interface_modifier m =
   | _ -> false
 ;;
 
+let check_constant_modifier m =
+  match m with
+  | Modifier(PUBLIC) -> true
+  | Modifier(STATIC) -> true
+  | Modifier(FINAL) -> true
+  | Modifier(STRICTFP) -> true
+  | NormalAnnotation(_, _) -> true
+  | MarkerAnnotation(_) -> true
+  | SingleMemberAnnotation(_, _) -> true
+  | _ -> false
+;;
+
+let check_abstract_method_modifier m =
+  match m with
+  | Modifier(PUBLIC) -> true
+  | Modifier(PROTECTED) -> true
+  | Modifier(PRIVATE) -> true
+  | Modifier(STATIC) -> true
+  | Modifier(FINAL) -> true
+  | Modifier(STRICTFP) -> true
+  | Modifier(ABSTRACT) -> true
+  | _ -> false
+;;
+
 let check_method_modifier m =
   match m with
   | Modifier(PUBLIC) -> true

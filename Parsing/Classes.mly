@@ -6,10 +6,6 @@
       ^ " column " ^ (string_of_int (position.pos_cnum - position.pos_bol))
     let error msg position =
       raise (Failure (create_error_message msg position))
-    let is_some o =
-      match o with
-      | Some(_) -> true
-      | None -> false
 %}
 
 
@@ -147,16 +143,17 @@ field_modifier: (* expression *)
 
 (* SECTION 8.4 *)
 method_declaration: (* bodyDeclaration *)
-  | em=extended_modifiers? rt=result_type i=identifier L_PAR fpl=formal_parameters? R_PAR t=throws? mb=method_body {
+  | em=extended_modifiers? rt=result_type i=identifier L_PAR fpl=ioption(formal_parameters) R_PAR t=throws? mb=method_body {
           match check_modifiers check_method_modifier em with
           | true -> MethodDeclaration(em, None, rt, i, fpl, t, Some mb)
           | false -> error ("Invalid modifier for method " ^ i) $startpos
   }
-  | em=extended_modifiers? tp=type_parameters rt=result_type i=identifier L_PAR fpl=formal_parameters? R_PAR t=throws? mb=method_body {
+  | em=extended_modifiers? tp=type_parameters rt=result_type i=identifier L_PAR fpl=ioption(formal_parameters) R_PAR t=throws? mb=method_body {
           match check_modifiers check_method_modifier em with
           | true -> MethodDeclaration(em, Some tp, rt, i, fpl, t, Some mb)
           | false -> error ("Invalid modifier for method " ^ i) $startpos
   }
+  | amd=endrule(abstract_method_declaration) { amd }
 
 %inline result_type: (* type_ *)
   | t=type_ { t }
@@ -300,8 +297,12 @@ interface_member_declaration: (* bodyDeclaration *)
   | SEMICOLON { EmptyBodyDeclaration }
 
 (* SECTION 9.3 *)
-constant_declaration: (* bodyDeclaration *)
-  | imms=interface_member_modifiers? t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(imms, t, vds) }
+constant_declaration: (* bodyDeclaration *) (* TODO post verification *)
+  | imms=extended_modifiers? t=type_ vds=variable_declarators SEMICOLON {
+    match check_modifiers check_constant_modifier imms with
+    | true -> FieldDeclaration(imms, t, vds)
+    | false -> error ("Invalid modifier for constant ") $startpos
+  }
 
 (* WARNING : constant_modifiers replaced by interface_member_modifiers *)
 interface_member_modifiers: (* expression list *)
@@ -318,9 +319,17 @@ constant_modifier: (* expression *)
   | a=annotation { a }
 
 (* SECTION 9.4 *)
-abstract_method_declaration: (* bodyDeclaration *)
-  | imms=interface_member_modifiers? (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, None, rt, i, lpl, t, None) }
-  | imms=interface_member_modifiers? tps=type_parameters rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, (Some tps), rt, i, lpl, t, None) }
+abstract_method_declaration: (* bodyDeclaration *) (* todo verification *)
+  | imms=extended_modifiers? (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON {
+          match check_modifiers check_abstract_method_modifier imms with
+          | true -> MethodDeclaration(imms, None, rt, i, lpl, t, None)
+          | false -> error ("Invalid modifier for abstract method " ^ i) $startpos
+  }
+  | imms=extended_modifiers? tps=type_parameters rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON {
+          match check_modifiers check_abstract_method_modifier imms with
+          | true -> MethodDeclaration(imms, Some tps, rt, i, lpl, t, None)
+          | false -> error ("Invalid modifier for abstract method " ^ i) $startpos
+  }
 
 (* WARNING : abstract_method_modifiers replaced by interface_member_modifiers *)
 
