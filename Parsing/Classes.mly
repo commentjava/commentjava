@@ -27,7 +27,6 @@ type_declarations: (* bodyDeclaration list *)
   | ts=nonempty_list(type_declaration) { ts }
 
 (* SECTION 7.4 *)
-
 package_declaration: (* packageDeclaration *)
   | a=extended_modifiers PACKAGE p=name SEMICOLON {
     match check_modifiers check_package_modifier a with
@@ -56,11 +55,16 @@ type_declaration: (* bodyDeclaration *)
 }
 
 (* SECTION 8.1.1 *)
-(* WARNING : Eclipse spec used -> class_modifiers replaced by extended_modifiers *)
+(* XXX: Eclipse spec used -> class_modifiers replaced by extended_modifiers
+  * Extended modifiers used to parse:
+  * - class_modifiers
+  * - constant_modifiers
+  * - enum_modifiers
+  * - interface_modifiers
+  *)
 extended_modifiers: (* expression list *)
   | ems=list(extended_modifier) { ems }
 
-(* XXX: This matches also FieldModifiers *)
 extended_modifier: (* expression *)
   | PUBLIC { Modifier(PUBLIC) }
   | PROTECTED { Modifier(PROTECTED) }
@@ -104,7 +108,7 @@ class_body_declarations: (* bodyDeclaration list *)
 
 class_body_declaration: (* bodyDeclaration *)
   | cd=constructor_declaration { cd }
-  | cmd=class_member_declaration { cmd (*Tree("class_body_declaration", [$1])*)  }
+  | cmd=class_member_declaration { cmd }
   | ii=instance_initializer { InstanceInitializer(ii) }
   | STATIC ii=instance_initializer { StaticInstanceInitializer(ii) }
 
@@ -128,7 +132,7 @@ field_declaration: (* bodyDeclaration *)
   | vdi=variable_declarator_id { match vdi with (i, d) -> VariableDeclarationFragment(i, d, None) }
   | vdi=variable_declarator_id ASSIGN vi=variable_initializer { match vdi with (i, d) -> VariableDeclarationFragment(i, d, Some vi) }
 
-%inline variable_declarator_id: (* sting * int *)
+%inline variable_declarator_id: (* string * int *)
   | i=identifier { (i, 0) }
   | i=identifier d=dims { (i, d) }
 
@@ -137,14 +141,9 @@ field_declaration: (* bodyDeclaration *)
   | ai=array_initializer { ai }
 
 (* SECTION 8.3.1 *)
-(* XXX: please use extended_modifiers, and check the tree with check_*_modifier
-field_modifiers: (*expression list *)
-  | fm=field_modifier { [fm] }
-  | fm=field_modifier fms=field_modifiers { fm::fms }
 
-field_modifier: (* expression *)
-  | a=annotation { a }
-*)
+(* XXX: Fields modifiers unused, we use extended_modifiers instead
+ * and to a final check when building the tree  with check_*_modifier *)
 
 (* SECTION 8.4 *)
 method_declaration: (* bodyDeclaration *)
@@ -188,15 +187,14 @@ formal_parameters: (* variableDeclaration list *)
   }
 
 %public variable_modifiers: (* expression list *)
-  | m=variable_modifier { [m] }
-  | ms=variable_modifiers m=variable_modifier  { ms @ [m] }
+  | m=nonempty_list(variable_modifier) { m }
 
 variable_modifier: (* expression *)
   | FINAL { Modifier(FINAL) }
   | a=annotation { a }
 
 (* SECTION 8.4.3 *)
-(* WARNING : method_modifiers replaced by extended_modifiers *)
+(* XXX: method_modifiers replaced by extended_modifiers *)
 
 (* SECTION 8.4.6 *)
 throws: (* type_ list *)
@@ -208,15 +206,15 @@ exception_type_list: (* type_ list *)
 
 (* SECTION 8.4.7 *)
 method_body: (* statement *)
-  | b=block { b }
-  | SEMICOLON { EmptyStatement }
+   | b=block { b }
+   | SEMICOLON { EmptyStatement }
 
 (* SECTION 8.6 *)
 %inline instance_initializer: (* statement *)
   | b=block { b }
 
 (* SECTION 8.7 *)
-(* WARNING : static_initializer included in class_body_declaration *)
+(* XXX : static_initializer included in class_body_declaration *)
 
 (* SECTION 8.8 *)
 constructor_declaration: (* bodyDeclaration *)
@@ -267,7 +265,7 @@ enum_declaration: (* bodyDeclaration *)
           | false -> error ("Invalid modifier for enum " ^ i) $startpos
   }
 
-enum_body: (*bodyDeclaration *)
+enum_body: (* bodyDeclaration *)
   | L_BRACE ec=enum_constants? R_BRACE { EnumBody(ec, None) }
   | L_BRACE ec=enum_constants? SEMICOLON cb=class_body_declarations? R_BRACE { EnumBody(ec, cb) }
 
@@ -278,9 +276,9 @@ enum_constants: (* bodyDeclaration list *)
 
 enum_constant: (* bodyDeclaration *)
   | a=annotations i=identifier args=delimited(L_PAR, argument_list, R_PAR)? cb=class_body? {
-                 match cb with
-                 | Some c -> EnumConstantDeclaration(a, i, args, c)
-                 | None -> EnumConstantDeclaration(a, i, args, None) }
+          match cb with
+          | Some c -> EnumConstantDeclaration(a, i, args, c)
+          | None -> EnumConstantDeclaration(a, i, args, None) }
 
 (* SECTION 9.1 *)
 interface_declaration: (* bodyDeclaration *)
@@ -291,7 +289,7 @@ interface_declaration: (* bodyDeclaration *)
   }
 
 (* SECTION 9.1.1 *)
-(* WARNING : Eclipse spec used -> interface_modifiers replaced by extended_modifiers *)
+(* XXX: Eclipse spec used -> interface_modifiers replaced by extended_modifiers *)
 
 (* SECTION 9.1.3 *)
 extends_interfaces: (* type_ list *)
@@ -300,10 +298,7 @@ extends_interfaces: (* type_ list *)
 
 (* SECTION 9.1.4 *)
 interface_body: (* bodyDeclaration list option *)
-  | L_BRACE imds=interface_member_declarations? R_BRACE { imds }
-
-interface_member_declarations: (* bodyDeclaration list *)
-  | imds=nonempty_list(interface_member_declaration) { imds }
+  | L_BRACE imds=nonempty_list(interface_member_declaration)? R_BRACE { imds }
 
 interface_member_declaration: (* bodyDeclaration *)
   | amd=abstract_method_declaration { amd }
@@ -326,7 +321,7 @@ constant_declaration: (* bodyDeclaration *)
     | false -> error ("Invalid modifier for constant ") $startpos
   }
 
-(* WARNING : constant_modifiers replaced by extended_modifiers *)
+(* XXX: constant_modifiers replaced by extended_modifiers *)
 
 (* SECTION 9.4 *)
 abstract_method_declaration: (* bodyDeclaration *)
@@ -341,20 +336,20 @@ abstract_method_declaration: (* bodyDeclaration *)
           | false -> error ("Invalid modifier for abstract method " ^ i) $startpos
   }
 
-(* WARNING : abstract_method_modifiers replaced by extended_modifiers *)
+(* XXX: abstract_method_modifiers replaced by extended_modifiers *)
 
 (* SECTION 9.6 *)
+(* TODO: modifiers for annotation was a bit hard, so we disabled it
+ * Don't forget to do the post-process if you want to activate it *)
 annotation_type_declaration: (* bodyDeclaration *)
   | (* no extended_modifiers *) AT INTERFACE i=identifier atb=annotation_type_body { AnnotationTypeDeclaration([], i, atb) }
-  (*| ems=extended_modifiers (* TODO : post-process *) AT INTERFACE i=identifier atb=annotation_type_body { AnnotationTypeDeclaration(ems, i, atb) } TODO : set back *)
+  (*| ems=extended_modifiers AT INTERFACE i=identifier atb=annotation_type_body { AnnotationTypeDeclaration(ems, i, atb) } *)
 
 annotation_type_body: (* bodyDeclaration list *)
-  | L_BRACE (* no annotation_type_element_declarations *) R_BRACE { [] }
   | L_BRACE ateds=annotation_type_element_declarations R_BRACE { ateds }
 
 annotation_type_element_declarations: (* bodyDeclaration list *)
-  | ated=annotation_type_element_declaration { [ated] }
-  | ated=annotation_type_element_declaration ateds=annotation_type_element_declarations { ated::ateds }
+  | ateds=list(annotation_type_element_declaration) { ateds }
 
 annotation_type_element_declaration: (* bodyDeclaration *)
   | (* no extended_modifiers *) t=type_ i=identifier L_PAR R_PAR dv=default_value? { AnnotationTypeMemberDeclaration([], t, i, dv) }
@@ -370,7 +365,6 @@ annotation_type_element_declaration: (* bodyDeclaration *)
 
 default_value: (* expression *)
   | DEFAULT ev=element_value { ev }
-(**)
 
 (* SECTION 9.7 Annotations *)
 annotations: (* expression list *)

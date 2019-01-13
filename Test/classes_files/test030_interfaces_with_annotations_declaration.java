@@ -18,4 +18,7 @@ interface myInterface{
         @thisIsAninterface strangeType k();
         public char w();
     }
+
+    @annot
+    int annotatedMethod();
 }
