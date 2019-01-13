@@ -209,7 +209,7 @@ exception_type_list: (* type_ list *)
 (* SECTION 8.4.7 *)
 method_body: (* statement *)
   | b=block { b }
-(* TODO: | SEMICOLON {} *)
+  | SEMICOLON { EmptyStatement }
 
 (* SECTION 8.6 *)
 %inline instance_initializer: (* statement *)
@@ -230,6 +230,7 @@ constructor_declaration: (* bodyDeclaration *)
           | true -> ConstructorDeclaration(cm, Some tp, id, cd, th, cb)
           | false -> error ("Invalid modifier for constructor " ^ id) $startpos
   }
+
 constructor_declarator: (* contructorDeclarator *)
   | fp=delimited(L_PAR, formal_parameters, R_PAR) { fp }
 
@@ -309,7 +310,7 @@ interface_member_declaration: (* bodyDeclaration *)
   | cd=constant_declaration { cd }
   | cd=class_declaration { cd }
   | id=interface_declaration { id }
-  | atd = annotation_type_declaration { atd } (* TODO : verify *)
+  | atd = annotation_type_declaration { atd }
   | SEMICOLON { EmptyBodyDeclaration }
 
 (* SECTION 9.3 *)
@@ -328,7 +329,7 @@ constant_declaration: (* bodyDeclaration *)
 (* WARNING : constant_modifiers replaced by extended_modifiers *)
 
 (* SECTION 9.4 *)
-abstract_method_declaration: (* bodyDeclaration *) (* todo verification *)
+abstract_method_declaration: (* bodyDeclaration *)
   | imms=extended_modifiers (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON {
           match check_modifiers check_abstract_method_modifier imms with
           | true -> MethodDeclaration(imms, None, rt, i, lpl, t, None)
@@ -343,19 +344,19 @@ abstract_method_declaration: (* bodyDeclaration *) (* todo verification *)
 (* WARNING : abstract_method_modifiers replaced by extended_modifiers *)
 
 (* SECTION 9.6 *)
-annotation_type_declaration: (* bodyDeclaration TODO : verify *)
+annotation_type_declaration: (* bodyDeclaration *)
   | (* no extended_modifiers *) AT INTERFACE i=identifier atb=annotation_type_body { AnnotationTypeDeclaration([], i, atb) }
   (*| ems=extended_modifiers (* TODO : post-process *) AT INTERFACE i=identifier atb=annotation_type_body { AnnotationTypeDeclaration(ems, i, atb) } TODO : set back *)
 
-annotation_type_body: (* bodyDeclaration list TODO : verify *)
+annotation_type_body: (* bodyDeclaration list *)
   | L_BRACE (* no annotation_type_element_declarations *) R_BRACE { [] }
   | L_BRACE ateds=annotation_type_element_declarations R_BRACE { ateds }
 
-annotation_type_element_declarations: (* bodyDeclaration list TODO : verify *)
+annotation_type_element_declarations: (* bodyDeclaration list *)
   | ated=annotation_type_element_declaration { [ated] }
   | ated=annotation_type_element_declaration ateds=annotation_type_element_declarations { ated::ateds }
 
-annotation_type_element_declaration: (* bodyDeclaration TODO : verify *)
+annotation_type_element_declaration: (* bodyDeclaration *)
   | (* no extended_modifiers *) t=type_ i=identifier L_PAR R_PAR dv=default_value? { AnnotationTypeMemberDeclaration([], t, i, dv) }
   | ems=extended_modifiers t=type_ i=identifier L_PAR R_PAR dv=default_value? { AnnotationTypeMemberDeclaration(ems, t, i, dv) }
   | (* no extended_modifiers *) t=array_type i=identifier L_PAR R_PAR dv=default_value? { AnnotationTypeMemberDeclaration([], t, i, dv) }
@@ -367,7 +368,7 @@ annotation_type_element_declaration: (* bodyDeclaration TODO : verify *)
   | atd=annotation_type_declaration { atd }
   | SEMICOLON { EmptyBodyDeclaration }
 
-default_value: (* expression TODO : verify *)
+default_value: (* expression *)
   | DEFAULT ev=element_value { ev }
 (**)
 
@@ -408,11 +409,3 @@ marker_annotation: (* expression *)
 single_element_annotation: (* expression *)
   | AT n=name L_PAR ev=element_value R_PAR { SingleMemberAnnotation(n, ev)  }
 
-(* SECTION 8.7 *)
-
-(* ExplicitConstructorInvocation:
-  NonWildTypeArgumentsopt this ( ArgumentListopt ) ;
-  NonWildTypeArgumentsopt super ( ArgumentListopt ) ;
-  Primary. NonWildTypeArgumentsopt super ( ArgumentListopt ) ; *)
-
-(* section 8.4.1 *)

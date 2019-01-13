@@ -4,36 +4,36 @@
 (* Section 4 Types, Values and Variables *)
 
 (* 3.1 *)
-%public identifier:
+%public identifier: (* string TODO : change $1 *)
   | IDENTIFIER { $1 }
 
 (* 4.1 *)
-%public type_:
+%public type_: (* type_ *)
   | t=primitive_type { t }
   | t=reference_type { t }
 
 
-%public array_type:
+%public array_type: (* type_ *)
   | t=primitive_type d=dims { ArrayType(t, d) }
   | t=reference_type d=dims { ArrayType(t, d) }
 
 (* 4.2 *)
-%public primitive_type:
+%public primitive_type: (* type_ *)
   | t=numeric_type { t }
   | BOOLEAN { Boolean }
 
-numeric_type:
+numeric_type: (* type_ *)
   | t=integral_type { t }
   | t=floating_point_type { t }
 
-integral_type:
+integral_type: (* type_ *)
   | BYTE  { Byte }
   | SHORT { Short  }
   | INT   { Int }
   | LONG  { Long }
   | CHAR  { Char }
 
-floating_point_type:
+floating_point_type: (* type_ *)
   | FLOAT  { Float }
   | DOUBLE { Double }
 
