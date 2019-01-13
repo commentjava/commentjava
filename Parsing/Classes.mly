@@ -207,14 +207,29 @@ exception_type_list: (* type_ list *)
 
 (* SECTION 8.8.7 *)
 constructor_body: (* bodyDeclaration *)
+(*  | L_BRACE bsecis=block_statements_or_ecis? R_BRACE { ConstructorBody(None, bsecis) } (* TODO : might be useful *)*)
   | L_BRACE (* no explicit_constructor_invocation *) bs=block_statements? R_BRACE { ConstructorBody(None, bs) }
-  | L_BRACE eci=explicit_constructor_invocation (* TODO : verify *) bs=block_statements? R_BRACE { ConstructorBody(None, bs) }
+  | L_BRACE eci=explicit_constructor_invocation (* TODO : verify *) bs=block_statements? R_BRACE { ConstructorBody((Some eci), bs) }
+
+(* TODO : might be useful *)
+(*
+(* WARNING : block_statements_or_ecis used to solve reduce/reduce conflict between block_statement and explicit_constructor_invocation *)
+block_statements_or_ecis: (* statement list TODO : verify *)
+  | bseci=block_statement_or_eci { [bseci] }
+  | bseci=block_statement_or_eci bsecis=block_statements_or_ecis { bseci::bsecis }
+
+block_statement_or_eci: (* statement TODO : verify *)
+  | eci=explicit_constructor_invocation { eci }
+  | bs=block_statement { bs }
+*)
 
 (* SECTION 8.8.7.1 *)
-%inline explicit_constructor_invocation: (* statement TODO : verify *)
-  | nwta=non_wild_type_arguments? THIS L_PAR arg=argument_list? R_PAR SEMICOLON { ConstructorInvocation(nwta, arg) }
-  | nwta=non_wild_type_arguments? SUPER L_PAR arg=argument_list? R_PAR SEMICOLON { SuperConstructorInvocation(None, nwta, arg) }
-  | p=primary PERIOD nwta=non_wild_type_arguments? SUPER L_PAR arg=argument_list? R_PAR SEMICOLON (* p : expression *) { SuperConstructorInvocation((Some p), nwta, arg) }
+explicit_constructor_invocation: (* statement TODO : verify *)
+  | (* no non_wild_type_arguments *) THIS L_PAR arg=argument_list? R_PAR SEMICOLON { ConstructorInvocation(None, arg) }
+  | (* no non_wild_type_arguments *) SUPER L_PAR arg=argument_list? R_PAR SEMICOLON { SuperConstructorInvocation(None, None, arg) }
+  | nwta=non_wild_type_arguments THIS L_PAR arg=argument_list? R_PAR SEMICOLON { ConstructorInvocation((Some nwta), arg) }
+  | nwta=non_wild_type_arguments SUPER L_PAR arg=argument_list? R_PAR SEMICOLON { SuperConstructorInvocation(None, (Some nwta), arg) }
+(*  | p=primary PERIOD nwta=non_wild_type_arguments? SUPER L_PAR arg=argument_list? R_PAR SEMICOLON (* p : expression *) { SuperConstructorInvocation((Some p), nwta, arg) } TODO : causes reduce-reduce conflict with SUPER of the 2nd option *)
 
 %public %inline non_wild_type_arguments: (* type_ list *)
   | LOWER tl=reference_type_list GREATER { tl }

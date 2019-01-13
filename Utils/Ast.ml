@@ -122,7 +122,7 @@ and bodyDeclaration =
   | FieldDeclaration of expression list option (*field modifiers*) * type_ (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
   | InstanceInitializer of statement
   | StaticInstanceInitializer of statement
-  | ConstructorBody of string option (* TODO ExplicitConstructorInvocation *) * statement list option (* block_statements *)
+  | ConstructorBody of statement option (* TODO ExplicitConstructorInvocation *) * statement list option (* block_statements *)
   | ConstructorDeclaration of expression list option (* contructor_modifiers *) * typeParameter list option (* type *) * string (* identifier *) * variableDeclaration list (* parameters  *) * type_ list option (* throws *) * bodyDeclaration (* constructor_body *)
   | MethodDeclaration of expression list option (* extendedMofifiers *) * typeParameter list option (* type parameters *) * type_ (* resultType *) * string (* identifier *) * variableDeclaration list option (* formal parameters *) * type_ list option (* throws *) * statement option (* body *)
   | EmptyBodyDeclaration
@@ -833,8 +833,9 @@ and print_bodyDeclaration bd deep =
             apply_opt_list print_variableDeclaration lpl (deep + 1);
             apply_opt_list print_type t (deep + 1);
             print_opt_statement mb (deep + 1)
-        | ConstructorBody ( ei, bs ) -> (* TODO ei *)
+        | ConstructorBody (ei, bs ) ->
             print_string_deep "ConstructorBody" deep;
+            apply_opt print_statement ei (deep + 1);
             apply_opt_list print_statement bs (deep + 1)
         | EmptyBodyDeclaration ->
             print_string_deep "EmptyDeclaration" deep;

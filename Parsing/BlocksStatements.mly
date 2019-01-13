@@ -16,11 +16,11 @@
   | L_BRACE R_BRACE { Block([]) }
   | L_BRACE bs=block_statements R_BRACE { Block(bs) }
 
-%public block_statements:
+%public block_statements: (* statement list *)
   | b=block_statement { [b] }
   | bs=block_statements b=block_statement { bs @ [b] }
 
-block_statement:
+%public block_statement: (* statement *)
   | s=local_variable_declaration_statement { s }
   | c=class_declaration { LocalClassDeclarationStatement(c) }
   | s=statement { s }
@@ -34,7 +34,7 @@ local_variable_declaration:
   | m=variable_modifiers t=type_ d=variable_declarators { VariableDeclarationStatement(m, t, d) }
 
 (* 14.5 *)
-statement:
+statement: (* statement *)
   | s=statement_without_trailing_substatement { s }
   | s=labeled_statement { s }
   | s=if_then_statement { s }
@@ -136,7 +136,7 @@ enum_constant_name:
   | i=identifier { Tree("enum_constant_name", [Leaf(i)]) }
 
 (* 14.12 *)
-while_statement:
+while_statement: (* statement *)
   | WHILE L_PAR e=expression R_PAR s=statement { WhileStatement(e, s) }
 
 while_statement_no_short_if:

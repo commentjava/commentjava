@@ -1,6 +1,6 @@
 class firstClass extends parentClass {
     public firstClass(int a, strangeType b, Object... c){
-        super();
-        int var = 0;
+        <strangeType>super(a, b); /* doesnt work with <int> */
+        int var = 23;
     }
 }

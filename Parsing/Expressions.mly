@@ -9,11 +9,11 @@
 (* Section 15 Expressions *)
 
 (* 15.8 *)
-%public primary:
+%public %inline primary:
   | p=primary_no_new_array { p }
   | e=array_creation_expression { e }
 
-primary_no_new_array:
+%inline primary_no_new_array:
   | l=literal { l }
   /* | t=type_ PERIOD CLASS { TypeLiteral(Some t) } */
   | VOID PERIOD CLASS { TypeLiteral(None) }
