@@ -153,7 +153,12 @@ method_declaration: (* bodyDeclaration *)
           | true -> MethodDeclaration(em, Some tp, rt, i, fpl, t, Some mb)
           | false -> error ("Invalid modifier for method " ^ i) $startpos
   }
-  | amd=endrule(abstract_method_declaration) { amd }
+  (* XXX not: `anonymous()` considered as a deprecated synonym of `endrule()`
+   * But because we want to keep compatibility with older versions of Menhir
+   * (e.g. the ones packaged with Debian and Ubuntu) we kept this syntax.
+   * You might want change that in the future.
+   *)
+  | amd=anonymous(abstract_method_declaration) { amd }
 
 %inline result_type: (* type_ *)
   | t=type_ { t }
@@ -297,7 +302,7 @@ interface_member_declaration: (* bodyDeclaration *)
   | SEMICOLON { EmptyBodyDeclaration }
 
 (* SECTION 9.3 *)
-constant_declaration: (* bodyDeclaration *) (* TODO post verification *)
+constant_declaration: (* bodyDeclaration *)
   | imms=extended_modifiers? t=type_ vds=variable_declarators SEMICOLON {
     match check_modifiers check_constant_modifier imms with
     | true -> FieldDeclaration(imms, t, vds)
