@@ -257,12 +257,11 @@ enum_constants:
   | c=enum_constant COMMA cs=enum_constants { c::cs }
   | c=enum_constant COMMA { [c] }
 
-  (* TODO: use argumentList instead which is different to formal PARAMETERS see 15.9 *)
 enum_constant:
-  | a=ioption(annotations) i=identifier (* args=constructor_declarator *) cb=class_body? {
+  | a=ioption(annotations) i=identifier args=delimited(L_PAR, argument_list, R_PAR)? cb=class_body? {
                  match cb with
-                 | Some c -> EnumConstantDeclaration(a, i, [] (*TODO*), c)
-                 | None -> EnumConstantDeclaration(a, i, [] (*TODO*), None) }
+                 | Some c -> EnumConstantDeclaration(a, i, args, c)
+                 | None -> EnumConstantDeclaration(a, i, args, None) }
 
 (* SECTION 9.1 *)
 interface_declaration: (* bodyDeclaration *)

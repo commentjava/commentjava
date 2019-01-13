@@ -25,3 +25,10 @@ public enum NoConsts implements Cat, tata {
         ;
         int i = j;
 }
+
+@annotation(coucou)
+public enum Withargs implements Cat, tata {
+        VAR(cat,  tree),
+        OBJECT(car, truck) { int a = 3; };
+        int i = j;
+}

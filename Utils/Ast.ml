@@ -117,7 +117,7 @@ and bodyDeclaration =
   | ClassDeclaration of expression list option (* Extended modifier list *) * string (* Identifier *) * typeParameter list option (* TypeParameter list *) * type_ option (* Type option *) * type_ list option (* Type list *) * bodyDeclaration list option (* ClassBodyDeclaration list *)
   | InterfaceDeclaration of expression list option (*interface_modifiers*) * string (*identifier*) * typeParameter list option (*type_parameters*) * type_ list option (*extends_interface*) * bodyDeclaration list option (*interface_body*)
   (* | AnnotationTypeMemberDeclaration *)
-  | EnumConstantDeclaration of expression list option (* annotations *) * string (* identifier *) * variableDeclaration list (* arguments *) * bodyDeclaration list option (* class_body *)
+  | EnumConstantDeclaration of expression list option (* annotations *) * string (* identifier *) * expression list option (* arguments *) * bodyDeclaration list option (* class_body *)
   | EnumBody of bodyDeclaration list option (* enum_constants *) * bodyDeclaration list option (* enum_body_declaration *)
   | FieldDeclaration of expression list option (*field modifiers*) * type_ (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
   | InstanceInitializer of statement
@@ -809,7 +809,7 @@ and print_bodyDeclaration bd deep =
             print_string_deep "EnumConstantDeclaration" deep;
             apply_opt_list print_expression      an   (deep + 1);
             print_string_deep i                       (deep + 1);
-            apply_list print_variableDeclaration args (deep + 1);
+            apply_opt_list print_expression args (deep + 1);
             apply_opt_list print_bodyDeclaration eb   (deep + 1);
         | InstanceInitializer b ->
             print_string_deep "InstanceInitializer" deep;
