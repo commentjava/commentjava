@@ -15,7 +15,8 @@
 
 %inline primary_no_new_array:
   | l=literal { l }
-  /* | t=type_ PERIOD CLASS { TypeLiteral(Some t) } */
+  | t=name PERIOD CLASS {  TypeLiteral(Some (SimpleType(t))) }
+  /* | t=type_ PERIOD CLASS {  TypeLiteral(Some t) } */
   | VOID PERIOD CLASS { TypeLiteral(None) }
   | THIS { ThisExpression(None) }
   | n=name PERIOD THIS { ThisExpression(Some n) }
