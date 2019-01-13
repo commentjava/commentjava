@@ -230,6 +230,8 @@ explicit_constructor_invocation: (* statement TODO : verify *)
   | (* no non_wild_type_arguments *) SUPER L_PAR arg=argument_list? R_PAR SEMICOLON { SuperConstructorInvocation(None, None, arg) }
   | nwta=non_wild_type_arguments THIS L_PAR arg=argument_list? R_PAR SEMICOLON { ConstructorInvocation((Some nwta), arg) }
   | nwta=non_wild_type_arguments SUPER L_PAR arg=argument_list? R_PAR SEMICOLON { SuperConstructorInvocation(None, (Some nwta), arg) }
+  | p=primary PERIOD (* no non_wild_type_arguments *) SUPER L_PAR arg=argument_list? R_PAR SEMICOLON (* p : expression *) { SuperConstructorInvocation((Some p), None, arg) }
+  | p=primary PERIOD nwta=non_wild_type_arguments SUPER L_PAR arg=argument_list? R_PAR SEMICOLON (* p : expression *) { SuperConstructorInvocation((Some p), (Some nwta), arg) }
 (*  | p=primary PERIOD nwta=non_wild_type_arguments? SUPER L_PAR arg=argument_list? R_PAR SEMICOLON (* p : expression *) { SuperConstructorInvocation((Some p), nwta, arg) } TODO : causes reduce-reduce conflict with SUPER of the 2nd option *)
 
 %public %inline non_wild_type_arguments: (* type_ list *)
