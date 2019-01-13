@@ -112,17 +112,17 @@ and expression =
   (* | VariableDeclarationExpression *)
 
 and bodyDeclaration =
-  (* | AbstractTypeDeclaration_AnnotationTypeDeclaration *)
+  | AnnotationTypeDeclaration of expression list (* interfaceModifier *) * string (* identifier *) * bodyDeclaration list (* annotationTypeBody *) (* TODO : verify *)
   | EnumDeclaration of expression list option (* modifiers *) * string (* identifier *) * type_ list option (* interfaces *) * bodyDeclaration list option (* enum_constants *) * bodyDeclaration list option (* enum_body *)
   | ClassDeclaration of expression list option (* Extended modifier list *) * string (* Identifier *) * typeParameter list option (* TypeParameter list *) * type_ option (* Type option *) * type_ list option (* Type list *) * bodyDeclaration list option (* ClassBodyDeclaration list *)
   | InterfaceDeclaration of expression list option (*interface_modifiers*) * string (*identifier*) * typeParameter list option (*type_parameters*) * type_ list option (*extends_interface*) * bodyDeclaration list option (*interface_body*)
-  (* | AnnotationTypeMemberDeclaration *)
+  | AnnotationTypeMemberDeclaration of expression list (* interfaceMemberModifiers *) * type_ (* type *) * string (* identifier *) * expression option (* defaultValue *)(* TODO : verify *)
   | EnumConstantDeclaration of expression list option (* annotations *) * string (* identifier *) * expression list option (* arguments *) * bodyDeclaration list option (* class_body *)
   | EnumBody of bodyDeclaration list option (* enum_constants *) * bodyDeclaration list option (* enum_body_declaration *)
   | FieldDeclaration of expression list option (*field modifiers*) * type_ (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
   | InstanceInitializer of statement
   | StaticInstanceInitializer of statement
-  | ConstructorBody of statement option (* TODO ExplicitConstructorInvocation *) * statement list option (* block_statements *)
+  | ConstructorBody of statement option (* ExplicitConstructorInvocation *) * statement list option (* block_statements *)
   | ConstructorDeclaration of expression list option (* contructor_modifiers *) * typeParameter list option (* type *) * string (* identifier *) * variableDeclaration list (* parameters  *) * type_ list option (* throws *) * bodyDeclaration (* constructor_body *)
   | MethodDeclaration of expression list option (* extendedMofifiers *) * typeParameter list option (* type parameters *) * type_ (* resultType *) * string (* identifier *) * variableDeclaration list option (* formal parameters *) * type_ list option (* throws *) * statement option (* body *)
   | EmptyBodyDeclaration
@@ -805,6 +805,24 @@ and print_bodyDeclaration bd deep =
             apply_opt_list print_type            it   (deep + 1);
             apply_opt_list print_bodyDeclaration ec   (deep + 1);
             apply_opt_list print_bodyDeclaration eb   (deep + 1)
+        | AnnotationTypeDeclaration (em, i, atb) ->
+            print_string_deep "AnnotationTypeDeclaration" deep;
+            print_string_deep "Modifiers : "             (deep + 1);
+            apply_list print_expression em               (deep + 2);
+            print_string_deep "Identifier : "            (deep + 1);
+            print_string_deep i                          (deep + 2);
+            print_string_deep "ElementsDeclaration : "   (deep + 1);
+            apply_list print_bodyDeclaration atb         (deep + 2)
+        | AnnotationTypeMemberDeclaration (imm, t, i, dv) ->
+            print_string_deep "AnnotationTypeMemberDeclaration" deep;
+            print_string_deep "InterfaceMemberModifiers : "    (deep + 1);
+            apply_list print_expression imm                    (deep + 2);
+            print_string_deep "Type : "                        (deep + 1);
+            print_type t                                       (deep + 2);
+            print_string_deep "Identifier : "                  (deep + 1);
+            print_string_deep i                                (deep + 2);
+            print_string_deep "DefaultValue : "                (deep + 1);
+            apply_opt print_expression dv                      (deep + 2)
         | EnumConstantDeclaration (an, i, args, eb) ->
             print_string_deep "EnumConstantDeclaration" deep;
             apply_opt_list print_expression      an   (deep + 1);

@@ -146,7 +146,7 @@ field_modifier: (* expression *)
 *)
 
 (* SECTION 8.4 *)
-method_declaration:
+method_declaration: (* bodyDeclaration *)
   | em=extended_modifiers? rt=result_type i=identifier L_PAR fpl=formal_parameters? R_PAR t=throws? mb=method_body {
           match check_modifiers check_method_modifier em with
           | true -> MethodDeclaration(em, None, rt, i, fpl, t, Some mb)
@@ -157,10 +157,6 @@ method_declaration:
           | true -> MethodDeclaration(em, Some tp, rt, i, fpl, t, Some mb)
           | false -> error ("Invalid modifier for method " ^ i) $startpos
   }
-
-method_body:
-  | b=block { b }
-(* TODO: | SEMICOLON {} *)
 
 %inline result_type: (* type_ *)
   | t=type_ { t }
@@ -180,9 +176,36 @@ formal_parameters: (* variableDeclaration list *)
     | i, n -> SingleVariableDeclaration(vm, t, None, e, i, n, None)
   }
 
+%public variable_modifiers: (* expression list *)
+  | m=variable_modifier { [m] }
+  | ms=variable_modifiers m=variable_modifier  { ms @ [m] }
+
+variable_modifier: (* expression *)
+  | FINAL { Modifier(FINAL) }
+  | a=annotation { a }
+
+(* SECTION 8.4.3 *)
+(* WARNING : method_modifiers replaced by extended_modifiers *)
+
+(* SECTION 8.4.6 *)
+throws: (* type_ list *)
+  | THROWS tl=exception_type_list { tl }
+
+exception_type_list: (* type_ list *)
+  | et=class_or_interface_type { [et] }
+  | et=class_or_interface_type COMMA ets=exception_type_list { et::ets }
+
+(* SECTION 8.4.7 *)
+method_body: (* statement *)
+  | b=block { b }
+(* TODO: | SEMICOLON {} *)
+
 (* SECTION 8.6 *)
 %inline instance_initializer: (* statement *)
   | b=block { b }
+
+(* SECTION 8.7 *)
+(* WARNING : static_initializer included in class_body_declaration *)
 
 (* SECTION 8.8 *)
 constructor_declaration: (* bodyDeclaration *)
@@ -199,40 +222,19 @@ constructor_declaration: (* bodyDeclaration *)
 constructor_declarator: (* contructorDeclarator *)
   | fp=delimited(L_PAR, formal_parameters, R_PAR) { fp }
 
-throws: (* type_ list *)
-  | THROWS tl=exception_type_list { tl }
-
-exception_type_list: (* type_ list *)
-  | et=class_or_interface_type { [et] }
-  | et=class_or_interface_type COMMA ets=exception_type_list { et::ets }
-
 (* SECTION 8.8.7 *)
 constructor_body: (* bodyDeclaration *)
-(*  | L_BRACE bsecis=block_statements_or_ecis? R_BRACE { ConstructorBody(None, bsecis) } (* TODO : might be useful *)*)
   | L_BRACE (* no explicit_constructor_invocation *) bs=block_statements? R_BRACE { ConstructorBody(None, bs) }
-  | L_BRACE eci=explicit_constructor_invocation (* TODO : verify *) bs=block_statements? R_BRACE { ConstructorBody((Some eci), bs) }
-
-(* TODO : might be useful *)
-(*
-(* WARNING : block_statements_or_ecis used to solve reduce/reduce conflict between block_statement and explicit_constructor_invocation *)
-block_statements_or_ecis: (* statement list TODO : verify *)
-  | bseci=block_statement_or_eci { [bseci] }
-  | bseci=block_statement_or_eci bsecis=block_statements_or_ecis { bseci::bsecis }
-
-block_statement_or_eci: (* statement TODO : verify *)
-  | eci=explicit_constructor_invocation { eci }
-  | bs=block_statement { bs }
-*)
+  | L_BRACE eci=explicit_constructor_invocation bs=block_statements? R_BRACE { ConstructorBody((Some eci), bs) }
 
 (* SECTION 8.8.7.1 *)
-explicit_constructor_invocation: (* statement TODO : verify *)
+explicit_constructor_invocation: (* statement *)
   | (* no non_wild_type_arguments *) THIS L_PAR arg=argument_list? R_PAR SEMICOLON { ConstructorInvocation(None, arg) }
   | (* no non_wild_type_arguments *) SUPER L_PAR arg=argument_list? R_PAR SEMICOLON { SuperConstructorInvocation(None, None, arg) }
   | nwta=non_wild_type_arguments THIS L_PAR arg=argument_list? R_PAR SEMICOLON { ConstructorInvocation((Some nwta), arg) }
   | nwta=non_wild_type_arguments SUPER L_PAR arg=argument_list? R_PAR SEMICOLON { SuperConstructorInvocation(None, (Some nwta), arg) }
   | p=primary PERIOD (* no non_wild_type_arguments *) SUPER L_PAR arg=argument_list? R_PAR SEMICOLON (* p : expression *) { SuperConstructorInvocation((Some p), None, arg) }
   | p=primary PERIOD nwta=non_wild_type_arguments SUPER L_PAR arg=argument_list? R_PAR SEMICOLON (* p : expression *) { SuperConstructorInvocation((Some p), (Some nwta), arg) }
-(*  | p=primary PERIOD nwta=non_wild_type_arguments? SUPER L_PAR arg=argument_list? R_PAR SEMICOLON (* p : expression *) { SuperConstructorInvocation((Some p), nwta, arg) } TODO : causes reduce-reduce conflict with SUPER of the 2nd option *)
 
 %public %inline non_wild_type_arguments: (* type_ list *)
   | LOWER tl=reference_type_list GREATER { tl }
@@ -251,16 +253,16 @@ enum_declaration: (* bodyDeclaration *)
           | false -> error ("Invalid modifier for enum " ^ i) $startpos
   }
 
-enum_body:
+enum_body: (*bodyDeclaration *)
   | L_BRACE ec=enum_constants? R_BRACE { EnumBody(ec, None) }
   | L_BRACE ec=enum_constants? SEMICOLON cb=class_body_declarations? R_BRACE { EnumBody(ec, cb) }
 
-enum_constants:
+enum_constants: (* bodyDeclaration list *)
   | c=enum_constant { [c] }
   | c=enum_constant COMMA cs=enum_constants { c::cs }
   | c=enum_constant COMMA { [c] }
 
-enum_constant:
+enum_constant: (* bodyDeclaration *)
   | a=ioption(annotations) i=identifier args=delimited(L_PAR, argument_list, R_PAR)? cb=class_body? {
                  match cb with
                  | Some c -> EnumConstantDeclaration(a, i, args, c)
@@ -294,6 +296,7 @@ interface_member_declaration: (* bodyDeclaration *)
   | cd=constant_declaration { cd }
   | cd=class_declaration { cd }
   | id=interface_declaration { id }
+(*  | atd = annotation_type_declaration { atd } TODO *)
   | SEMICOLON { EmptyBodyDeclaration }
 
 (* SECTION 9.3 *)
@@ -320,6 +323,33 @@ abstract_method_declaration: (* bodyDeclaration *)
   | imms=interface_member_modifiers? tps=type_parameters rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON { MethodDeclaration(imms, (Some tps), rt, i, lpl, t, None) }
 
 (* WARNING : abstract_method_modifiers replaced by interface_member_modifiers *)
+
+(* SECTION 9.6 *)
+(* TODO : not sure if it does work yet *)
+annotation_type_declaration: (* bodyDeclaration TODO : verify *)
+  | em=list(extended_modifier) (* TODO : post-process *) AT INTERFACE i=identifier atb=annotation_type_body { AnnotationTypeDeclaration(em, i, atb) }
+
+annotation_type_body: (* bodyDeclaration list TODO : verify *)
+  | L_BRACE ated=list(annotation_type_element_declaration) R_BRACE { ated }
+
+(* TODO : useless?
+annotation_type_element_declarations: (* bodyDeclaration list TODO : verify *)
+  | ated=annotation_type_element_declaration { [ated] }
+  | ated=annotation_type_element_declaration ateds=annotation_type_element_declarations { ated::ateds }
+*)
+
+annotation_type_element_declaration: (* bodyDeclaration TODO : verify *)
+  | imm=list(interface_member_modifier) t=type_ i=identifier L_PAR R_PAR dv=default_value? { AnnotationTypeMemberDeclaration(imm, t, i, dv) }
+  | cd=constant_declaration { cd }
+  | cd=class_declaration { cd }
+  | id=interface_declaration { id }
+  | ed=enum_declaration { ed }
+  | atd=annotation_type_declaration { atd }
+  | SEMICOLON { EmptyBodyDeclaration }
+
+default_value: (* expression TODO : verify *)
+  | DEFAULT ev=element_value { ev }
+(**)
 
 (* SECTION 9.7 Annotations *)
 annotations: (* expression list *)
@@ -366,10 +396,3 @@ single_element_annotation: (* expression *)
   Primary. NonWildTypeArgumentsopt super ( ArgumentListopt ) ; *)
 
 (* section 8.4.1 *)
-%public variable_modifiers:
-  | m=variable_modifier { [m] }
-  | ms=variable_modifiers m=variable_modifier  { ms @ [m] }
-
-variable_modifier: (* expression *)
-  | FINAL { Modifier(FINAL) }
-  | a=annotation { a }
