@@ -35,7 +35,7 @@ literal:
   | l=NULL_LITERAL { NullLiteral }
 
 (* 15.9 *)
-class_instance_creation_expression:
+%public class_instance_creation_expression:
   | NEW t=class_or_interface_type L_PAR R_PAR { ClassInstanceCreation(None, None, t, None, None) }
   | NEW a=type_arguments t=class_or_interface_type L_PAR R_PAR { ClassInstanceCreation(None, Some a, t, None, None) }
   | NEW t=class_or_interface_type L_PAR al=argument_list R_PAR { ClassInstanceCreation(None, None, t, Some al, None) }

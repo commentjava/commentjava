@@ -31,4 +31,5 @@
     a = this.new <myType> c(3) {
         int laba = 12;
     };
+    new TableExample3();
 }

@@ -89,7 +89,7 @@ statement_expression:
   | e=post_increment_expression { ExpressionStatement(e) }
   | e=post_decrement_expression { ExpressionStatement(e) }
   | e=method_invocation { ExpressionStatement(e) }
-  /* | class_instance_creation_expression {} */
+  | e=class_instance_creation_expression { ExpressionStatement(e) }
 
 
 (* 14.9 *)
