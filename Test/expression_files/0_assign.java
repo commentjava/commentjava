@@ -7,4 +7,5 @@
     myObject.myVar += 3;
     myVar = 'm';
     myVar = null;
+    Xmin = 1E20f;
 }

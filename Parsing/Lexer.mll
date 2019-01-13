@@ -15,6 +15,9 @@ let digit = '0' | non_zero_digit
 let octal_digit = ['0'-'7']
 let hex_digit = ['0'-'9' 'a'-'z' 'A'-'Z']
 
+let signed_integer = ('+' | '-')? digit+
+let exponent_part = ('e' | 'E') signed_integer
+
 (* TODO change identifier *)
 let identifier = java_letter (java_letter | digit )*
 
@@ -37,7 +40,14 @@ let string_char = [^ '"' '\\'] | '\\' escaped_char
 let string_literal = '"' string_char* '"'
 
 (* Float Literals *)
-let float_literal = (digit+ '.'? digit* | '.' digit+) ('f' | 'F')?
+let float_suffix = 'f' | 'F'
+let hex_significand = hex_numeral | hex_numeral '.' | '0' ('x' | 'X') hex_digit* '.' hex_digit+
+let hex_float_literal = hex_significand ('p' | 'P') signed_integer float_suffix?
+let decimal_float_literal = (digit+ '.' digit* exponent_part? float_suffix? 
+                            | '.' digit+ exponent_part? float_suffix?
+                            | digit+ exponent_part float_suffix?
+                            | digit+ exponent_part? float_suffix)
+let float_literal = decimal_float_literal | hex_float_literal
 
 (* Char Literals *)
 let single_char = [^ '\'' '\\']
