@@ -29,10 +29,13 @@ type_declarations: (* bodyDeclaration list *)
 (* SECTION 7.4 *)
 
 package_declaration: (* packageDeclaration *)
-  | a=ioption(annotations) PACKAGE p=name SEMICOLON { PackageDeclaration(a, p) }
+  | a=extended_modifiers PACKAGE p=name SEMICOLON {
+    match check_modifiers check_package_modifier a with
+    | true -> PackageDeclaration(a, p)
+    | false -> error ("Invalid annotation for package declaration") $startpos
+  }
 
 (* SECTION 7.5 *)
-
 import_declaration: (* importDeclaration *)
   | IMPORT s=boption(STATIC) n=name PERIOD MULTIPLY SEMICOLON { ImportDeclaration_(s, n, true) }
   | IMPORT s=boption(STATIC) n=name SEMICOLON { ImportDeclaration_(s, n, false) }
@@ -46,7 +49,7 @@ type_declaration: (* bodyDeclaration *)
 
 (* SECTION 8.1 *)
 %public class_declaration: (* bodyDeclaration *)
-  | em=extended_modifiers? CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body {
+  | em=extended_modifiers CLASS i=identifier tp=type_parameters? s=super? it=interfaces? cb=class_body {
           match check_modifiers check_class_modifier em with
           | true -> ClassDeclaration(em, i, tp, s, it, cb)
           | false -> error ("Invalid modifier for class " ^ i) $startpos
@@ -55,7 +58,7 @@ type_declaration: (* bodyDeclaration *)
 (* SECTION 8.1.1 *)
 (* WARNING : Eclipse spec used -> class_modifiers replaced by extended_modifiers *)
 extended_modifiers: (* expression list *)
-  | ems=nonempty_list(extended_modifier) { ems }
+  | ems=list(extended_modifier) { ems }
 
 (* XXX: This matches also FieldModifiers *)
 extended_modifier: (* expression *)
@@ -113,8 +116,8 @@ class_member_declaration: (* bodyDeclaration *)
 
 (* SECTION 8.3 *)
 field_declaration: (* bodyDeclaration *)
-  | fm=extended_modifiers? t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(fm, t, vds) }
-  | fm=extended_modifiers? t=array_type vds=variable_declarators SEMICOLON { FieldDeclaration(fm, t, vds) }
+  | fm=extended_modifiers t=type_ vds=variable_declarators SEMICOLON { FieldDeclaration(fm, t, vds) }
+  | fm=extended_modifiers t=array_type vds=variable_declarators SEMICOLON { FieldDeclaration(fm, t, vds) }
 
 %public variable_declarators: (* variableDeclaration list *)
   | vd=variable_declarator { [vd] }
@@ -144,12 +147,12 @@ field_modifier: (* expression *)
 
 (* SECTION 8.4 *)
 method_declaration: (* bodyDeclaration *)
-  | em=extended_modifiers? rt=result_type i=identifier L_PAR fpl=ioption(formal_parameters) R_PAR t=throws? mb=method_body {
+  | em=extended_modifiers rt=result_type i=identifier L_PAR fpl=ioption(formal_parameters) R_PAR t=throws? mb=method_body {
           match check_modifiers check_method_modifier em with
           | true -> MethodDeclaration(em, None, rt, i, fpl, t, Some mb)
           | false -> error ("Invalid modifier for method " ^ i) $startpos
   }
-  | em=extended_modifiers? tp=type_parameters rt=result_type i=identifier L_PAR fpl=ioption(formal_parameters) R_PAR t=throws? mb=method_body {
+  | em=extended_modifiers tp=type_parameters rt=result_type i=identifier L_PAR fpl=ioption(formal_parameters) R_PAR t=throws? mb=method_body {
           match check_modifiers check_method_modifier em with
           | true -> MethodDeclaration(em, Some tp, rt, i, fpl, t, Some mb)
           | false -> error ("Invalid modifier for method " ^ i) $startpos
@@ -216,12 +219,12 @@ method_body: (* statement *)
 
 (* SECTION 8.8 *)
 constructor_declaration: (* bodyDeclaration *)
-  | cm=extended_modifiers? id=identifier cd=constructor_declarator th=throws? cb=constructor_body {
+  | cm=extended_modifiers id=identifier cd=constructor_declarator th=throws? cb=constructor_body {
           match check_modifiers check_contructor_modifer cm with
           | true -> ConstructorDeclaration(cm, None, id, cd, th, cb)
           | false -> error ("Invalid modifier for constructor " ^ id) $startpos
   }
-  | cm=extended_modifiers? tp=type_parameters id=identifier cd=constructor_declarator th=throws? cb=constructor_body {
+  | cm=extended_modifiers tp=type_parameters id=identifier cd=constructor_declarator th=throws? cb=constructor_body {
           match check_modifiers check_contructor_modifer cm with
           | true -> ConstructorDeclaration(cm, Some tp, id, cd, th, cb)
           | false -> error ("Invalid modifier for constructor " ^ id) $startpos
@@ -254,7 +257,7 @@ reference_type_list: (* type_ list *)
 
 (* SECTION 8.9 *)
 enum_declaration: (* bodyDeclaration *)
-  | em=extended_modifiers? ENUM i=identifier it=interfaces? eb=enum_body {
+  | em=extended_modifiers ENUM i=identifier it=interfaces? eb=enum_body {
           match eb with
           | EnumBody(ec, cb) ->
                 match check_modifiers check_class_modifier em with
@@ -272,14 +275,14 @@ enum_constants: (* bodyDeclaration list *)
   | c=enum_constant COMMA { [c] }
 
 enum_constant: (* bodyDeclaration *)
-  | a=ioption(annotations) i=identifier args=delimited(L_PAR, argument_list, R_PAR)? cb=class_body? {
+  | a=annotations i=identifier args=delimited(L_PAR, argument_list, R_PAR)? cb=class_body? {
                  match cb with
                  | Some c -> EnumConstantDeclaration(a, i, args, c)
                  | None -> EnumConstantDeclaration(a, i, args, None) }
 
 (* SECTION 9.1 *)
 interface_declaration: (* bodyDeclaration *)
-  | em=extended_modifiers? INTERFACE i=identifier tp=type_parameters? ei=extends_interfaces? ib=interface_body {
+  | em=extended_modifiers INTERFACE i=identifier tp=type_parameters? ei=extends_interfaces? ib=interface_body {
           match check_modifiers check_interface_modifier em with
           | true -> InterfaceDeclaration(em, i, tp, ei, ib)
           | false -> error ("Invalid modifier for interface " ^ i) $startpos
@@ -310,12 +313,12 @@ interface_member_declaration: (* bodyDeclaration *)
 
 (* SECTION 9.3 *)
 constant_declaration: (* bodyDeclaration *)
-  | imms=extended_modifiers? t=type_ vds=variable_declarators SEMICOLON {
+  | imms=extended_modifiers t=type_ vds=variable_declarators SEMICOLON {
     match check_modifiers check_constant_modifier imms with
     | true -> FieldDeclaration(imms, t, vds)
     | false -> error ("Invalid modifier for constant ") $startpos
   }
-  | imms=extended_modifiers? t=array_type vds=variable_declarators SEMICOLON {
+  | imms=extended_modifiers t=array_type vds=variable_declarators SEMICOLON {
     match check_modifiers check_constant_modifier imms with
     | true -> FieldDeclaration(imms, t, vds)
     | false -> error ("Invalid modifier for constant ") $startpos
@@ -325,12 +328,12 @@ constant_declaration: (* bodyDeclaration *)
 
 (* SECTION 9.4 *)
 abstract_method_declaration: (* bodyDeclaration *) (* todo verification *)
-  | imms=extended_modifiers? (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON {
+  | imms=extended_modifiers (* no type_parameters *) rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON {
           match check_modifiers check_abstract_method_modifier imms with
           | true -> MethodDeclaration(imms, None, rt, i, lpl, t, None)
           | false -> error ("Invalid modifier for abstract method " ^ i) $startpos
   }
-  | imms=extended_modifiers? tps=type_parameters rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON {
+  | imms=extended_modifiers tps=type_parameters rt=result_type i=identifier L_PAR lpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON {
           match check_modifiers check_abstract_method_modifier imms with
           | true -> MethodDeclaration(imms, Some tps, rt, i, lpl, t, None)
           | false -> error ("Invalid modifier for abstract method " ^ i) $startpos

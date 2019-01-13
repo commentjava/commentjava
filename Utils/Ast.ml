@@ -113,18 +113,18 @@ and expression =
 
 and bodyDeclaration =
   | AnnotationTypeDeclaration of expression list (* interfaceModifier *) * string (* identifier *) * bodyDeclaration list (* annotationTypeBody *) (* TODO : verify *)
-  | EnumDeclaration of expression list option (* modifiers *) * string (* identifier *) * type_ list option (* interfaces *) * bodyDeclaration list option (* enum_constants *) * bodyDeclaration list option (* enum_body *)
-  | ClassDeclaration of expression list option (* Extended modifier list *) * string (* Identifier *) * typeParameter list option (* TypeParameter list *) * type_ option (* Type option *) * type_ list option (* Type list *) * bodyDeclaration list option (* ClassBodyDeclaration list *)
-  | InterfaceDeclaration of expression list option (*interface_modifiers*) * string (*identifier*) * typeParameter list option (*type_parameters*) * type_ list option (*extends_interface*) * bodyDeclaration list option (*interface_body*)
+  | EnumDeclaration of expression list (* modifiers *) * string (* identifier *) * type_ list option (* interfaces *) * bodyDeclaration list option (* enum_constants *) * bodyDeclaration list option (* enum_body *)
+  | ClassDeclaration of expression list (* Extended modifier list *) * string (* Identifier *) * typeParameter list option (* TypeParameter list *) * type_ option (* Type option *) * type_ list option (* Type list *) * bodyDeclaration list option (* ClassBodyDeclaration list *)
+  | InterfaceDeclaration of expression list (*interface_modifiers*) * string (*identifier*) * typeParameter list option (*type_parameters*) * type_ list option (*extends_interface*) * bodyDeclaration list option (*interface_body*)
   | AnnotationTypeMemberDeclaration of expression list (* interfaceMemberModifiers *) * type_ (* type *) * string (* identifier *) * expression option (* defaultValue *)(* TODO : verify *)
-  | EnumConstantDeclaration of expression list option (* annotations *) * string (* identifier *) * expression list option (* arguments *) * bodyDeclaration list option (* class_body *)
+  | EnumConstantDeclaration of expression list (* annotations *) * string (* identifier *) * expression list option (* arguments *) * bodyDeclaration list option (* class_body *)
   | EnumBody of bodyDeclaration list option (* enum_constants *) * bodyDeclaration list option (* enum_body_declaration *)
-  | FieldDeclaration of expression list option (*field modifiers*) * type_ (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
+  | FieldDeclaration of expression list (*field modifiers*) * type_ (*type*) * variableDeclaration list (*VariableDeclarationFragments*)
   | InstanceInitializer of statement
   | StaticInstanceInitializer of statement
   | ConstructorBody of statement option (* ExplicitConstructorInvocation *) * statement list option (* block_statements *)
-  | ConstructorDeclaration of expression list option (* contructor_modifiers *) * typeParameter list option (* type *) * string (* identifier *) * variableDeclaration list (* parameters  *) * type_ list option (* throws *) * bodyDeclaration (* constructor_body *)
-  | MethodDeclaration of expression list option (* extendedMofifiers *) * typeParameter list option (* type parameters *) * type_ (* resultType *) * string (* identifier *) * variableDeclaration list option (* formal parameters *) * type_ list option (* throws *) * statement option (* body *)
+  | ConstructorDeclaration of expression list (* contructor_modifiers *) * typeParameter list option (* type *) * string (* identifier *) * variableDeclaration list (* parameters  *) * type_ list option (* throws *) * bodyDeclaration (* constructor_body *)
+  | MethodDeclaration of expression list (* extendedMofifiers *) * typeParameter list option (* type parameters *) * type_ (* resultType *) * string (* identifier *) * variableDeclaration list option (* formal parameters *) * type_ list option (* throws *) * statement option (* body *)
   | EmptyBodyDeclaration
 
 and statement =
@@ -157,7 +157,7 @@ and importDeclaration =
     ImportDeclaration_ of bool (* static *) * expression (* name *) * bool (* .* : import all *)
 
 and packageDeclaration =
-    PackageDeclaration of expression list option (* annotations *) * expression (* name *)
+    PackageDeclaration of expression list (* annotations *) * expression (* name *)
 
 and compilationUnit =
     CompilationUnit of packageDeclaration option (* PackageDeclaration *) * importDeclaration list option (* ImportDeclaration *) * bodyDeclaration list option
@@ -256,15 +256,18 @@ let check_method_modifier m =
   | _ -> false
 ;;
 
-let check_modifiers checker cm =
-  let rec m_check mods =
-    match mods with
+let check_package_modifier m =
+  match m with
+  | NormalAnnotation(_, _) -> true
+  | MarkerAnnotation(_) -> true
+  | SingleMemberAnnotation(_, _) -> true
+  | _ -> false
+;;
+
+let rec check_modifiers checker cm =
+    match cm with
     | [] -> true
-    | m :: ms -> (m_check ms) && (checker m)
-  in
-  match cm with
-  | None -> true
-  | Some cm -> m_check cm
+    | m :: ms -> (check_modifiers checker ms) && (checker m)
 ;;
 
 let rec check_formal_parameters fps =
@@ -789,7 +792,7 @@ and print_packageDeclaration p deep =
     match p with
         | PackageDeclaration(annotations, name) ->
             print_string_deep "PackageDeclaration" deep;
-            apply_opt_list print_expression annotations (deep + 1);
+            apply_list print_expression annotations (deep + 1);
             (*print_string_deep "annotations" deep;*)
             print_expression name (deep + 1)
             (*print_string_deep "name" deep*)
@@ -804,7 +807,7 @@ and print_bodyDeclaration bd deep =
     match bd with
         | ClassDeclaration(cm, i, tp, s, it, cbLO) ->
             print_string_deep "ClassDeclaration"       deep;
-            apply_opt_list print_expression      cm   (deep + 1);
+            apply_list print_expression      cm   (deep + 1);
             print_string_deep                    i    (deep + 1);
             apply_opt_list print_typeParameter   tp   (deep + 1);
             apply_opt print_type                 s    (deep + 1);
@@ -812,19 +815,19 @@ and print_bodyDeclaration bd deep =
             apply_opt_list print_bodyDeclaration cbLO (deep + 1)
         | InterfaceDeclaration (im, i, tp, ei, ib) ->
             print_string_deep "InterfaceDeclaration"   deep;
-            apply_opt_list print_expression      im   (deep + 1);
+            apply_list print_expression      im   (deep + 1);
             print_string_deep                    i    (deep + 1);
             apply_opt_list print_typeParameter   tp   (deep + 1);
             apply_opt_list print_type            ei   (deep + 1);
             apply_opt_list print_bodyDeclaration ib   (deep + 1);
         | FieldDeclaration(fm, t, vdL) ->
             print_string_deep "FieldDeclaration" deep;
-            apply_opt_list print_expression      fm   (deep + 1);
+            apply_list print_expression      fm   (deep + 1);
             print_type                           t    (deep + 1);
             apply_list print_variableDeclaration vdL  (deep + 1)
         | EnumDeclaration (em, i, it, ec, eb) ->
             print_string_deep "EnumDeclaration" deep;
-            apply_opt_list print_expression em        (deep + 1);
+            apply_list print_expression em        (deep + 1);
             print_string_deep i                       (deep + 1);
             apply_opt_list print_type            it   (deep + 1);
             apply_opt_list print_bodyDeclaration ec   (deep + 1);
@@ -849,7 +852,7 @@ and print_bodyDeclaration bd deep =
             apply_opt print_expression dv                      (deep + 2)
         | EnumConstantDeclaration (an, i, args, eb) ->
             print_string_deep "EnumConstantDeclaration" deep;
-            apply_opt_list print_expression      an   (deep + 1);
+            apply_list print_expression      an   (deep + 1);
             print_string_deep i                       (deep + 1);
             apply_opt_list print_expression args (deep + 1);
             apply_opt_list print_bodyDeclaration eb   (deep + 1);
@@ -862,7 +865,7 @@ and print_bodyDeclaration bd deep =
         | ConstructorDeclaration (cm,  tp, id, params, throws, bd) ->
             print_string_deep "ConstructorDeclaration" deep;
             print_string_deep id    (deep + 1);
-            apply_opt_list print_expression cm (deep + 1);
+            apply_list print_expression cm (deep + 1);
             apply_opt_list print_typeParameter tp (deep + 1);
             apply_list print_variableDeclaration params (deep + 1);
             apply_opt_list print_type throws (deep + 1);
