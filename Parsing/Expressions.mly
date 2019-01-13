@@ -68,16 +68,15 @@ literal:
 
 (* 15.10 *)
 array_creation_expression:
-  | NEW t=primitive_type de=dim_exprs { ArrayCreation(t, Some de, 0, None) }
-  | NEW t=primitive_type de=dim_exprs d=dims { ArrayCreation(t, Some de, d, None) }
-  | NEW t=class_or_interface_type de=dim_exprs { ArrayCreation(t, Some de, 0, None) }
-  | NEW t=class_or_interface_type de=dim_exprs d=dims { ArrayCreation(t, Some de, d, None) }
+  | NEW t=primitive_type de=dim_exprs { match de with (e, d) -> ArrayCreation(t, Some e, d, None) }
+  | NEW t=class_or_interface_type de=dim_exprs { match de with (e, d) -> ArrayCreation(t, Some e, d, None) }
   | NEW t=primitive_type d=dims ai=array_initializer { ArrayCreation(t, None, d, Some ai) }
   | NEW t=class_or_interface_type d=dims ai=array_initializer { ArrayCreation(t, None, d, Some ai) }
 
 dim_exprs:
-  | e=dim_expr { [e] }
-  | es=dim_expr e=dim_expr { [es; e] }
+  | e=dim_expr { ([e], 0) }
+  | e=dim_expr es=dim_exprs { match es with (el, d) -> (e::el, d) }
+  | e=dim_expr d=dims { ([e], d) }
 
 dim_expr:
   | L_BRACKET e=expression R_BRACKET { e }

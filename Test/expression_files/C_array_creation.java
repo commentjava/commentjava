@@ -1,5 +1,5 @@
 {
-    myArray = new int[2];
+    myArray = new int[2][3][][];
     myArray = new int[a][b];
     myArray = new int[a][b][][][];
     myArray = new myType<T1>[a][b];
