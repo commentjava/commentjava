@@ -24,6 +24,7 @@
 (* Literals - 3.10 *)
 /* %token < int > INTEGER_LITERAL
 %token < float > FLOAT_LITERAL
+%token < float > DOUBLE_LITERAL
 %token < bool > BOOLEAN_LITERAL
 %token < char > CHAR_LITERAL
 %token < string > STRING_LITERAL
@@ -31,6 +32,7 @@
 
 %token <string> INTEGER_LITERAL
 %token <string> FLOAT_LITERAL
+%token <string> DOUBLE_LITERAL
 %token <string> BOOLEAN_LITERAL
 %token <string> CHAR_LITERAL
 %token <string> STRING_LITERAL

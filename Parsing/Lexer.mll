@@ -43,11 +43,21 @@ let string_literal = '"' string_char* '"'
 let float_suffix = 'f' | 'F'
 let hex_significand = hex_numeral | hex_numeral '.' | '0' ('x' | 'X') hex_digit* '.' hex_digit+
 let hex_float_literal = hex_significand ('p' | 'P') signed_integer float_suffix?
-let decimal_float_literal = (digit+ '.' digit* exponent_part? float_suffix? 
+let decimal_float_literal = (digit+ '.' digit* exponent_part? float_suffix?
                             | '.' digit+ exponent_part? float_suffix?
                             | digit+ exponent_part float_suffix?
                             | digit+ exponent_part? float_suffix)
 let float_literal = decimal_float_literal | hex_float_literal
+
+(* Double Literals *)
+let double_suffix = 'd' | 'D'
+let hex_significand = hex_numeral | hex_numeral '.' | '0' ('x' | 'X') hex_digit* '.' hex_digit+
+let hex_double_literal = hex_significand ('p' | 'P') signed_integer double_suffix?
+let decimal_double_literal = (digit+ '.' digit* exponent_part? double_suffix?
+                            | '.' digit+ exponent_part? double_suffix?
+                            | digit+ exponent_part double_suffix?
+                            | digit+ exponent_part? double_suffix)
+let double_literal = decimal_double_literal | hex_double_literal
 
 (* Char Literals *)
 let single_char = [^ '\'' '\\']
@@ -138,6 +148,7 @@ and nexttoken = parse
   | boolean_literal as b { BOOLEAN_LITERAL b }
   | char_literal as c { CHAR_LITERAL c }
   | float_literal as f { FLOAT_LITERAL f }
+  | double_literal as f { DOUBLE_LITERAL f }
   | integer_literal as i { INTEGER_LITERAL i }
   | null_literal { NULL_LITERAL }
   | string_literal as s { STRING_LITERAL s }

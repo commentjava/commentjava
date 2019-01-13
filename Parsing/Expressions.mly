@@ -29,6 +29,7 @@
 literal:
   | l=INTEGER_LITERAL { NumberLiteral(l) }
   | l=FLOAT_LITERAL { NumberLiteral(l) }
+  | l=DOUBLE_LITERAL { NumberLiteral(l) }
   | l=BOOLEAN_LITERAL { BooleanLiteral(l) }
   | l=CHAR_LITERAL { CharacterLiteral(l) }
   | l=STRING_LITERAL { StringLiteral(l) }
