@@ -82,10 +82,15 @@ extended_modifier: (* expression *)
 (* SECTION 8.1.2 *)
 type_parameters: (* typeParameter list *)
   | LOWER tpl=type_parameter_list GREATER { tpl }
+  | LOWER tpl=type_parameter_list_one_greater_more { tpl }
 
 type_parameter_list: (* typeParameter list *)
-  | tp=type_parameter COMMA tpl=type_parameter_list { tp::tpl }
+  | tpl=type_parameter_list COMMA tp=type_parameter { tpl @ [tp] }
   | tp=type_parameter { [tp] }
+
+type_parameter_list_one_greater_more: (* typeParameter list *)
+  | tpl=type_parameter_list COMMA tp=type_parameter_one_greater_more { tpl @ [tp] }
+  | tp=type_parameter_one_greater_more { [tp] }
 
 (* SECTION 8.1.4 *)
 super: (* type_ *)
@@ -248,12 +253,19 @@ explicit_constructor_invocation: (* statement *)
 
 %public %inline non_wild_type_arguments: (* type_ list *)
   | LOWER tl=reference_type_list GREATER { tl }
+  | LOWER tl=reference_type_list_one_greater_more { tl }
 
 reference_type_list: (* type_ list *)
   | t=reference_type { [t] }
   | t=array_type { [t] }
   | tl=reference_type_list COMMA t=reference_type { tl @ [t] }
   | tl=reference_type_list COMMA t=array_type { tl @ [t] }
+
+reference_type_list_one_greater_more: (* type_ list *)
+  | t=reference_type_one_greater_more { [t] }
+  (*| t=array_type { [t] }*)
+  | tl=reference_type_list COMMA t=reference_type_one_greater_more { tl @ [t] }
+  (*| tl=reference_type_list COMMA t=array_type { tl @ [t] }*)
 
 (* SECTION 8.9 *)
 enum_declaration: (* bodyDeclaration *)
