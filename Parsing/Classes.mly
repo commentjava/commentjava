@@ -162,12 +162,22 @@ method_declaration: (* bodyDeclaration *)
           | true -> MethodDeclaration(em, Some tp, rt, i, fpl, t, Some mb)
           | false -> error ("Invalid modifier for method " ^ i) $startpos
   }
+  | em=extended_modifiers rt=result_type i=identifier L_PAR fpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON {
+          match check_modifiers check_method_modifier em with
+          | true -> MethodDeclaration(em, None, rt, i, fpl, t, None)
+          | false -> error ("Invalid modifier for method " ^ i) $startpos
+  }
+  | em=extended_modifiers tp=type_parameters rt=result_type i=identifier L_PAR fpl=ioption(formal_parameters) R_PAR t=throws? SEMICOLON {
+          match check_modifiers check_method_modifier em with
+          | true -> MethodDeclaration(em, Some tp, rt, i, fpl, t, None)
+          | false -> error ("Invalid modifier for method " ^ i) $startpos
+  }
   (* XXX not: `anonymous()` considered as a deprecated synonym of `endrule()`
    * But because we want to keep compatibility with older versions of Menhir
    * (e.g. the ones packaged with Debian and Ubuntu) we kept this syntax.
    * You might want change that in the future.
    *)
-  | amd=anonymous(abstract_method_declaration) { amd }
+  (* | amd=anonymous(abstract_method_declaration) { amd } *)
 
 %inline result_type: (* type_ *)
   | t=type_ { t }
