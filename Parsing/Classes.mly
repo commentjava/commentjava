@@ -212,7 +212,7 @@ exception_type_list: (* type_ list *)
 (* SECTION 8.4.7 *)
 method_body: (* statement *)
    | b=block { b }
-   | SEMICOLON { EmptyStatement }
+(*   | SEMICOLON { EmptyStatement } *)
 
 (* SECTION 8.6 *)
 %inline instance_initializer: (* statement *)
